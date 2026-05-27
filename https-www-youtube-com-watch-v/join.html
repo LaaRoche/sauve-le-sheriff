@@ -9,8 +9,13 @@
   <body>
     <main class="phone-shell">
       <section class="panel phone-panel" aria-labelledby="player-title">
-        <p class="eyebrow">Sauve le Sheriff</p>
-        <h1 id="player-title">Telephone joueur</h1>
+        <div class="phone-topbar">
+          <div>
+            <p class="eyebrow">Sauve le Sheriff</p>
+            <h1 id="player-title">Ecran joueur</h1>
+          </div>
+          <button class="ghost-button" data-rules-open type="button">Regles</button>
+        </div>
 
         <form class="join-form" id="join-form">
           <label>
@@ -28,6 +33,12 @@
             <em id="player-role">Role non attribue</em>
           </div>
 
+          <div class="player-task">
+            <span>Phase</span>
+            <strong id="player-phase">En attente</strong>
+            <p id="player-action">Attends le lancement de la partie.</p>
+          </div>
+
           <div class="clock-ring phone-clock" id="clock-ring">
             <span id="time-left">30</span>
             <small>secondes</small>
@@ -35,15 +46,47 @@
 
           <p class="outcome" id="player-message">En attente du maitre de partie.</p>
 
+          <div class="voice-panel">
+            <div>
+              <span>Vocal</span>
+              <strong id="voice-room">Non connecte</strong>
+              <p id="voice-status">Active ton micro pour rejoindre le vocal de ta phase.</p>
+            </div>
+            <button class="primary" id="enable-voice" type="button">Activer le micro</button>
+          </div>
+
+          <button class="primary hidden" id="volunteer-duel" type="button">Je vais au duel</button>
+
           <button class="danger hidden" id="sheriff-phone-shot" type="button">Tir du sheriff</button>
 
           <div class="choice-buttons hidden" id="choice-buttons">
             <button class="danger" data-choice="shoot" type="button">Tirer</button>
             <button data-choice="hold" type="button">Ne pas tirer</button>
           </div>
+          <div id="remote-audio" aria-hidden="true"></div>
         </div>
       </section>
     </main>
+
+    <div class="rules-modal hidden" id="rules-modal" role="dialog" aria-modal="true" aria-labelledby="rules-modal-title">
+      <section class="panel rules-modal-card">
+        <div class="rules-header">
+          <div>
+            <p class="eyebrow">Aide de jeu</p>
+            <h2 id="rules-modal-title">Regles rapides</h2>
+          </div>
+          <button class="ghost-button" data-rules-close type="button">Fermer</button>
+        </div>
+        <ol class="rules-list">
+          <li>Ton role est secret. Ne le montre pas.</li>
+          <li>Va dans le vocal indique par ton saloon ou par l'ecran joueur.</li>
+          <li>Pendant la discussion, ton saloon choisit un duelliste.</li>
+          <li>Si tu vas au duel, clique sur tirer ou ne pas tirer avant la fin du timer.</li>
+          <li>Si personne ne tire, les deux duellistes se montrent leur role en prive et echangent de saloon.</li>
+          <li>Si tu meurs, garde le silence jusqu'a la fin de la partie.</li>
+        </ol>
+      </section>
+    </div>
 
     <script src="player.js"></script>
   </body>

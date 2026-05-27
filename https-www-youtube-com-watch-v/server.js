@@ -5,7 +5,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = path.dirname(fileURLToPath(import.meta.url));
-const port = Number(globalThis.process?.env?.PORT || 5204);
+const port = Number(globalThis.process?.env?.PORT || 5205);
 const defaultSettings = {
   duelDuration: 30,
   resultDuration: 15,
@@ -53,6 +53,15 @@ function freshDuel() {
   };
 }
 
+function saloonDuelist(saloon) {
+  return state.duel[saloon === "A" ? "leftId" : "rightId"];
+}
+
+function setSaloonDuelist(saloon, playerId) {
+  if (saloon === "A") state.duel.leftId = playerId;
+  if (saloon === "B") state.duel.rightId = playerId;
+}
+
 function makeId() {
   return Math.random().toString(36).slice(2, 10);
 }
@@ -98,13 +107,13 @@ function computePhase() {
   phase.remaining = Math.max(0, phase.duration - elapsed);
   if (phase.remaining === 0) {
     phase.running = false;
-    if (phase.name === "result") {
+  if (phase.name === "result") {
       state.duel = freshDuel();
       startPhase("transition", "Temps mort : rejoignez vos saloons", state.settings.transitionDuration);
     } else if (phase.name === "transition") {
       startPhase("discussion", "Discussion dans les saloons", state.settings.discussionDuration);
     } else if (phase.name === "discussion") {
-      phase.label = "Discussion terminee : choisissez les duellistes";
+      phase.label = state.duel.leftId && state.duel.rightId ? "Duel pret : les duellistes vont dans le vocal Duel" : "Discussion terminee : choisissez les duellistes";
     }
   }
   return phase;
@@ -161,6 +170,11 @@ function readBody(req) {
 
 function emit() {
   const payload = `event: state\ndata: ${JSON.stringify(publicState())}\n\n`;
+  for (const res of clients) res.write(payload);
+}
+
+function emitSignal(signal) {
+  const payload = `event: signal\ndata: ${JSON.stringify(signal)}\n\n`;
   for (const res of clients) res.write(payload);
 }
 
@@ -259,7 +273,10 @@ function serveFile(req, res) {
       ".css": "text/css; charset=utf-8",
       ".js": "text/javascript; charset=utf-8"
     };
-    res.writeHead(200, { "Content-Type": types[path.extname(file)] || "application/octet-stream" });
+    res.writeHead(200, {
+      "Content-Type": types[path.extname(file)] || "application/octet-stream",
+      "Cache-Control": "no-store"
+    });
     res.end(data);
   });
 }
@@ -356,6 +373,20 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  if (req.method === "POST" && url.pathname === "/api/signal") {
+    const body = await readBody(req);
+    if (body.from && body.to && body.kind) {
+      emitSignal({
+        from: String(body.from),
+        to: String(body.to),
+        kind: String(body.kind),
+        payload: body.payload || null
+      });
+    }
+    sendJson(res, { ok: true });
+    return;
+  }
+
   if (req.method === "POST" && url.pathname === "/api/assign-roles") {
     const body = await readBody(req);
     state.hostMessage = "";
@@ -433,7 +464,37 @@ const server = http.createServer(async (req, res) => {
   }
 
   if (req.method === "POST" && url.pathname === "/api/start-discussion") {
+    state.duel = freshDuel();
     startPhase("discussion", "Discussion dans les saloons", state.settings.discussionDuration);
+    emit();
+    sendJson(res, publicState(req));
+    return;
+  }
+
+  if (req.method === "POST" && url.pathname === "/api/volunteer-duel") {
+    const body = await readBody(req);
+    const player = state.players.find((item) => item.id === body.playerId);
+    state.hostMessage = "";
+
+    if (!player || !player.alive) {
+      sendJson(res, publicState(req));
+      return;
+    }
+
+    if (state.phase.name !== "discussion" && state.phase.label !== "Discussion terminee : choisissez les duellistes") {
+      sendJson(res, publicState(req));
+      return;
+    }
+
+    if (!saloonDuelist(player.saloon)) {
+      setSaloonDuelist(player.saloon, player.id);
+      if (state.duel.leftId && state.duel.rightId) {
+        state.phase.running = false;
+        state.phase.remaining = 0;
+        state.phase.label = "Duel pret : les duellistes vont dans le vocal Duel";
+      }
+    }
+
     emit();
     sendJson(res, publicState(req));
     return;

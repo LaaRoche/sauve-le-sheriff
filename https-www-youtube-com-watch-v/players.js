@@ -2,6 +2,19 @@ let state = null;
 
 const grid = document.querySelector("#players-phone-grid");
 
+function setupRulesModal() {
+  const modal = document.querySelector("#rules-modal");
+  document.querySelectorAll("[data-rules-open]").forEach((button) => {
+    button.addEventListener("click", () => modal.classList.remove("hidden"));
+  });
+  document.querySelectorAll("[data-rules-close]").forEach((button) => {
+    button.addEventListener("click", () => modal.classList.add("hidden"));
+  });
+  modal.addEventListener("click", (event) => {
+    if (event.target === modal) modal.classList.add("hidden");
+  });
+}
+
 async function postJson(url, body) {
   const response = await fetch(url, {
     method: "POST",
@@ -74,6 +87,18 @@ function makePlayerCard(player) {
   actions.className = "choice-buttons";
 
   const canChoose = player.alive && isInDuel(player, duel) && !duel.revealed && !playerChoice(player, duel);
+  const saloonDuelist = player.saloon === "A" ? duel.leftId : duel.rightId;
+  const canVolunteer = player.alive && !state.winner && !isInDuel(player, duel) && !saloonDuelist && (phase.name === "discussion" || phase.label === "Discussion terminee : choisissez les duellistes");
+
+  if (canVolunteer) {
+    const volunteer = document.createElement("button");
+    volunteer.className = "primary full-width";
+    volunteer.type = "button";
+    volunteer.textContent = "Je vais au duel";
+    volunteer.addEventListener("click", () => postJson("/api/volunteer-duel", { playerId: player.id }));
+    actions.append(volunteer);
+  }
+
   if (canChoose) {
     const shoot = document.createElement("button");
     shoot.className = "danger";
@@ -120,3 +145,4 @@ function render(nextState) {
 const events = new EventSource("/events");
 events.addEventListener("state", (event) => render(JSON.parse(event.data)));
 fetch("/api/state").then((response) => response.json()).then(render);
+setupRulesModal();

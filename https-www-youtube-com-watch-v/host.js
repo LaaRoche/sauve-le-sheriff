@@ -38,6 +38,19 @@ const discussionDurationInput = document.querySelector("#discussion-duration");
 let adminUnlocked = false;
 let pinValue = "";
 
+function setupRulesModal() {
+  const modal = document.querySelector("#rules-modal");
+  document.querySelectorAll("[data-rules-open]").forEach((button) => {
+    button.addEventListener("click", () => modal.classList.remove("hidden"));
+  });
+  document.querySelectorAll("[data-rules-close]").forEach((button) => {
+    button.addEventListener("click", () => modal.classList.add("hidden"));
+  });
+  modal.addEventListener("click", (event) => {
+    if (event.target === modal) modal.classList.add("hidden");
+  });
+}
+
 function formatTime(seconds) {
   const safe = Math.max(0, Number(seconds || 0));
   const minutes = Math.floor(safe / 60);
@@ -385,3 +398,4 @@ wakeLockButton.addEventListener("click", () => toggleWakeLock().catch(() => {
 const events = new EventSource("/events");
 events.addEventListener("state", (event) => render(JSON.parse(event.data)));
 fetch("/api/state").then((response) => response.json()).then(render);
+setupRulesModal();

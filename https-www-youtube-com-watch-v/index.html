@@ -15,6 +15,7 @@
             <h1 id="app-title">Maitre de partie</h1>
           </div>
           <div class="top-actions">
+            <button class="ghost-button" data-rules-open type="button">Regles</button>
             <button class="ghost-button" id="wake-lock" type="button">Veille</button>
             <button class="danger" id="new-game" type="button">Nouvelle partie</button>
           </div>
@@ -218,6 +219,28 @@
         </ol>
       </aside>
     </main>
+
+    <div class="rules-modal hidden" id="rules-modal" role="dialog" aria-modal="true" aria-labelledby="rules-modal-title">
+      <section class="panel rules-modal-card">
+        <div class="rules-header">
+          <div>
+            <p class="eyebrow">Aide de jeu</p>
+            <h2 id="rules-modal-title">Regles rapides</h2>
+          </div>
+          <button class="ghost-button" data-rules-close type="button">Fermer</button>
+        </div>
+        <ol class="rules-list">
+          <li>Chaque joueur recoit un role secret : citoyen, hors-la-loi ou sheriff.</li>
+          <li>Les joueurs sont envoyes aleatoirement dans Saloon A ou Saloon B.</li>
+          <li>Pendant la discussion, chaque saloon choisit lui-meme son duelliste.</li>
+          <li>Les deux duellistes vont dans le vocal Duel.</li>
+          <li>Pendant le duel, chacun choisit secretement : tirer ou ne pas tirer.</li>
+          <li>Deux tirs : les deux meurent. Un tir : l'autre joueur meurt. Aucun tir : revelation privee des roles, puis echange de saloon.</li>
+          <li>Le sheriff peut tirer avant la fin du decompte.</li>
+          <li>Les citoyens gagnent quand tous les hors-la-loi sont morts. Les hors-la-loi gagnent s'ils sont plus nombreux que les citoyens et le sheriff vivants.</li>
+        </ol>
+      </section>
+    </div>
 
     <script src="host.js"></script>
   </body>
