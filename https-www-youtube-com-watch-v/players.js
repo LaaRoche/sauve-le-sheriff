@@ -49,6 +49,13 @@ function statusText(player, duel) {
   return playerChoice(player, duel) ? "Choix envoye" : "Doit choisir";
 }
 
+function roleImage(role) {
+  if (role === "Sheriff") return "assets/role-sheriff.svg";
+  if (role === "Hors-la-loi") return "assets/role-outlaw.svg";
+  if (role === "Citoyen") return "assets/role-citizen.svg";
+  return "assets/role-hidden.svg";
+}
+
 function makePlayerCard(player) {
   const duel = state.duel;
   const phase = state.phase || {};
@@ -56,14 +63,16 @@ function makePlayerCard(player) {
   card.className = "test-phone-card";
   card.classList.toggle("dead-player-card", !player.alive);
   card.classList.toggle("game-over-card", Boolean(state.winner));
+  const sheriffPowerText = player.role === "Sheriff" && player.sheriffPower === false ? " - pouvoir utilise" : "";
 
   const heading = document.createElement("div");
   heading.className = "identity";
   heading.innerHTML = `
     <span>${statusText(player, duel)}</span>
+    <img class="role-art" src="${roleImage(player.role)}" alt="">
     <strong>${player.name}</strong>
     <small>${player.alive ? `Saloon ${player.saloon}` : "Hors partie"}</small>
-    <em>${player.role ? `Role : ${player.role}` : "Role non attribue"}</em>
+    <em>${player.role ? `Role : ${player.role}${sheriffPowerText}` : "Role non attribue"}</em>
   `;
 
   const clock = document.createElement("div");
@@ -114,7 +123,7 @@ function makePlayerCard(player) {
     actions.append(shoot, hold);
   }
 
-  if (canChoose && player.role === "Sheriff") {
+  if (canChoose && player.role === "Sheriff" && player.sheriffPower !== false) {
     const sheriff = document.createElement("button");
     sheriff.className = "danger full-width";
     sheriff.type = "button";

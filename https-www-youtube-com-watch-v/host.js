@@ -70,7 +70,7 @@ function choiceText(choice, revealed) {
 
 function resolveOutcome(duel) {
   if (state?.hostMessage) return state.hostMessage;
-  if (duel.sheriffShot) return "Tir anticipe du sheriff : appliquez son pouvoir maintenant.";
+  if (duel.sheriffShot) return duel.resultMessage || "Tir anticipe du sheriff.";
   if (!duel.leftId || !duel.rightId) return "Choisissez deux joueurs pour preparer le duel.";
   if (!duel.revealed && duel.remaining > 0) return "Duel en cours : les choix restent secrets.";
   if (!duel.leftChoice || !duel.rightChoice) return "Il manque un choix. Le maitre de partie tranche ou relance le duel.";
@@ -234,8 +234,8 @@ function renderRoleTools(players) {
     quickRoles.append(button);
   });
 
-  if (livingCount < 3) {
-    roleAdvice.textContent = "Il faut au moins 3 joueurs pour une distribution interessante.";
+  if (livingCount < 5) {
+    roleAdvice.textContent = "La partie peut commencer a partir de 5 joueurs.";
     return;
   }
 
@@ -356,6 +356,10 @@ document.querySelector("#set-duel").addEventListener("click", () => {
 document.querySelector("#assign-roles").addEventListener("click", () => {
   outlawCountInput.dataset.touched = "true";
   const livingCount = state.players.filter((player) => player.alive).length;
+  if (livingCount < 5) {
+    roleAdvice.textContent = "La partie peut commencer a partir de 5 joueurs.";
+    return;
+  }
   const count = clampOutlawCount(outlawCountInput.value, livingCount);
   postJson("/api/assign-roles", { outlawCount: count });
 });

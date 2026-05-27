@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 180" role="img" aria-label="Sheriff">
+  <rect width="240" height="180" rx="18" fill="#f8f0df"/>
+  <circle cx="120" cy="76" r="42" fill="#d99a25"/>
+  <path d="M120 37l12 25 27 4-20 19 5 27-24-13-24 13 5-27-20-19 27-4z" fill="#f8f0df" stroke="#211611" stroke-width="7" stroke-linejoin="round"/>
+  <path d="M73 143h94" stroke="#2b6b61" stroke-width="16" stroke-linecap="round"/>
+  <circle cx="120" cy="132" r="10" fill="#211611"/>
+</svg>

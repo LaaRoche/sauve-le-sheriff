@@ -28,6 +28,7 @@
         <div class="player-view hidden" id="player-view">
           <div class="identity">
             <span id="player-status">Connecte</span>
+            <img class="role-art" id="role-art" src="assets/role-hidden.svg" alt="">
             <strong id="player-display-name"></strong>
             <small id="player-saloon"></small>
             <em id="player-role">Role non attribue</em>
@@ -82,7 +83,11 @@
           <li>Va dans le vocal indique par ton saloon ou par l'ecran joueur.</li>
           <li>Pendant la discussion, ton saloon choisit un duelliste.</li>
           <li>Si tu vas au duel, clique sur tirer ou ne pas tirer avant la fin du timer.</li>
+          <li>Le sheriff peut utiliser son pouvoir avant la fin du timer : sa cible meurt et le duel s'arrete.</li>
+          <li>Si le sheriff tue un citoyen, il perd son pouvoir. S'il tue un hors-la-loi, il le garde.</li>
           <li>Si personne ne tire, les deux duellistes se montrent leur role en prive et echangent de saloon.</li>
+          <li>Les citoyens gagnent quand tous les hors-la-loi sont morts.</li>
+          <li>Les hors-la-loi gagnent s'ils sont plus nombreux que les citoyens et le sheriff vivants.</li>
           <li>Si tu meurs, garde le silence jusqu'a la fin de la partie.</li>
         </ol>
       </section>

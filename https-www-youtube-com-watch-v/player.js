@@ -8,6 +8,7 @@ const displayName = document.querySelector("#player-display-name");
 const playerSaloon = document.querySelector("#player-saloon");
 const playerStatus = document.querySelector("#player-status");
 const playerRole = document.querySelector("#player-role");
+const roleArt = document.querySelector("#role-art");
 const playerPhase = document.querySelector("#player-phase");
 const playerAction = document.querySelector("#player-action");
 const timeLeft = document.querySelector("#time-left");
@@ -22,7 +23,9 @@ const voiceStatus = document.querySelector("#voice-status");
 const remoteAudio = document.querySelector("#remote-audio");
 
 let voiceEnabled = false;
+let muted = false;
 let localStream = null;
+let lastVoiceRoom = "";
 const peers = new Map();
 const pendingCandidates = new Map();
 
@@ -84,6 +87,13 @@ function playerName(id) {
 function setTask(phase, action) {
   playerPhase.textContent = phase;
   playerAction.textContent = action;
+}
+
+function roleImage(role) {
+  if (role === "Sheriff") return "assets/role-sheriff.svg";
+  if (role === "Hors-la-loi") return "assets/role-outlaw.svg";
+  if (role === "Citoyen") return "assets/role-citizen.svg";
+  return "assets/role-hidden.svg";
 }
 
 function voiceRoomFor(player, duel) {
@@ -223,6 +233,10 @@ async function syncVoicePeers() {
 
   const myRoom = voiceRoomFor(player, state.duel);
   voiceRoom.textContent = myRoom;
+  if (myRoom !== lastVoiceRoom) {
+    lastVoiceRoom = myRoom;
+    await postJson("/api/voice-room", { playerId, room: myRoom });
+  }
   const targetIds = voiceTargetIds();
 
   for (const id of peers.keys()) {
@@ -242,10 +256,24 @@ async function syncVoicePeers() {
 async function enableVoiceChat() {
   localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
   voiceEnabled = true;
+  muted = false;
   enableVoice.textContent = "Micro actif";
-  enableVoice.disabled = true;
+  enableVoice.classList.add("voice-on");
+  enableVoice.classList.remove("voice-muted");
   await syncVoicePeers();
   await Promise.all(voiceTargetIds().map((id) => sendSignal(id, "ready", null)));
+}
+
+function toggleMute() {
+  if (!localStream) return;
+  muted = !muted;
+  localStream.getAudioTracks().forEach((track) => {
+    track.enabled = !muted;
+  });
+  enableVoice.textContent = muted ? "Micro coupe" : "Micro actif";
+  enableVoice.classList.toggle("voice-muted", muted);
+  enableVoice.classList.toggle("voice-on", !muted);
+  voiceStatus.textContent = muted ? "Ton micro est coupe." : "Ton micro est actif.";
 }
 
 function render(nextState) {
@@ -263,7 +291,9 @@ function render(nextState) {
   displayName.textContent = player.name;
   playerSaloon.textContent = player.alive ? `Saloon ${player.saloon}` : "Elimine";
   playerStatus.textContent = player.alive ? "Connecte" : "Hors partie";
-  playerRole.textContent = player.role ? `Role : ${player.role}` : "Role non attribue";
+  const sheriffPowerText = player.role === "Sheriff" && player.sheriffPower === false ? " - pouvoir utilise" : "";
+  playerRole.textContent = player.role ? `Role : ${player.role}${sheriffPowerText}` : "Role non attribue";
+  roleArt.src = roleImage(player.role);
 
   const duel = state.duel;
   const phase = state.phase || {};
@@ -356,7 +386,7 @@ function render(nextState) {
   setTask("Duel", "Choisis secretement : tirer ou ne pas tirer.");
   message.textContent = duel.revealed ? "Les choix sont reveles sur l'ecran du maitre de partie." : choiceLabel(choice);
   choiceButtons.classList.toggle("hidden", Boolean(choice) || duel.revealed);
-  sheriffPhoneShot.classList.toggle("hidden", player.role !== "Sheriff" || duel.revealed);
+  sheriffPhoneShot.classList.toggle("hidden", player.role !== "Sheriff" || player.sheriffPower === false || duel.revealed);
 }
 
 joinForm.addEventListener("submit", async (event) => {
@@ -384,6 +414,10 @@ volunteerDuel.addEventListener("click", async () => {
 });
 
 enableVoice.addEventListener("click", () => {
+  if (voiceEnabled) {
+    toggleMute();
+    return;
+  }
   enableVoiceChat().catch(() => {
     voiceStatus.textContent = "Micro bloque par le navigateur. Autorise le micro puis recharge.";
   });

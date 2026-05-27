@@ -53,6 +53,15 @@ function freshDuel() {
   };
 }
 
+function startDuelTimer() {
+  computeDuel();
+  state.hostMessage = "";
+  state.phase = freshPhase();
+  state.duel.running = true;
+  state.duel.startedAt = Date.now() - (state.settings.duelDuration - state.duel.remaining) * 1000;
+  state.duel.revealed = false;
+}
+
 function saloonDuelist(saloon) {
   return state.duel[saloon === "A" ? "leftId" : "rightId"];
 }
@@ -183,6 +192,19 @@ function moveToOtherSaloon(player) {
   player.saloon = player.saloon === "A" ? "B" : "A";
 }
 
+function maybeStartDuelFromVoice() {
+  const duel = state.duel;
+  if (!duel.leftId || !duel.rightId || duel.running || duel.revealed || duel.resolved) return false;
+  const left = state.players.find((player) => player.id === duel.leftId);
+  const right = state.players.find((player) => player.id === duel.rightId);
+  if (!left?.alive || !right?.alive) return false;
+  if (left.voiceRoom === "Duel" && right.voiceRoom === "Duel") {
+    startDuelTimer();
+    return true;
+  }
+  return false;
+}
+
 function applyResolution() {
   const duel = state.duel;
   if (duel.resolved) return;
@@ -190,7 +212,16 @@ function applyResolution() {
   const right = state.players.find((player) => player.id === duel.rightId);
   if (!left || !right || !duel.leftChoice || !duel.rightChoice) return;
 
-  if (duel.leftChoice === "shoot" && duel.rightChoice === "shoot") {
+  if (duel.sheriffShot) {
+    const sheriff = left.role === "Sheriff" ? left : right.role === "Sheriff" ? right : null;
+    const target = sheriff?.id === left.id ? right : left;
+    if (!sheriff || !target) return;
+    target.alive = false;
+    moveToOtherSaloon(sheriff);
+    if (target.role === "Citoyen") sheriff.sheriffPower = false;
+    duel.resultMessage = `${sheriff.name} utilise son pouvoir : ${target.name} est elimine, ${sheriff.name} change de saloon.`;
+    duel.resultDetail = target.role === "Hors-la-loi" ? "Le sheriff garde son pouvoir." : "Le sheriff perd son pouvoir.";
+  } else if (duel.leftChoice === "shoot" && duel.rightChoice === "shoot") {
     left.alive = false;
     right.alive = false;
     duel.resultMessage = `${left.name} et ${right.name} tirent : les deux sont elimines.`;
@@ -271,7 +302,8 @@ function serveFile(req, res) {
     const types = {
       ".html": "text/html; charset=utf-8",
       ".css": "text/css; charset=utf-8",
-      ".js": "text/javascript; charset=utf-8"
+      ".js": "text/javascript; charset=utf-8",
+      ".svg": "image/svg+xml; charset=utf-8"
     };
     res.writeHead(200, {
       "Content-Type": types[path.extname(file)] || "application/octet-stream",
@@ -316,7 +348,9 @@ const server = http.createServer(async (req, res) => {
       name,
       saloon: state.players.filter((item) => item.alive && item.saloon === "A").length <= state.players.filter((item) => item.alive && item.saloon === "B").length ? "A" : "B",
       alive: true,
-      role: ""
+      role: "",
+      sheriffPower: true,
+      voiceRoom: ""
     };
     state.players.push(player);
     emit();
@@ -392,7 +426,8 @@ const server = http.createServer(async (req, res) => {
     state.hostMessage = "";
     const living = state.players.filter((player) => player.alive);
     state.hostMessage = "";
-    if (living.length < 2) {
+    if (living.length < 5) {
+      state.hostMessage = "La partie peut commencer a partir de 5 joueurs.";
       emit();
       sendJson(res, publicState(req));
       return;
@@ -405,9 +440,11 @@ const server = http.createServer(async (req, res) => {
     const shuffledRoles = shuffle(roles);
     living.forEach((player, index) => {
       player.role = shuffledRoles[index] || "Citoyen";
+      player.sheriffPower = player.role === "Sheriff";
     });
     state.players.filter((player) => !player.alive).forEach((player) => {
       player.role = "";
+      player.sheriffPower = false;
     });
 
     emit();
@@ -452,13 +489,20 @@ const server = http.createServer(async (req, res) => {
   }
 
   if (req.method === "POST" && url.pathname === "/api/start-duel") {
-    computeDuel();
-    state.hostMessage = "";
-    state.phase = freshPhase();
-    state.duel.running = true;
-    state.duel.startedAt = Date.now() - (state.settings.duelDuration - state.duel.remaining) * 1000;
-    state.duel.revealed = false;
+    startDuelTimer();
     emit();
+    sendJson(res, publicState(req));
+    return;
+  }
+
+  if (req.method === "POST" && url.pathname === "/api/voice-room") {
+    const body = await readBody(req);
+    const player = state.players.find((item) => item.id === body.playerId);
+    if (player) {
+      player.voiceRoom = String(body.room || "");
+      maybeStartDuelFromVoice();
+      emit();
+    }
     sendJson(res, publicState(req));
     return;
   }
@@ -492,6 +536,7 @@ const server = http.createServer(async (req, res) => {
         state.phase.running = false;
         state.phase.remaining = 0;
         state.phase.label = "Duel pret : les duellistes vont dans le vocal Duel";
+        maybeStartDuelFromVoice();
       }
     }
 
@@ -503,6 +548,10 @@ const server = http.createServer(async (req, res) => {
   if (req.method === "POST" && url.pathname === "/api/choice") {
     const body = await readBody(req);
     state.hostMessage = "";
+    if (state.duel.revealed || state.duel.resolved || state.duel.sheriffShot) {
+      sendJson(res, publicState(req));
+      return;
+    }
     if (body.playerId === state.duel.leftId) state.duel.leftChoice = body.choice === "shoot" ? "shoot" : "hold";
     if (body.playerId === state.duel.rightId) state.duel.rightChoice = body.choice === "shoot" ? "shoot" : "hold";
     emit();
@@ -527,30 +576,25 @@ const server = http.createServer(async (req, res) => {
     if (body.playerId) {
       const player = state.players.find((item) => item.id === body.playerId);
       const inDuel = state.duel.leftId === body.playerId || state.duel.rightId === body.playerId;
-      if (!player || player.role !== "Sheriff" || !inDuel) {
+      if (!player || player.role !== "Sheriff" || !player.sheriffPower || !inDuel || state.duel.revealed || state.duel.resolved) {
         sendJson(res, publicState(req));
         return;
       }
+      const targetId = state.duel.leftId === body.playerId ? state.duel.rightId : state.duel.leftId;
       if (state.duel.leftId === body.playerId) state.duel.leftChoice = "shoot";
       if (state.duel.rightId === body.playerId) state.duel.rightChoice = "shoot";
-      if (state.duel.leftId !== body.playerId && !state.duel.leftChoice) state.duel.leftChoice = "hold";
-      if (state.duel.rightId !== body.playerId && !state.duel.rightChoice) state.duel.rightChoice = "hold";
+      if (state.duel.leftId === targetId) state.duel.leftChoice = "hold";
+      if (state.duel.rightId === targetId) state.duel.rightChoice = "hold";
       state.duel.running = false;
       state.duel.revealed = true;
       state.duel.sheriffShot = true;
       applyResolution();
-      state.duel.resultDetail = "Tir anticipe du sheriff.";
       scheduleAfterDuel();
       emit();
       sendJson(res, publicState(req));
       return;
     }
-    state.duel.sheriffShot = true;
-    state.duel.running = false;
-    state.duel.revealed = true;
-    state.duel.resultMessage = "Le sheriff tire avant la fin du duel.";
-    state.duel.resultDetail = "Le joueur vise par le sheriff est elimine. Le maitre de partie applique ce tir, puis relance la manche.";
-    scheduleAfterDuel();
+    state.hostMessage = "Action impossible.";
     emit();
     sendJson(res, publicState(req));
     return;

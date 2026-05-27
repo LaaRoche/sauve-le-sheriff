@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 180" role="img" aria-label="Citoyen">
+  <rect width="240" height="180" rx="18" fill="#f8f0df"/>
+  <circle cx="120" cy="76" r="42" fill="#2b6b61"/>
+  <path d="M60 143h120" stroke="#d99a25" stroke-width="14" stroke-linecap="round"/>
+  <path d="M83 77h74" stroke="#211611" stroke-width="15" stroke-linecap="round"/>
+  <path d="M95 53h50l14 24H81z" fill="#d99a25"/>
+  <circle cx="105" cy="83" r="6" fill="#f8f0df"/>
+  <circle cx="135" cy="83" r="6" fill="#f8f0df"/>
+</svg>
