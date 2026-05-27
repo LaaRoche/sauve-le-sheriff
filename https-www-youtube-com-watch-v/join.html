@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Sauve le Sheriff - Joueur</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <main class="phone-shell">
+      <section class="panel phone-panel" aria-labelledby="player-title">
+        <p class="eyebrow">Sauve le Sheriff</p>
+        <h1 id="player-title">Telephone joueur</h1>
+
+        <form class="join-form" id="join-form">
+          <label>
+            Ton nom
+            <input id="player-name" autocomplete="off" maxlength="24" required>
+          </label>
+          <button class="primary" type="submit">Rejoindre</button>
+        </form>
+
+        <div class="player-view hidden" id="player-view">
+          <div class="identity">
+            <span id="player-status">Connecte</span>
+            <strong id="player-display-name"></strong>
+            <small id="player-saloon"></small>
+            <em id="player-role">Role non attribue</em>
+          </div>
+
+          <div class="clock-ring phone-clock" id="clock-ring">
+            <span id="time-left">30</span>
+            <small>secondes</small>
+          </div>
+
+          <p class="outcome" id="player-message">En attente du maitre de partie.</p>
+
+          <button class="danger hidden" id="sheriff-phone-shot" type="button">Tir du sheriff</button>
+
+          <div class="choice-buttons hidden" id="choice-buttons">
+            <button class="danger" data-choice="shoot" type="button">Tirer</button>
+            <button data-choice="hold" type="button">Ne pas tirer</button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script src="player.js"></script>
+  </body>
+</html>
