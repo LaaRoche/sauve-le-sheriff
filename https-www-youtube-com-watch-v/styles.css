@@ -216,6 +216,13 @@ h3 {
   color: #3b2818;
 }
 
+.icon-button {
+  width: 46px;
+  padding: 0;
+  color: var(--gold-light);
+  background: linear-gradient(180deg, #233f46, #101f24);
+}
+
 .step-nav {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -726,6 +733,8 @@ h3 {
 }
 
 .saloon-vote-choice {
+  position: relative;
+  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -735,16 +744,38 @@ h3 {
 }
 
 .saloon-vote-choice span {
+  position: relative;
+  z-index: 1;
   overflow-wrap: anywhere;
 }
 
 .saloon-vote-choice small {
+  position: relative;
+  z-index: 1;
   font-weight: 900;
+}
+
+.saloon-vote-choice b {
+  position: relative;
+  z-index: 1;
+}
+
+.saloon-vote-choice i {
+  position: absolute;
+  inset: 0 auto 0 0;
+  z-index: 0;
+  display: block;
+  background: rgba(35, 63, 70, 0.25);
+  pointer-events: none;
 }
 
 .saloon-vote-choice.selected {
   color: var(--gold-light);
   background: linear-gradient(180deg, #233f46, #101f24);
+}
+
+.saloon-vote-choice.selected i {
+  background: rgba(242, 205, 117, 0.22);
 }
 
 .voice-panel span {
@@ -823,7 +854,7 @@ h3 {
 
 .host-actions {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
 }
 
@@ -844,6 +875,10 @@ h3 {
 }
 
 .host-player-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
   padding: 10px 12px;
   border: 1px solid rgba(217, 154, 39, 0.32);
   border-radius: 7px;
@@ -852,15 +887,73 @@ h3 {
   background: rgba(8, 7, 6, 0.32);
 }
 
+.host-player-item small {
+  display: block;
+  margin-top: 4px;
+  color: #c8b39b;
+}
+
+.host-player-item small.ready {
+  color: #f2c46b;
+}
+
+.host-player-item small.not-ready {
+  color: #ffb3a8;
+}
+
+.host-player-item button {
+  min-height: 36px;
+  padding: 0 10px;
+}
+
 .host-end-tools {
   display: grid;
+}
+
+.end-roles {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid rgba(217, 154, 37, 0.42);
+  border-radius: 8px;
+  background: linear-gradient(180deg, rgba(255, 238, 202, 0.12), rgba(8, 7, 6, 0.66));
+}
+
+.end-roles > span {
+  color: #b99a69;
+  font-size: 0.82rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+#end-role-list {
+  display: grid;
+  gap: 8px;
+}
+
+.end-role-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px;
+  border-radius: 7px;
+  background: rgba(8, 7, 6, 0.34);
+}
+
+.end-role-item strong {
+  color: var(--gold-light);
+}
+
+.audio-settings {
+  display: grid;
+  gap: 18px;
+  margin-top: 20px;
 }
 
 .player-view.is-host-setup .player-hero,
 .player-view.is-host-setup .player-task,
 .player-view.is-host-setup .phone-clock,
 .player-view.is-host-setup .outcome,
-.player-view.is-host-setup .voice-panel,
 .player-view.is-host-setup .saloon-vote-panel,
 .player-view.is-host-setup #sheriff-phone-shot,
 .player-view.is-host-setup .choice-buttons {
@@ -1065,6 +1158,7 @@ h3 {
   .two-columns,
   .timer-settings,
   .host-timer-grid,
+  .host-actions,
   .voice-panel,
   .inline-form,
   .choice-buttons,

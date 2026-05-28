@@ -25,6 +25,12 @@ const enableVoice = document.querySelector("#enable-voice");
 const voiceRoom = document.querySelector("#voice-room");
 const voiceStatus = document.querySelector("#voice-status");
 const remoteAudio = document.querySelector("#remote-audio");
+const audioSettingsOpen = document.querySelector("#audio-settings-open");
+const audioSettingsClose = document.querySelector("#audio-settings-close");
+const audioSettingsModal = document.querySelector("#audio-settings-modal");
+const voiceVolumeInput = document.querySelector("#voice-volume");
+const musicVolumeInput = document.querySelector("#music-volume");
+const effectsVolumeInput = document.querySelector("#effects-volume");
 const hostTools = document.querySelector("#host-tools");
 const hostGameCode = document.querySelector("#host-game-code");
 const hostPlayerCount = document.querySelector("#host-player-count");
@@ -35,9 +41,12 @@ const hostResultDuration = document.querySelector("#host-result-duration");
 const hostDiscussionDuration = document.querySelector("#host-discussion-duration");
 const hostPlayerList = document.querySelector("#host-player-list");
 const hostStartGame = document.querySelector("#host-start-game");
+const hostForceStart = document.querySelector("#host-force-start");
 const hostNewGame = document.querySelector("#host-new-game");
 const hostEndTools = document.querySelector("#host-end-tools");
 const hostEndNewGame = document.querySelector("#host-end-new-game");
+const endRoles = document.querySelector("#end-roles");
+const endRoleList = document.querySelector("#end-role-list");
 
 let voiceEnabled = false;
 let muted = false;
@@ -49,6 +58,16 @@ let hostTimersTouched = false;
 const peers = new Map();
 const pendingCandidates = new Map();
 let events = null;
+let previousPhaseName = "";
+let previousPhaseRunning = false;
+let lastGunKey = "";
+let audioContext = null;
+let ambienceNode = null;
+const audioSettings = {
+  voice: Number(localStorage.getItem("sheriffVoiceVolume") || 100),
+  music: Number(localStorage.getItem("sheriffMusicVolume") || 25),
+  effects: Number(localStorage.getItem("sheriffEffectsVolume") || 70)
+};
 
 function setupRulesModal() {
   const modal = document.querySelector("#rules-modal");
@@ -61,6 +80,104 @@ function setupRulesModal() {
   modal.addEventListener("click", (event) => {
     if (event.target === modal) modal.classList.add("hidden");
   });
+}
+
+function setupAudioSettings() {
+  voiceVolumeInput.value = audioSettings.voice;
+  musicVolumeInput.value = audioSettings.music;
+  effectsVolumeInput.value = audioSettings.effects;
+  audioSettingsOpen.addEventListener("click", () => audioSettingsModal.classList.remove("hidden"));
+  audioSettingsClose.addEventListener("click", () => audioSettingsModal.classList.add("hidden"));
+  audioSettingsModal.addEventListener("click", (event) => {
+    if (event.target === audioSettingsModal) audioSettingsModal.classList.add("hidden");
+  });
+  voiceVolumeInput.addEventListener("input", () => {
+    audioSettings.voice = Number(voiceVolumeInput.value);
+    localStorage.setItem("sheriffVoiceVolume", String(audioSettings.voice));
+    updateRemoteAudioVolume();
+  });
+  musicVolumeInput.addEventListener("input", () => {
+    audioSettings.music = Number(musicVolumeInput.value);
+    localStorage.setItem("sheriffMusicVolume", String(audioSettings.music));
+    updateAmbience();
+  });
+  effectsVolumeInput.addEventListener("input", () => {
+    audioSettings.effects = Number(effectsVolumeInput.value);
+    localStorage.setItem("sheriffEffectsVolume", String(audioSettings.effects));
+  });
+}
+
+function ensureAudioContext() {
+  if (!audioContext) audioContext = new AudioContext();
+  if (audioContext.state === "suspended") audioContext.resume();
+  return audioContext;
+}
+
+function playTone(frequency, duration, volume, type = "sine") {
+  if (!volume) return;
+  const context = ensureAudioContext();
+  const oscillator = context.createOscillator();
+  const gain = context.createGain();
+  oscillator.type = type;
+  oscillator.frequency.value = frequency;
+  gain.gain.setValueAtTime(0.0001, context.currentTime);
+  gain.gain.exponentialRampToValueAtTime(volume, context.currentTime + 0.02);
+  gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + duration);
+  oscillator.connect(gain).connect(context.destination);
+  oscillator.start();
+  oscillator.stop(context.currentTime + duration + 0.03);
+}
+
+function playBell() {
+  const volume = audioSettings.effects / 100;
+  playTone(740, 0.18, volume * 0.16, "triangle");
+  setTimeout(() => playTone(520, 0.34, volume * 0.12, "triangle"), 120);
+}
+
+function playGunshot() {
+  const volume = audioSettings.effects / 100;
+  playTone(90, 0.12, volume * 0.24, "sawtooth");
+  setTimeout(() => playTone(55, 0.18, volume * 0.16, "square"), 40);
+}
+
+function updateAmbience() {
+  if (!audioContext || !ambienceNode) return;
+  ambienceNode.gain.gain.value = audioSettings.music / 100 * 0.035;
+}
+
+function startAmbience() {
+  if (ambienceNode || !audioSettings.music) return;
+  const context = ensureAudioContext();
+  const oscillator = context.createOscillator();
+  const gain = context.createGain();
+  oscillator.type = "triangle";
+  oscillator.frequency.value = 146;
+  gain.gain.value = audioSettings.music / 100 * 0.035;
+  oscillator.connect(gain).connect(context.destination);
+  oscillator.start();
+  ambienceNode = { oscillator, gain };
+}
+
+function updateRemoteAudioVolume() {
+  document.querySelectorAll("#remote-audio audio").forEach((audio) => {
+    audio.volume = audioSettings.voice / 100;
+  });
+}
+
+function handleAudioCues(previous, nextState, player) {
+  if (!previous || !player) return;
+  const previousName = previous.phase?.name || "";
+  const nextName = nextState.phase?.name || "";
+  if (nextName === "discussion" && previousName !== "discussion") playBell();
+  if (previousName === "discussion" && nextName !== "discussion") playBell();
+
+  const duel = nextState.duel || {};
+  const shotHappened = duel.sheriffShot || duel.leftChoice === "shoot" || duel.rightChoice === "shoot";
+  const gunKey = `${duel.leftId}-${duel.rightId}-${duel.resultMessage}-${duel.revealed}`;
+  if (shotHappened && duel.revealed && (duel.leftId === player.id || duel.rightId === player.id) && gunKey !== lastGunKey) {
+    lastGunKey = gunKey;
+    playGunshot();
+  }
 }
 
 async function postJson(url, body) {
@@ -80,6 +197,7 @@ function storeSession(code, id) {
   if (gameCode) localStorage.setItem("sheriffGameCode", gameCode);
   if (gameCode && playerId) localStorage.setItem(`sheriffPlayerId:${gameCode}`, playerId);
   if (gameCodeInput) gameCodeInput.value = gameCode;
+  startAmbience();
   connectEvents();
 }
 
@@ -196,7 +314,13 @@ function renderHostPlayerList() {
   hostPlayerList.innerHTML = state.players
     .map((player, index) => {
       const suffix = state.hostId === player.id ? " - organisateur" : "";
-      return `<div class="host-player-item"><span>${index + 1}. ${escapeHtml(player.name)}${suffix}</span></div>`;
+      const micReady = player.voiceReady && !player.voiceMuted;
+      const status = micReady ? "Micro actif" : "Micro manquant";
+      const canKick = state.hostId !== player.id && !gameHasStarted();
+      return `<div class="host-player-item">
+        <div><span>${index + 1}. ${escapeHtml(player.name)}${suffix}</span><small class="${micReady ? "ready" : "not-ready"}">${status}</small></div>
+        ${canKick ? `<button class="danger kick-player" data-kick-id="${player.id}" type="button">Kick</button>` : ""}
+      </div>`;
     })
     .join("");
 }
@@ -219,11 +343,22 @@ function renderSaloonVote(player) {
 
   const selectedId = mySaloonVote(player);
   const candidates = state.players.filter((item) => item.alive && item.role && item.saloon === player.saloon);
+  const votes = state.saloonVotes?.[player.saloon] || {};
+  const voterIds = new Set(candidates.map((candidate) => candidate.id));
+  const totalVotes = Object.entries(votes).filter(([voterId]) => voterIds.has(voterId)).length || 0;
   saloonVoteList.innerHTML = candidates.map((candidate) => {
     const selected = selectedId === candidate.id ? " selected" : "";
     const label = selectedId === candidate.id ? "Vote choisi" : "Voter";
-    return `<button class="saloon-vote-choice${selected}" data-vote-target="${candidate.id}" type="button"><span>${escapeHtml(candidate.name)}</span><small>${label}</small></button>`;
+    const count = Object.values(votes).filter((targetId) => targetId === candidate.id).length;
+    const percent = candidates.length ? Math.round((count / candidates.length) * 100) : 0;
+    return `<button class="saloon-vote-choice${selected}" data-vote-target="${candidate.id}" type="button">
+      <span>${escapeHtml(candidate.name)}</span>
+      <small>${count}/${candidates.length}</small>
+      <i style="width:${percent}%"></i>
+      <b>${label}</b>
+    </button>`;
   }).join("");
+  saloonVotePanel.querySelector("p").textContent = `${totalVotes}/${candidates.length} votes recus. En cas d'egalite, l'Empire tranche au hasard.`;
 }
 
 async function sendSignal(to, kind, payload) {
@@ -250,6 +385,7 @@ function ensureAudioElement(id) {
     audio.id = peerKey(id);
     audio.autoplay = true;
     audio.playsInline = true;
+    audio.volume = audioSettings.voice / 100;
     remoteAudio.append(audio);
   }
   return audio;
@@ -404,6 +540,7 @@ function toggleMute() {
 }
 
 function render(nextState) {
+  const previousState = state;
   state = nextState;
   const player = myPlayer();
 
@@ -412,6 +549,9 @@ function render(nextState) {
     playerView.classList.add("hidden");
     return;
   }
+
+  handleAudioCues(previousState, nextState, player);
+  if (audioContext) startAmbience();
 
   joinForm.classList.add("hidden");
   playerView.classList.remove("hidden");
@@ -433,6 +573,11 @@ function render(nextState) {
     hostMessage.textContent = state.hostMessage || (livingCount < 3 ? "Tu peux tester a partir de 3 joueurs. L'experience complete est meilleure a 5 joueurs ou plus." : "Configure la partie puis lance quand tout le monde est pret.");
     renderHostPlayerList();
     syncHostSettings();
+    const missingMic = state.players.filter((item) => item.alive && (!item.voiceReady || item.voiceMuted));
+    hostForceStart.classList.toggle("hidden", !missingMic.length);
+    if (!state.hostMessage && missingMic.length) {
+      hostMessage.textContent = `Micro manquant : ${missingMic.map((item) => item.name).join(", ")}.`;
+    }
   }
 
   const duel = state.duel;
@@ -457,12 +602,15 @@ function render(nextState) {
     choiceButtons.classList.add("hidden");
     sheriffPhoneShot.classList.add("hidden");
     saloonVotePanel.classList.add("hidden");
+    endRoles.classList.remove("hidden");
+    endRoleList.innerHTML = state.players.map((item) => `<div class="end-role-item"><span>${escapeHtml(item.name)}</span><strong>${escapeHtml(item.role || "Sans role")}</strong></div>`).join("");
     setTask("Partie terminee", `${state.winner} gagnent. Rejoins le vocal Fin de partie.`);
     return;
   }
 
   message.classList.remove("big-message");
   clockRing.classList.remove("game-over-ring");
+  endRoles.classList.add("hidden");
 
   if (!player.alive) {
     playerStatus.textContent = "Tu es mort";
@@ -568,6 +716,12 @@ saloonVoteList.addEventListener("click", async (event) => {
   await postJson("/api/saloon-vote", { playerId, targetId: button.dataset.voteTarget });
 });
 
+hostPlayerList.addEventListener("click", async (event) => {
+  const button = event.target.closest("[data-kick-id]");
+  if (!button) return;
+  await postJson("/api/delete-player", { id: button.dataset.kickId });
+});
+
 hostStartGame.addEventListener("click", async () => {
   await postJson("/api/settings", {
     duelDuration: hostDuelDuration.value,
@@ -575,6 +729,15 @@ hostStartGame.addEventListener("click", async () => {
     discussionDuration: hostDiscussionDuration.value
   });
   await postJson("/api/setup-game", { outlawCount: hostOutlawCount.value });
+});
+
+hostForceStart.addEventListener("click", async () => {
+  await postJson("/api/settings", {
+    duelDuration: hostDuelDuration.value,
+    resultDuration: hostResultDuration.value,
+    discussionDuration: hostDiscussionDuration.value
+  });
+  await postJson("/api/setup-game", { outlawCount: hostOutlawCount.value, force: true });
 });
 
 hostNewGame.addEventListener("click", async () => {
@@ -617,3 +780,4 @@ if (gameCode) {
   fetch(`/api/state?code=${encodeURIComponent(gameCode)}`).then((response) => response.json()).then(render);
 }
 setupRulesModal();
+setupAudioSettings();

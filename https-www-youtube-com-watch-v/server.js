@@ -152,6 +152,10 @@ function resolveDiscussionVotes() {
   return Boolean(leftId && rightId);
 }
 
+function missingVoicePlayers() {
+  return state.players.filter((player) => player.alive && (!player.voiceReady || player.voiceMuted));
+}
+
 function livingPlayers() {
   return state.players.filter((player) => player.alive);
 }
@@ -423,11 +427,16 @@ function normalizeSettings(body) {
   };
 }
 
-function setupGame(outlawCountInput) {
+function setupGame(outlawCountInput, options = {}) {
   state.hostMessage = "";
   const living = state.players.filter((player) => player.alive);
   if (living.length < 3) {
     state.hostMessage = "Ajoute au moins 3 joueurs pour demarrer une partie test.";
+    return false;
+  }
+  const missingMic = missingVoicePlayers();
+  if (missingMic.length && !options.force) {
+    state.hostMessage = `Micro manquant : ${missingMic.map((player) => player.name).join(", ")}.`;
     return false;
   }
   if (living.length < 5) state.hostMessage = "Partie test possible. Pour une meilleure experience, joue a 5 joueurs ou plus.";
@@ -622,7 +631,7 @@ const server = http.createServer(async (req, res) => {
   if (req.method === "POST" && url.pathname === "/api/setup-game") {
     const body = await readBody(req);
     useGame(body.code);
-    setupGame(body.outlawCount);
+    setupGame(body.outlawCount, { force: Boolean(body.force) });
     emit();
     sendJson(res, publicState(req));
     return;
@@ -646,7 +655,7 @@ const server = http.createServer(async (req, res) => {
   if (req.method === "POST" && url.pathname === "/api/assign-roles") {
     const body = await readBody(req);
     useGame(body.code);
-    setupGame(body.outlawCount);
+    setupGame(body.outlawCount, { force: Boolean(body.force) });
     emit();
     sendJson(res, publicState(req));
     return;

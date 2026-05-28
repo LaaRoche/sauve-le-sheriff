@@ -1,5 +1,18 @@
 # Release notes
 
+## v5.1
+
+- Lobby ameliore : l'organisateur voit le statut micro de chaque joueur.
+- L'organisateur peut kicker un joueur avant le lancement.
+- Le lancement est bloque si des micros sont manquants, avec la liste des joueurs concernes.
+- Ajout du bouton "Lancer quand meme" pour forcer le lancement.
+- Reconnexion conserve le code de partie et l'identite du joueur.
+- Fin de partie : les roles de tous les joueurs sont affiches.
+- Ajout des sons generes : cloche debut/fin de discussion et revolver pour les duellistes.
+- Ajout d'une ambiance sonore de saloon.
+- Ajout d'un menu audio avec volumes separes : vocal, ambiance, effets.
+- Vote de saloon ameliore avec barre de progression et compteur par candidat.
+
 ## v5.0
 
 - Ajout du mode jeu avec code de partie.
