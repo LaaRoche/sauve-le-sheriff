@@ -1,5 +1,11 @@
 # Release notes
 
+## v5.8
+
+- Suppression de l'ambiance sonore de saloon.
+- Conservation uniquement des effets sonores utiles : cloche et revolver.
+- Le menu audio garde le volume du chat vocal et des effets sonores.
+
 ## v5.7
 
 - Les duellistes restent dans le vocal Duel pendant toute la phase de revelation/resultat.

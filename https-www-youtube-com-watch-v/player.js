@@ -30,7 +30,6 @@ const audioSettingsOpen = document.querySelector("#audio-settings-open");
 const audioSettingsClose = document.querySelector("#audio-settings-close");
 const audioSettingsModal = document.querySelector("#audio-settings-modal");
 const voiceVolumeInput = document.querySelector("#voice-volume");
-const musicVolumeInput = document.querySelector("#music-volume");
 const effectsVolumeInput = document.querySelector("#effects-volume");
 const hostTools = document.querySelector("#host-tools");
 const hostGameCode = document.querySelector("#host-game-code");
@@ -63,10 +62,8 @@ let previousPhaseName = "";
 let previousPhaseRunning = false;
 let lastGunKey = "";
 let audioContext = null;
-let ambienceNode = null;
 const audioSettings = {
   voice: Number(localStorage.getItem("sheriffVoiceVolume") || 100),
-  music: Number(localStorage.getItem("sheriffMusicVolume") || 25),
   effects: Number(localStorage.getItem("sheriffEffectsVolume") || 70)
 };
 
@@ -85,7 +82,6 @@ function setupRulesModal() {
 
 function setupAudioSettings() {
   voiceVolumeInput.value = audioSettings.voice;
-  musicVolumeInput.value = audioSettings.music;
   effectsVolumeInput.value = audioSettings.effects;
   audioSettingsOpen.addEventListener("click", () => audioSettingsModal.classList.remove("hidden"));
   audioSettingsClose.addEventListener("click", () => audioSettingsModal.classList.add("hidden"));
@@ -96,11 +92,6 @@ function setupAudioSettings() {
     audioSettings.voice = Number(voiceVolumeInput.value);
     localStorage.setItem("sheriffVoiceVolume", String(audioSettings.voice));
     updateRemoteAudioVolume();
-  });
-  musicVolumeInput.addEventListener("input", () => {
-    audioSettings.music = Number(musicVolumeInput.value);
-    localStorage.setItem("sheriffMusicVolume", String(audioSettings.music));
-    updateAmbience();
   });
   effectsVolumeInput.addEventListener("input", () => {
     audioSettings.effects = Number(effectsVolumeInput.value);
@@ -139,24 +130,6 @@ function playGunshot() {
   const volume = audioSettings.effects / 100;
   playTone(90, 0.12, volume * 0.24, "sawtooth");
   setTimeout(() => playTone(55, 0.18, volume * 0.16, "square"), 40);
-}
-
-function updateAmbience() {
-  if (!audioContext || !ambienceNode) return;
-  ambienceNode.gain.gain.value = audioSettings.music / 100 * 0.035;
-}
-
-function startAmbience() {
-  if (ambienceNode || !audioSettings.music) return;
-  const context = ensureAudioContext();
-  const oscillator = context.createOscillator();
-  const gain = context.createGain();
-  oscillator.type = "triangle";
-  oscillator.frequency.value = 146;
-  gain.gain.value = audioSettings.music / 100 * 0.035;
-  oscillator.connect(gain).connect(context.destination);
-  oscillator.start();
-  ambienceNode = { oscillator, gain };
 }
 
 function updateRemoteAudioVolume() {
@@ -198,7 +171,6 @@ function storeSession(code, id) {
   if (gameCode) localStorage.setItem("sheriffGameCode", gameCode);
   if (gameCode && playerId) localStorage.setItem(`sheriffPlayerId:${gameCode}`, playerId);
   if (gameCodeInput) gameCodeInput.value = gameCode;
-  startAmbience();
   connectEvents();
 }
 
@@ -587,7 +559,6 @@ function render(nextState) {
   }
 
   handleAudioCues(previousState, nextState, player);
-  if (audioContext) startAmbience();
 
   joinForm.classList.add("hidden");
   playerView.classList.remove("hidden");
