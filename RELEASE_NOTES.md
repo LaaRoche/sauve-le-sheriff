@@ -1,5 +1,94 @@
 # Release notes
 
+## v5.7
+
+- Les duellistes restent dans le vocal Duel pendant toute la phase de revelation/resultat.
+- Le retour vers les saloons se fait seulement apres la fin du resultat.
+
+## v5.6
+
+- Le vocal Preparation est reserve au lobby avant le lancement de la partie.
+- Un joueur qui rejoint une partie deja lancee est place hors partie jusqu'a la prochaine manche.
+- Les joueurs hors partie ne sont plus melanges avec les vocaux Preparation, Saloon ou Duel.
+
+## v5.5
+
+- Correction du vocal pendant un duel lance : les deux duellistes vont bien dans le vocal Duel.
+- Les autres joueurs restent dans leur Saloon A ou Saloon B pendant le duel.
+- La phase interne "idle" du duel ne renvoie plus les joueurs en Preparation par erreur.
+
+## v5.4
+
+- Ajout d'un bouton "Changer de partie" pour revenir au lobby si un joueur rejoint le mauvais code.
+- Le bouton coupe le vocal local, retire le joueur de la partie courante et nettoie son code memorise.
+
+## v5.3
+
+- Clarification du vote de saloon : le vote choisit uniquement le representant qui part au duel.
+- Seuls les deux joueurs designes basculent dans le vocal Duel.
+- Tous les autres joueurs restent dans leur Saloon A ou Saloon B pendant le duel.
+- Les messages joueurs indiquent simplement "Tu es designe" pour le duelliste.
+- L'interface joueur evite de repeter le saloon dans plusieurs blocs.
+
+## v5.2
+
+- Correction de la separation vocale : les connexions audio se font uniquement avec les joueurs declares dans le meme vocal cote serveur.
+- Le vocal Duel ne se melange plus avec les saloons si un joueur change de phase ou recharge sa page.
+- Les joueurs hors duel ne voient plus le detail du resultat quand quelqu'un est tue.
+- Les duellistes gardent le detail de leur duel, les autres voient seulement un message neutre.
+
+## v5.1
+
+- Lobby ameliore : l'organisateur voit le statut micro de chaque joueur.
+- L'organisateur peut kicker un joueur avant le lancement.
+- Le lancement est bloque si des micros sont manquants, avec la liste des joueurs concernes.
+- Ajout du bouton "Lancer quand meme" pour forcer le lancement.
+- Reconnexion conserve le code de partie et l'identite du joueur.
+- Fin de partie : les roles de tous les joueurs sont affiches.
+- Ajout des sons generes : cloche debut/fin de discussion et revolver pour les duellistes.
+- Ajout d'une ambiance sonore de saloon.
+- Ajout d'un menu audio avec volumes separes : vocal, ambiance, effets.
+- Vote de saloon ameliore avec barre de progression et compteur par candidat.
+
+## v5.0
+
+- Ajout du mode jeu avec code de partie.
+- Un joueur peut creer une partie et obtenir un code a partager.
+- Les autres joueurs peuvent rejoindre avec leur pseudo et le code de partie.
+- Chaque code possede sa propre partie : joueurs, roles, saloons, votes, timers et vocaux sont separes.
+- Le premier joueur de chaque code reste organisateur et configure la partie depuis son interface.
+
+## v4.9
+
+- Ajout du vocal Preparation avant le lancement de la partie.
+- Avant les roles, tous les joueurs peuvent activer leur micro et se retrouver dans le vocal Preparation.
+- Au lancement, l'app dispatch automatiquement les joueurs vers Saloon A ou Saloon B.
+- Le duel ne demarre plus si les duellistes n'ont pas tous les deux le micro actif dans le vocal Duel.
+- Si un duelliste coupe son micro ou ne l'active pas, l'app attend au lieu de lancer le decompte.
+
+## v4.8
+
+- Correction du blocage possible apres le vote de saloon.
+- Apres le vote, l'app lance une courte phase "rejoignez le vocal Duel", puis demarre le timer automatiquement.
+- Le duel final utilise la meme securite et ne peut plus rester bloque en attente du vocal.
+- Le timer joueur affiche maintenant le bon decompte pendant l'attente du duel et pendant le resultat.
+
+## v4.7
+
+- Ajout du vote de saloon pendant la discussion.
+- Chaque joueur voit uniquement les membres vivants de son saloon et vote pour le duelliste.
+- A la fin du timer de discussion, l'app choisit automatiquement le plus vote.
+- En cas d'egalite, l'app tire au hasard entre les joueurs a egalite.
+- Le bouton "Je vais au duel" est remplace par l'interface de vote.
+
+## v4.6
+
+- L'ecran joueur gagne de la place : le titre "Ecran joueur" est retire.
+- L'illustration du role est maintenant fondue directement dans la carte d'identite du joueur.
+- Le premier joueur connecte dispose d'une vraie configuration de partie depuis son interface joueur : timers, nombre de hors-la-loi et liste des joueurs.
+- Apres le lancement, l'organisateur revient sur son interface joueur normale.
+- En fin de partie, l'organisateur garde un bouton pour recommencer une nouvelle partie.
+
 ## v4.5
 
 - Le premier joueur connecte devient organisateur et peut preparer/lancer la partie depuis l'ecran joueur.

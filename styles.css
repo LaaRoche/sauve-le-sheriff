@@ -206,14 +206,21 @@ h3 {
 }
 
 .phone-logo {
-  width: min(150px, 42vw);
-  margin-bottom: 10px;
+  width: min(132px, 38vw);
+  margin-bottom: 0;
 }
 
 .ghost-button {
   background: rgba(239, 217, 170, 0.38);
   border: 1px solid var(--line);
   color: #3b2818;
+}
+
+.icon-button {
+  width: 46px;
+  padding: 0;
+  color: var(--gold-light);
+  background: linear-gradient(180deg, #233f46, #101f24);
 }
 
 .step-nav {
@@ -614,6 +621,12 @@ h3 {
   margin-top: 18px;
 }
 
+.launch-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
 .player-view {
   display: grid;
   gap: 14px;
@@ -622,7 +635,7 @@ h3 {
 
 .player-hero {
   display: grid;
-  gap: 12px;
+  gap: 0;
 }
 
 .identity {
@@ -632,6 +645,22 @@ h3 {
   border-radius: 8px;
   border: 1px solid rgba(217, 154, 37, 0.28);
   background: linear-gradient(180deg, rgba(18, 15, 13, 0.42), rgba(8, 7, 6, 0.72));
+}
+
+.player-view .identity {
+  position: relative;
+  min-height: 210px;
+  overflow: hidden;
+  align-content: end;
+  padding: 18px;
+}
+
+.identity-content {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 6px;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.55);
 }
 
 .player-task {
@@ -671,6 +700,84 @@ h3 {
   background: linear-gradient(180deg, rgba(255, 238, 202, 0.12), rgba(8, 7, 6, 0.62));
 }
 
+.saloon-vote-panel {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid rgba(217, 154, 37, 0.42);
+  border-radius: 8px;
+  background: linear-gradient(180deg, rgba(255, 238, 202, 0.12), rgba(8, 7, 6, 0.66));
+}
+
+.saloon-vote-panel > span {
+  color: #b99a69;
+  font-size: 0.82rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.saloon-vote-panel > strong {
+  color: #fff0cf;
+  font-size: 1.35rem;
+}
+
+.saloon-vote-panel p {
+  margin: 0;
+  color: #c8b39b;
+  font-weight: 800;
+}
+
+.saloon-vote-list {
+  display: grid;
+  gap: 8px;
+}
+
+.saloon-vote-choice {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 50px;
+  color: #1b130c;
+}
+
+.saloon-vote-choice span {
+  position: relative;
+  z-index: 1;
+  overflow-wrap: anywhere;
+}
+
+.saloon-vote-choice small {
+  position: relative;
+  z-index: 1;
+  font-weight: 900;
+}
+
+.saloon-vote-choice b {
+  position: relative;
+  z-index: 1;
+}
+
+.saloon-vote-choice i {
+  position: absolute;
+  inset: 0 auto 0 0;
+  z-index: 0;
+  display: block;
+  background: rgba(35, 63, 70, 0.25);
+  pointer-events: none;
+}
+
+.saloon-vote-choice.selected {
+  color: var(--gold-light);
+  background: linear-gradient(180deg, #233f46, #101f24);
+}
+
+.saloon-vote-choice.selected i {
+  background: rgba(242, 205, 117, 0.22);
+}
+
 .voice-panel span {
   color: #b99a69;
   font-size: 0.82rem;
@@ -701,11 +808,16 @@ h3 {
 
 .host-tools {
   display: grid;
-  gap: 10px;
-  padding: 14px;
+  gap: 14px;
+  padding: 16px;
   border: 1px solid rgba(217, 154, 39, 0.48);
   border-radius: 8px;
   background: linear-gradient(180deg, rgba(244, 203, 116, 0.18), rgba(12, 10, 8, 0.74));
+}
+
+.host-tools-header {
+  display: grid;
+  gap: 4px;
 }
 
 .host-tools span {
@@ -726,10 +838,126 @@ h3 {
   font-weight: 800;
 }
 
+.game-code-display {
+  padding: 12px;
+  border: 1px solid rgba(217, 154, 39, 0.38);
+  border-radius: 7px;
+  background: rgba(8, 7, 6, 0.34);
+}
+
+.game-code-display strong {
+  display: inline;
+  color: #f2c46b;
+  font-size: 1.35rem;
+  letter-spacing: 0.08em;
+}
+
 .host-actions {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
+}
+
+.host-timer-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.host-player-list {
+  display: grid;
+  gap: 7px;
+  margin-top: 8px;
+}
+
+.host-player-list p {
+  color: #c8b39b;
+}
+
+.host-player-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid rgba(217, 154, 39, 0.32);
+  border-radius: 7px;
+  color: #fff0cf;
+  font-weight: 900;
+  background: rgba(8, 7, 6, 0.32);
+}
+
+.host-player-item small {
+  display: block;
+  margin-top: 4px;
+  color: #c8b39b;
+}
+
+.host-player-item small.ready {
+  color: #f2c46b;
+}
+
+.host-player-item small.not-ready {
+  color: #ffb3a8;
+}
+
+.host-player-item button {
+  min-height: 36px;
+  padding: 0 10px;
+}
+
+.host-end-tools {
+  display: grid;
+}
+
+.end-roles {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid rgba(217, 154, 37, 0.42);
+  border-radius: 8px;
+  background: linear-gradient(180deg, rgba(255, 238, 202, 0.12), rgba(8, 7, 6, 0.66));
+}
+
+.end-roles > span {
+  color: #b99a69;
+  font-size: 0.82rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+#end-role-list {
+  display: grid;
+  gap: 8px;
+}
+
+.end-role-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px;
+  border-radius: 7px;
+  background: rgba(8, 7, 6, 0.34);
+}
+
+.end-role-item strong {
+  color: var(--gold-light);
+}
+
+.audio-settings {
+  display: grid;
+  gap: 18px;
+  margin-top: 20px;
+}
+
+.player-view.is-host-setup .player-hero,
+.player-view.is-host-setup .player-task,
+.player-view.is-host-setup .phone-clock,
+.player-view.is-host-setup .outcome,
+.player-view.is-host-setup .saloon-vote-panel,
+.player-view.is-host-setup #sheriff-phone-shot,
+.player-view.is-host-setup .choice-buttons {
+  display: none !important;
 }
 
 .identity strong {
@@ -748,9 +976,37 @@ h3 {
   box-shadow: inset 0 -55px 65px rgba(0, 0, 0, 0.55), 0 18px 34px rgba(0, 0, 0, 0.22);
 }
 
+.identity-role-art {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  height: 100%;
+  max-height: none;
+  opacity: 0.38;
+  filter: saturate(0.95) contrast(1.08);
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.player-view .identity::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background:
+    linear-gradient(180deg, rgba(10, 8, 6, 0.1), rgba(8, 7, 6, 0.42) 45%, rgba(8, 7, 6, 0.9)),
+    radial-gradient(circle at 78% 24%, rgba(214, 154, 39, 0.2), transparent 38%);
+  pointer-events: none;
+}
+
 .identity small {
   color: #d6bd93;
   font-weight: 900;
+}
+
+.identity small:empty {
+  display: none;
 }
 
 .identity em {
@@ -905,9 +1161,12 @@ h3 {
   .step-nav,
   .two-columns,
   .timer-settings,
+  .host-timer-grid,
+  .host-actions,
   .voice-panel,
   .inline-form,
-  .choice-buttons {
+  .choice-buttons,
+  .launch-actions {
     grid-template-columns: 1fr;
   }
 
