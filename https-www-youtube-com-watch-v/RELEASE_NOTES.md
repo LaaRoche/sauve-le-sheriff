@@ -1,5 +1,17 @@
 # Release notes
 
+## v5.6
+
+- Le vocal Preparation est reserve au lobby avant le lancement de la partie.
+- Un joueur qui rejoint une partie deja lancee est place hors partie jusqu'a la prochaine manche.
+- Les joueurs hors partie ne sont plus melanges avec les vocaux Preparation, Saloon ou Duel.
+
+## v5.5
+
+- Correction du vocal pendant un duel lance : les deux duellistes vont bien dans le vocal Duel.
+- Les autres joueurs restent dans leur Saloon A ou Saloon B pendant le duel.
+- La phase interne "idle" du duel ne renvoie plus les joueurs en Preparation par erreur.
+
 ## v5.4
 
 - Ajout d'un bouton "Changer de partie" pour revenir au lobby si un joueur rejoint le mauvais code.

@@ -270,6 +270,16 @@ function getWinner() {
   return "";
 }
 
+function gameHasStarted() {
+  return Boolean(
+    state.winner ||
+    state.phase.name !== "idle" ||
+    state.players.some((player) => player.role) ||
+    state.duel.leftId ||
+    state.duel.rightId
+  );
+}
+
 function sendJson(res, body) {
   res.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
   res.end(JSON.stringify(body));
@@ -282,7 +292,7 @@ function addPlayer(name) {
     id: makeId(),
     name,
     saloon: state.players.filter((item) => item.alive && item.saloon === "A").length <= state.players.filter((item) => item.alive && item.saloon === "B").length ? "A" : "B",
-    alive: true,
+    alive: !gameHasStarted(),
     role: "",
     sheriffPower: true,
     voiceRoom: "",
@@ -553,11 +563,12 @@ const server = http.createServer(async (req, res) => {
       return;
     }
 
+    const started = gameHasStarted();
     const player = {
       id: makeId(),
       name,
       saloon: state.players.filter((item) => item.alive && item.saloon === "A").length <= state.players.filter((item) => item.alive && item.saloon === "B").length ? "A" : "B",
-      alive: true,
+      alive: !started,
       role: "",
       sheriffPower: true,
       voiceRoom: "",

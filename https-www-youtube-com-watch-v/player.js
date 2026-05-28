@@ -318,11 +318,12 @@ function escapeHtml(value) {
 function voiceRoomFor(player, duel) {
   if (!player) return "";
   if (state?.winner) return "Fin de partie";
+  if (!player.role) return gameHasStarted() ? "Hors partie" : "Preparation";
   if (!player.alive) return "Elimines";
-  if (!player.role || state?.phase?.name === "idle") return "Preparation";
   const isDuelist = duel.leftId === player.id || duel.rightId === player.id;
   const duelPhase = state?.phase?.name === "duel-ready" || state?.phase?.name === "final" || duel.running;
   if (isDuelist && duelPhase && duelIsOpen(duel)) return "Duel";
+  if (state?.phase?.name === "idle") return `Saloon ${player.saloon}`;
   return `Saloon ${player.saloon}`;
 }
 
@@ -650,11 +651,17 @@ function render(nextState) {
     playerStatus.textContent = "Tu es mort";
     playerSaloon.textContent = "";
     clockRing.classList.add("dead-ring");
-    message.textContent = "Tu es mort. Garde le silence jusqu'a la fin de la partie.";
+    if (!player.role) {
+      playerStatus.textContent = "Hors partie";
+      message.textContent = "La partie est deja en cours. Attends la prochaine manche.";
+      setScreen("Partie en cours", "Tu rejoindras la prochaine partie.", "Reste hors des vocaux de jeu.");
+    } else {
+      message.textContent = "Tu es mort. Garde le silence jusqu'a la fin de la partie.";
+      setScreen("Elimine", "Tu ne participes plus.", "Reste dans le vocal Elimines et garde le silence.");
+    }
     choiceButtons.classList.add("hidden");
     sheriffPhoneShot.classList.add("hidden");
     saloonVotePanel.classList.add("hidden");
-    setScreen("Elimine", "Tu ne participes plus.", "Reste dans le vocal Elimines et garde le silence.");
     return;
   }
 
