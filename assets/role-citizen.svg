@@ -1,9 +1,26 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 180" role="img" aria-label="Citoyen">
-  <rect width="240" height="180" rx="18" fill="#f8f0df"/>
-  <circle cx="120" cy="76" r="42" fill="#2b6b61"/>
-  <path d="M60 143h120" stroke="#d99a25" stroke-width="14" stroke-linecap="round"/>
-  <path d="M83 77h74" stroke="#211611" stroke-width="15" stroke-linecap="round"/>
-  <path d="M95 53h50l14 24H81z" fill="#d99a25"/>
-  <circle cx="105" cy="83" r="6" fill="#f8f0df"/>
-  <circle cx="135" cy="83" r="6" fill="#f8f0df"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 360" role="img" aria-label="Citoyen">
+  <defs>
+    <linearGradient id="sand" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#251b12"/>
+      <stop offset=".45" stop-color="#9f7444"/>
+      <stop offset="1" stop-color="#f0d4a0"/>
+    </linearGradient>
+    <radialGradient id="light" cx="46%" cy="34%" r="68%">
+      <stop offset="0" stop-color="#f6dfaf" stop-opacity=".78"/>
+      <stop offset=".48" stop-color="#8f6135" stop-opacity=".35"/>
+      <stop offset="1" stop-color="#0a0806" stop-opacity=".78"/>
+    </radialGradient>
+  </defs>
+  <rect width="720" height="360" fill="#120d09"/>
+  <rect width="720" height="360" fill="url(#sand)" opacity=".92"/>
+  <rect width="720" height="360" fill="url(#light)"/>
+  <path d="M0 286c89-48 183-62 286-43 135 25 267 3 434-80v197H0z" fill="#140e0a" opacity=".42"/>
+  <g transform="translate(238 54)" fill="#ecd2a0" stroke="#3b2819" stroke-width="8" stroke-linejoin="round">
+    <path d="M90 72h86l20 32H70z"/>
+    <path d="M50 104h170l-30 28H78z"/>
+    <circle cx="135" cy="146" r="43"/>
+    <path d="M84 190c14-36 35-54 51-54s39 18 54 54l29 70H55z"/>
+    <path d="M92 229h86" stroke="#7e5b34" stroke-width="13" stroke-linecap="round"/>
+  </g>
+  <text x="360" y="321" fill="#f4dfb5" font-size="40" font-family="Georgia, serif" font-weight="900" text-anchor="middle">CITOYEN</text>
 </svg>

@@ -1,7 +1,16 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 180" role="img" aria-label="Role secret">
-  <rect width="240" height="180" rx="18" fill="#f8f0df"/>
-  <circle cx="120" cy="76" r="42" fill="#2b6b61"/>
-  <path d="M80 142c8-25 26-38 40-38s32 13 40 38" fill="none" stroke="#211611" stroke-width="16" stroke-linecap="round"/>
-  <path d="M104 69c0-13 9-23 23-23 13 0 23 8 23 21 0 22-25 20-25 42" fill="none" stroke="#f8f0df" stroke-width="15" stroke-linecap="round"/>
-  <circle cx="125" cy="130" r="7" fill="#f8f0df"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 360" role="img" aria-label="Role secret">
+  <defs>
+    <radialGradient id="mist" cx="50%" cy="42%" r="70%">
+      <stop offset="0" stop-color="#2d7369" stop-opacity=".85"/>
+      <stop offset=".38" stop-color="#1b1815" stop-opacity=".64"/>
+      <stop offset="1" stop-color="#050505"/>
+    </radialGradient>
+  </defs>
+  <rect width="720" height="360" fill="#050505"/>
+  <rect width="720" height="360" fill="url(#mist)"/>
+  <path d="M0 282c91-45 188-55 292-30 144 35 269 14 428-71v179H0z" fill="#080807" opacity=".58"/>
+  <circle cx="360" cy="148" r="82" fill="#1d6b61" opacity=".62"/>
+  <path d="M308 134c0-31 22-56 58-56 33 0 58 21 58 53 0 54-62 52-62 105" fill="none" stroke="#f5e5c7" stroke-width="35" stroke-linecap="round"/>
+  <circle cx="361" cy="284" r="16" fill="#f5e5c7"/>
+  <text x="360" y="323" fill="#f1dfbd" font-size="34" font-family="Georgia, serif" font-weight="900" text-anchor="middle">ROLE SECRET</text>
 </svg>

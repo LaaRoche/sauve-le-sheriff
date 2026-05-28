@@ -84,6 +84,12 @@ function playerName(id) {
   return state?.players.find((player) => player.id === id)?.name || "";
 }
 
+function duelOpponent(duel) {
+  if (duel.leftId === playerId) return state?.players.find((player) => player.id === duel.rightId);
+  if (duel.rightId === playerId) return state?.players.find((player) => player.id === duel.leftId);
+  return null;
+}
+
 function setTask(phase, action) {
   playerPhase.textContent = phase;
   playerAction.textContent = action;
@@ -348,7 +354,15 @@ function render(nextState) {
     volunteerDuel.classList.toggle("hidden", !canVolunteer);
 
     if (duel.revealed && phase.name === "result") {
-      setScreen("Resultat du duel", `Rejoins ${voiceRoomFor(player, duel)}.`, duel.resultMessage || "Resultat du duel.");
+      const opponent = duelOpponent(duel);
+      const shouldRevealOpponent = isInDuel(duel) && duel.leftChoice === "hold" && duel.rightChoice === "hold" && !duel.sheriffShot && opponent;
+      if (shouldRevealOpponent) {
+        roleArt.src = roleImage(opponent.role);
+        playerRole.textContent = `Carte adverse : ${opponent.role}`;
+        setScreen("Carte revelee", `${opponent.name} est ${opponent.role}.`, "Regarde la carte adverse, puis rejoins ton nouveau saloon.");
+      } else {
+        setScreen("Resultat du duel", `Rejoins ${voiceRoomFor(player, duel)}.`, duel.resultMessage || "Resultat du duel.");
+      }
     } else if (phase.name === "transition") {
       setScreen("Temps mort", `Rejoins ${voiceRoomFor(player, duel)}.`, "Replace-toi avant la discussion.");
     } else if (isSelectedForDuel) {
