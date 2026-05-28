@@ -39,6 +39,8 @@ let voiceEnabled = false;
 let muted = false;
 let localStream = null;
 let lastVoiceRoom = "";
+let lastVoiceReady = null;
+let lastVoiceMuted = null;
 let hostTimersTouched = false;
 const peers = new Map();
 const pendingCandidates = new Map();
@@ -140,6 +142,7 @@ function voiceRoomFor(player, duel) {
   if (!player) return "";
   if (state?.winner) return "Fin de partie";
   if (!player.alive) return "Elimines";
+  if (!player.role || state?.phase?.name === "idle") return "Preparation";
   if (state?.phase?.name === "final" && (duel.leftId === player.id || duel.rightId === player.id)) return "Duel";
   if ((duel.leftId === player.id || duel.rightId === player.id) && duelIsOpen(duel)) return "Duel";
   return `Saloon ${player.saloon}`;
@@ -325,9 +328,12 @@ async function syncVoicePeers() {
 
   const myRoom = voiceRoomFor(player, state.duel);
   voiceRoom.textContent = myRoom;
-  if (myRoom !== lastVoiceRoom) {
+  const ready = voiceEnabled && !muted;
+  if (myRoom !== lastVoiceRoom || ready !== lastVoiceReady || muted !== lastVoiceMuted) {
     lastVoiceRoom = myRoom;
-    await postJson("/api/voice-room", { playerId, room: myRoom });
+    lastVoiceReady = ready;
+    lastVoiceMuted = muted;
+    await postJson("/api/voice-room", { playerId, room: myRoom, ready, muted });
   }
   const targetIds = voiceTargetIds();
 
@@ -366,6 +372,7 @@ function toggleMute() {
   enableVoice.classList.toggle("voice-muted", muted);
   enableVoice.classList.toggle("voice-on", !muted);
   voiceStatus.textContent = muted ? "Ton micro est coupe." : "Ton micro est actif.";
+  syncVoicePeers();
 }
 
 function render(nextState) {
@@ -405,7 +412,7 @@ function render(nextState) {
   const isSelectedForDuel = saloonDuelist === player.id;
   voiceRoom.textContent = voiceRoomFor(player, duel) || "Non connecte";
   syncVoicePeers();
-  const shownTime = duel.running || isInDuel(duel) ? duel.remaining : phase.remaining || duel.remaining;
+  const shownTime = duel.running ? duel.remaining : phase.remaining || duel.remaining;
   timeLeft.textContent = String(shownTime);
   timeLeft.classList.toggle("compact-time", shownTime >= 100);
   clockRing.classList.toggle("warning", shownTime <= 5 && shownTime > 0);
@@ -455,9 +462,9 @@ function render(nextState) {
         setScreen("Resultat du duel", `Rejoins ${voiceRoomFor(player, duel)}.`, duel.resultMessage || "Resultat du duel.");
       }
     } else if (phase.name === "final" && isInDuel(duel)) {
-      setScreen("Duel final", "Va dans le vocal Duel.", "Il ne reste qu'un face-a-face. Le timer demarre quand les deux joueurs sont en vocal Duel.");
+      setScreen("Duel final", "Va dans le vocal Duel.", "Active ton micro : le duel demarre quand les deux micros sont actifs.");
     } else if (isSelectedForDuel) {
-      setScreen("Duel a venir", "Va dans le vocal Duel.", "Le timer demarre quand les deux duellistes sont en vocal Duel.");
+      setScreen("Duel a venir", "Va dans le vocal Duel.", "Active ton micro : le duel demarre quand les deux micros sont actifs.");
     } else if (saloonDuelist) {
       setScreen("Duel a venir", `${playerName(saloonDuelist)} represente ton saloon.`, "Un duel va commencer.");
     } else if (phase.name === "discussion") {
@@ -466,7 +473,7 @@ function render(nextState) {
     } else if (phase.label === "Discussion terminee : choisissez les duellistes") {
       setScreen("Vote termine", "L'Empire tranche.", "En cas d'egalite, un tirage aleatoire decide.");
     } else if (!player.role) {
-      setScreen("Preparation", "Attends ton role.", "Role pas encore distribue.");
+      setScreen("Preparation", "Attends ton role.", "Rejoins le vocal Preparation pendant que tout le monde arrive.");
     } else if (phase.name === "result") {
       setScreen(phase.label, "Suis l'indication affichee.", phase.label);
     } else {

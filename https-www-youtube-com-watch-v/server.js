@@ -11,6 +11,7 @@ const defaultSettings = {
   resultDuration: 15,
   discussionDuration: 150
 };
+const duelReadyDuration = 8;
 const clients = new Set();
 let resultResetTimer = null;
 let lastPublicOrigin = "";
@@ -133,14 +134,7 @@ function setupFinalDuelIfNeeded() {
   if (living.length !== 2 || outlaws.length !== 1 || empire.length !== 1) return false;
   if (state.duel.leftId || state.duel.rightId || state.duel.running || state.duel.revealed) return false;
   state.duel = { ...freshDuel(), leftId: living[0].id, rightId: living[1].id };
-  state.phase = {
-    name: "final",
-    label: "Duel final : rejoignez le vocal Duel",
-    remaining: 0,
-    running: false,
-    startedAt: 0,
-    duration: 0
-  };
+  startPhase("final", "Duel final : rejoignez le vocal Duel", duelReadyDuration);
   return true;
 }
 
@@ -194,8 +188,15 @@ function computePhase() {
       state.saloonVotes = freshSaloonVotes();
       startPhase("discussion", "Discussion dans les saloons", state.settings.discussionDuration);
     } else if (phase.name === "discussion") {
-      resolveDiscussionVotes();
-      phase.label = state.duel.leftId && state.duel.rightId ? "Duel pret : les duellistes vont dans le vocal Duel" : "Discussion terminee : choisissez les duellistes";
+      if (resolveDiscussionVotes()) {
+        startPhase("duel-ready", "Duel pret : rejoignez le vocal Duel", duelReadyDuration);
+      } else {
+        phase.label = "Discussion terminee : choisissez les duellistes";
+      }
+    } else if (phase.name === "duel-ready" || phase.name === "final") {
+      if (!maybeStartDuelFromVoice()) {
+        phase.label = "En attente des micros des duellistes";
+      }
     }
   }
   return phase;
@@ -283,7 +284,7 @@ function maybeStartDuelFromVoice() {
   const left = state.players.find((player) => player.id === duel.leftId);
   const right = state.players.find((player) => player.id === duel.rightId);
   if (!left?.alive || !right?.alive) return false;
-  if (left.voiceRoom === "Duel" && right.voiceRoom === "Duel") {
+  if (left.voiceRoom === "Duel" && right.voiceRoom === "Duel" && left.voiceReady && right.voiceReady && !left.voiceMuted && !right.voiceMuted) {
     startDuelTimer();
     return true;
   }
@@ -469,7 +470,9 @@ const server = http.createServer(async (req, res) => {
       alive: true,
       role: "",
       sheriffPower: true,
-      voiceRoom: ""
+      voiceRoom: "",
+      voiceReady: false,
+      voiceMuted: false
     };
     state.players.push(player);
     if (!state.hostId) state.hostId = player.id;
@@ -608,6 +611,8 @@ const server = http.createServer(async (req, res) => {
     const player = state.players.find((item) => item.id === body.playerId);
     if (player) {
       player.voiceRoom = String(body.room || "");
+      player.voiceReady = Boolean(body.ready);
+      player.voiceMuted = Boolean(body.muted);
       maybeStartDuelFromVoice();
       emit();
     }

@@ -1,5 +1,20 @@
 # Release notes
 
+## v4.9
+
+- Ajout du vocal Preparation avant le lancement de la partie.
+- Avant les roles, tous les joueurs peuvent activer leur micro et se retrouver dans le vocal Preparation.
+- Au lancement, l'app dispatch automatiquement les joueurs vers Saloon A ou Saloon B.
+- Le duel ne demarre plus si les duellistes n'ont pas tous les deux le micro actif dans le vocal Duel.
+- Si un duelliste coupe son micro ou ne l'active pas, l'app attend au lieu de lancer le decompte.
+
+## v4.8
+
+- Correction du blocage possible apres le vote de saloon.
+- Apres le vote, l'app lance une courte phase "rejoignez le vocal Duel", puis demarre le timer automatiquement.
+- Le duel final utilise la meme securite et ne peut plus rester bloque en attente du vocal.
+- Le timer joueur affiche maintenant le bon decompte pendant l'attente du duel et pendant le resultat.
+
 ## v4.7
 
 - Ajout du vote de saloon pendant la discussion.
