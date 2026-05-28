@@ -1005,6 +1005,10 @@ h3 {
   font-weight: 900;
 }
 
+.identity small:empty {
+  display: none;
+}
+
 .identity em {
   margin-top: 8px;
   color: #f2c46b;

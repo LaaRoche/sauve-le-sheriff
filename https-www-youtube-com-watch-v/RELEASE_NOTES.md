@@ -1,5 +1,25 @@
 # Release notes
 
+## v5.4
+
+- Ajout d'un bouton "Changer de partie" pour revenir au lobby si un joueur rejoint le mauvais code.
+- Le bouton coupe le vocal local, retire le joueur de la partie courante et nettoie son code memorise.
+
+## v5.3
+
+- Clarification du vote de saloon : le vote choisit uniquement le representant qui part au duel.
+- Seuls les deux joueurs designes basculent dans le vocal Duel.
+- Tous les autres joueurs restent dans leur Saloon A ou Saloon B pendant le duel.
+- Les messages joueurs indiquent simplement "Tu es designe" pour le duelliste.
+- L'interface joueur evite de repeter le saloon dans plusieurs blocs.
+
+## v5.2
+
+- Correction de la separation vocale : les connexions audio se font uniquement avec les joueurs declares dans le meme vocal cote serveur.
+- Le vocal Duel ne se melange plus avec les saloons si un joueur change de phase ou recharge sa page.
+- Les joueurs hors duel ne voient plus le detail du resultat quand quelqu'un est tue.
+- Les duellistes gardent le detail de leur duel, les autres voient seulement un message neutre.
+
 ## v5.1
 
 - Lobby ameliore : l'organisateur voit le statut micro de chaque joueur.
