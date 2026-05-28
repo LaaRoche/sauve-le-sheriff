@@ -70,8 +70,8 @@ function duelIsOpen(duel) {
 }
 
 function choiceLabel(choice) {
-  if (choice === "shoot") return "Tu as choisi : tirer.";
-  if (choice === "hold") return "Tu as choisi : ne pas tirer.";
+  if (choice === "shoot") return "Tu as choisi : tirer. Attends la fin du timer.";
+  if (choice === "hold") return "Tu as choisi : ne pas tirer. La carte adverse sera revelee a la fin si personne ne tire.";
   return "Choisis secretement avant la fin du decompte.";
 }
 

@@ -237,7 +237,7 @@ function applyResolution() {
     moveToOtherSaloon(left);
     moveToOtherSaloon(right);
     duel.resultMessage = "Personne ne tire.";
-    duel.resultDetail = `${left.name} et ${right.name} doivent se reveler leur role en prive, puis echanger de saloon.`;
+    duel.resultDetail = `${left.name} et ${right.name} voient chacun la carte adverse, puis echangent de saloon.`;
   }
   duel.resolved = true;
 }
