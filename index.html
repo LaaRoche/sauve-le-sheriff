@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Sauve le Sheriff - Maitre de partie</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <main class="host-flow">
+      <section class="panel flow-panel" aria-labelledby="app-title">
+        <div class="topbar">
+          <div>
+            <p class="eyebrow">Sauve le Sheriff</p>
+            <h1 id="app-title">Maitre de partie</h1>
+          </div>
+          <div class="top-actions">
+            <button class="ghost-button" data-rules-open type="button">Regles</button>
+            <button class="ghost-button" id="wake-lock" type="button">Veille</button>
+            <button class="danger" id="new-game" type="button">Nouvelle partie</button>
+          </div>
+        </div>
+
+        <nav class="step-nav" aria-label="Etapes de partie">
+          <button class="selected" data-step-target="players" type="button">1. Joueurs</button>
+          <button data-step-target="roles" type="button">2. Roles & Saloons</button>
+          <button data-step-target="duel" type="button">3. Partie</button>
+        </nav>
+
+        <section class="step-page" data-step="players">
+        <div class="join-box">
+          <span>Lien joueurs</span>
+          <strong id="join-url">Chargement...</strong>
+          <p>Les telephones doivent etre sur le meme Wi-Fi que cet ordinateur.</p>
+          <a class="test-link" href="/players.html" target="_blank">Ouvrir la page test de tous les joueurs</a>
+        </div>
+
+          <div class="rules-header">
+            <div>
+              <p class="eyebrow">Preparation</p>
+              <h2>Liste des joueurs</h2>
+            </div>
+            <form class="inline-form" id="add-player-form">
+              <input id="add-player-name" autocomplete="off" placeholder="Nom">
+              <button type="submit">Ajouter</button>
+            </form>
+          </div>
+
+          <div class="all-players" id="all-players"></div>
+          <p class="outcome">Quand tout le monde est connecte, passe a la page Roles & Saloons.</p>
+        </section>
+
+        <section class="step-page hidden" data-step="roles">
+          <div class="admin-lock" id="admin-lock">
+            <p class="eyebrow">Acces admin</p>
+            <h2>Code requis</h2>
+            <div class="pin-display" id="pin-display">----</div>
+            <div class="pin-pad" aria-label="Pave numerique admin">
+              <button data-pin="1" type="button">1</button>
+              <button data-pin="2" type="button">2</button>
+              <button data-pin="3" type="button">3</button>
+              <button data-pin="4" type="button">4</button>
+              <button data-pin="5" type="button">5</button>
+              <button data-pin="6" type="button">6</button>
+              <button data-pin="7" type="button">7</button>
+              <button data-pin="8" type="button">8</button>
+              <button data-pin="9" type="button">9</button>
+              <button data-pin="clear" type="button">Effacer</button>
+              <button data-pin="0" type="button">0</button>
+              <button data-pin="enter" type="button">OK</button>
+            </div>
+            <p class="outcome" id="pin-message">Entre le code admin pour modifier les roles et les saloons.</p>
+          </div>
+
+          <div class="admin-content hidden" id="admin-content">
+            <div class="rules-header">
+              <div>
+                <p class="eyebrow">Timers</p>
+                <h2>Reglages de partie</h2>
+              </div>
+              <button class="primary" id="save-settings" type="button">Enregistrer les timers</button>
+            </div>
+
+            <div class="timer-settings">
+              <label>
+                Duree duel
+                <input id="duel-duration" type="number" min="5" max="300" step="1">
+              </label>
+              <label>
+                Duree resultat
+                <input id="result-duration" type="number" min="3" max="120" step="1">
+              </label>
+              <label>
+                Duree temps mort
+                <input id="transition-duration" type="number" min="0" max="120" step="1">
+              </label>
+              <label>
+                Duree discussion
+                <input id="discussion-duration" type="number" min="10" max="900" step="1">
+              </label>
+            </div>
+
+            <div class="rules-header">
+              <div>
+                <p class="eyebrow">Roles secrets</p>
+                <h2>Distribution</h2>
+              </div>
+            </div>
+
+            <div class="role-tools role-page-tools">
+              <label>
+                Hors-la-loi
+                <input id="outlaw-count" type="number" min="1" value="2">
+              </label>
+              <div class="quick-roles" id="quick-roles" aria-label="Choix rapides du nombre de hors-la-loi"></div>
+              <button class="primary" id="assign-roles" type="button">Partager les roles</button>
+              <p id="role-advice">Ajoutez les joueurs pour obtenir une recommandation.</p>
+            </div>
+
+            <div class="rules-header">
+              <div>
+                <p class="eyebrow">Placement</p>
+                <h2>Saloons aleatoires</h2>
+              </div>
+              <button class="primary" id="assign-saloons" type="button">Envoyer dans les saloons</button>
+            </div>
+
+            <div class="saloon-grid two-columns">
+              <div>
+                <h3>Saloon A</h3>
+                <div class="player-list" id="saloon-a"></div>
+              </div>
+              <div>
+                <h3>Saloon B</h3>
+                <div class="player-list" id="saloon-b"></div>
+              </div>
+              <div class="hidden">
+                <h3>Morts</h3>
+                <div class="player-list" id="dead-list"></div>
+              </div>
+            </div>
+
+            <p class="outcome">Les saloons sont tires au hasard sans tenir compte des roles.</p>
+          </div>
+        </section>
+
+        <section class="step-page hidden" data-step="duel">
+          <div class="phase-panel">
+            <div>
+              <p class="eyebrow">Phase en cours</p>
+              <h2 id="phase-label">En attente</h2>
+            </div>
+            <strong id="phase-time">--:--</strong>
+            <button class="primary" id="start-discussion" type="button">Demarrer discussion</button>
+          </div>
+
+          <div class="duel-selectors">
+            <label>
+              Joueur du saloon A
+              <select id="left-select"></select>
+            </label>
+            <label>
+              Joueur du saloon B
+              <select id="right-select"></select>
+            </label>
+            <button class="primary" id="set-duel" type="button">Preparer</button>
+          </div>
+
+          <div class="duel-stage" aria-live="polite">
+            <div class="saloon">
+              <span>Duel A</span>
+              <strong id="left-duelist">Aucun joueur</strong>
+              <small id="left-choice">Pas de choix</small>
+            </div>
+            <div class="clock-wrap">
+              <div class="clock-ring" id="clock-ring">
+                <span id="time-left">30</span>
+                <small>secondes</small>
+              </div>
+            </div>
+            <div class="saloon">
+              <span>Duel B</span>
+              <strong id="right-duelist">Aucun joueur</strong>
+              <small id="right-choice">Pas de choix</small>
+            </div>
+          </div>
+
+          <div class="controls">
+            <button class="primary" id="start-duel" type="button">Lancer le duel</button>
+            <button id="reveal" type="button">Reveler</button>
+            <button class="danger" id="sheriff-shot" type="button">Tir du sheriff</button>
+            <button id="reset-duel" type="button">Nouveau duel</button>
+          </div>
+
+          <p class="outcome" id="outcome">Choisissez deux joueurs pour preparer le duel.</p>
+
+          <div class="result-overlay hidden" id="result-overlay" aria-live="assertive">
+            <p class="eyebrow">Resultat du duel</p>
+            <strong id="result-message"></strong>
+            <p id="result-detail"></p>
+            <button class="danger hidden" id="overlay-new-game" type="button">Recommencer une partie</button>
+            <span>La fenetre duel se remet a zero automatiquement.</span>
+          </div>
+        </section>
+      </section>
+
+      <aside class="panel rules-panel">
+        <div class="rules-header">
+          <p class="eyebrow">Rappels</p>
+          <h2>Regles rapides</h2>
+        </div>
+        <ol class="rules-list">
+          <li>Chaque joueur recoit un role secret : citoyen, hors-la-loi ou sheriff.</li>
+          <li>Les saloons sont tires au hasard apres les roles.</li>
+          <li>Un joueur de chaque saloon sort pour un duel.</li>
+          <li>Les duellistes ont 30 secondes pour parler, bluffer et negocier.</li>
+          <li>Les choix sont secrets sur telephone : tirer ou ne pas tirer.</li>
+          <li>Le sheriff peut utiliser son pouvoir avant la fin du decompte : sa cible meurt et le duel s'arrete.</li>
+          <li>Si le sheriff tue un citoyen, il perd son pouvoir. S'il tue un hors-la-loi, il le garde.</li>
+          <li>Les citoyens gagnent quand tous les hors-la-loi sont morts.</li>
+          <li>Les hors-la-loi gagnent s'ils sont plus nombreux que les citoyens et le sheriff vivants.</li>
+        </ol>
+      </aside>
+    </main>
+
+    <div class="rules-modal hidden" id="rules-modal" role="dialog" aria-modal="true" aria-labelledby="rules-modal-title">
+      <section class="panel rules-modal-card">
+        <div class="rules-header">
+          <div>
+            <p class="eyebrow">Aide de jeu</p>
+            <h2 id="rules-modal-title">Regles rapides</h2>
+          </div>
+          <button class="ghost-button" data-rules-close type="button">Fermer</button>
+        </div>
+        <ol class="rules-list">
+          <li>Chaque joueur recoit un role secret : citoyen, hors-la-loi ou sheriff.</li>
+          <li>Les joueurs sont envoyes aleatoirement dans Saloon A ou Saloon B.</li>
+          <li>Pendant la discussion, chaque saloon choisit lui-meme son duelliste.</li>
+          <li>Les deux duellistes vont dans le vocal Duel.</li>
+          <li>Pendant le duel, chacun choisit secretement : tirer ou ne pas tirer.</li>
+          <li>Deux tirs : les deux meurent. Un tir : l'autre joueur meurt. Aucun tir : revelation privee des roles, puis echange de saloon.</li>
+          <li>Le sheriff peut utiliser son pouvoir avant la fin du decompte : sa cible meurt et le duel s'arrete.</li>
+          <li>Si le sheriff tue un citoyen, il perd son pouvoir. S'il tue un hors-la-loi, il le garde.</li>
+          <li>Les citoyens gagnent quand tous les hors-la-loi sont morts. Les hors-la-loi gagnent s'ils sont plus nombreux que les citoyens et le sheriff vivants.</li>
+        </ol>
+      </section>
+    </div>
+
+    <script src="host.js"></script>
+  </body>
+</html>

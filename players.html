@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Sauve le Sheriff - Test joueurs</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <main class="players-test-shell">
+      <section class="panel">
+        <div class="topbar">
+          <div>
+            <p class="eyebrow">Test local</p>
+            <h1>Pages joueurs</h1>
+          </div>
+          <div class="top-actions">
+            <button class="ghost-button" data-rules-open type="button">Regles</button>
+            <a class="test-link" href="/">Retour maitre</a>
+          </div>
+        </div>
+        <p class="outcome">Cette page sert uniquement au test : elle montre les ecrans de tous les joueurs en meme temps.</p>
+      </section>
+
+      <section class="players-phone-grid" id="players-phone-grid"></section>
+    </main>
+
+    <div class="rules-modal hidden" id="rules-modal" role="dialog" aria-modal="true" aria-labelledby="rules-modal-title">
+      <section class="panel rules-modal-card">
+        <div class="rules-header">
+          <div>
+            <p class="eyebrow">Aide de jeu</p>
+            <h2 id="rules-modal-title">Regles rapides</h2>
+          </div>
+          <button class="ghost-button" data-rules-close type="button">Fermer</button>
+        </div>
+        <ol class="rules-list">
+          <li>Cette page sert seulement a tester tous les ecrans joueurs.</li>
+          <li>Pendant la discussion, chaque saloon choisit son duelliste.</li>
+          <li>Les choix de duel restent secrets jusqu'a la revelation.</li>
+          <li>Le sheriff peut utiliser son pouvoir avant la fin du timer : sa cible meurt et le duel s'arrete.</li>
+          <li>Si le sheriff tue un citoyen, il perd son pouvoir. S'il tue un hors-la-loi, il le garde.</li>
+          <li>Les citoyens gagnent quand tous les hors-la-loi sont morts.</li>
+          <li>Les hors-la-loi gagnent s'ils sont plus nombreux que les citoyens et le sheriff vivants.</li>
+          <li>Les joueurs morts ne doivent plus parler.</li>
+        </ol>
+      </section>
+    </div>
+
+    <script src="players.js"></script>
+  </body>
+</html>

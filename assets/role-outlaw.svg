@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 180" role="img" aria-label="Hors-la-loi">
+  <rect width="240" height="180" rx="18" fill="#f8f0df"/>
+  <circle cx="120" cy="76" r="42" fill="#b5392e"/>
+  <path d="M72 65h96" stroke="#211611" stroke-width="16" stroke-linecap="round"/>
+  <path d="M92 47h56l12 20H80z" fill="#211611"/>
+  <path d="M85 108c20 18 50 18 70 0" fill="none" stroke="#211611" stroke-width="10" stroke-linecap="round"/>
+  <path d="M77 143h86l17 18H60z" fill="#d99a25"/>
+</svg>
