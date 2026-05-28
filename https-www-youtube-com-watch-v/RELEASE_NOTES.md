@@ -1,5 +1,14 @@
 # Release notes
 
+## v4.3
+
+- Refonte des couleurs globales autour du logo : noir, or, cuir brun et papier western.
+- Panneaux principaux et regles en style papier western marron.
+- Boutons recolores selon la palette du logo.
+- Timer joueur rendu beaucoup plus visible.
+- Illustration Citoyen retravaillee.
+- Texte de duel sans tir clarifie : les roles sont reveles a la fin du timer, pas au moment du choix.
+
 ## v4.2
 
 - En cas de duel sans tir, chaque duelliste voit temporairement la carte de son adversaire pendant le timer de resultat.
