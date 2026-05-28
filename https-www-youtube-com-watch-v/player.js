@@ -89,6 +89,11 @@ function setTask(phase, action) {
   playerAction.textContent = action;
 }
 
+function setScreen(phase, action, note) {
+  setTask(phase, action);
+  message.textContent = note || action;
+}
+
 function roleImage(role) {
   if (role === "Sheriff") return "assets/role-sheriff.svg";
   if (role === "Hors-la-loi") return "assets/role-outlaw.svg";
@@ -332,7 +337,7 @@ function render(nextState) {
     choiceButtons.classList.add("hidden");
     sheriffPhoneShot.classList.add("hidden");
     volunteerDuel.classList.add("hidden");
-    setTask("Mort", "Tu ne participes plus aux discussions.");
+    setScreen("Elimine", "Tu ne participes plus.", "Reste dans le vocal Elimines et garde le silence.");
     return;
   }
 
@@ -343,32 +348,23 @@ function render(nextState) {
     volunteerDuel.classList.toggle("hidden", !canVolunteer);
 
     if (duel.revealed && phase.name === "result") {
-      setTask("Retour vocal", `Retourne dans le vocal ${voiceRoomFor(player, duel)}.`);
-      message.textContent = duel.resultMessage || "Resultat du duel.";
+      setScreen("Resultat du duel", `Rejoins ${voiceRoomFor(player, duel)}.`, duel.resultMessage || "Resultat du duel.");
     } else if (phase.name === "transition") {
-      setTask("Temps mort", `Rejoins le vocal ${voiceRoomFor(player, duel)}.`);
-      message.textContent = phase.label;
+      setScreen("Temps mort", `Rejoins ${voiceRoomFor(player, duel)}.`, "Replace-toi avant la discussion.");
     } else if (isSelectedForDuel) {
-      setTask("Duel", "Tu es le duelliste de ton saloon. Va dans le vocal Duel.");
-      message.textContent = "Tu es choisi pour le duel.";
+      setScreen("Duel a venir", "Va dans le vocal Duel.", "Le timer demarre quand les deux duellistes sont en vocal Duel.");
     } else if (saloonDuelist) {
-      setTask("Duel", `${playerName(saloonDuelist)} represente ton saloon.`);
-      message.textContent = "Attends le duel.";
+      setScreen("Duel a venir", `${playerName(saloonDuelist)} represente ton saloon.`, "Un duel va commencer.");
     } else if (phase.name === "discussion") {
-      setTask("Discussion", "Parle avec ton saloon. Si vous decidez que tu y vas, clique sur Je vais au duel.");
-      message.textContent = phase.label;
+      setScreen("Discussion saloon", "Discute avec ton saloon.", "Choisissez ensemble qui ira au duel.");
     } else if (phase.label === "Discussion terminee : choisissez les duellistes") {
-      setTask("Choix du duel", "Votre saloon doit choisir un duelliste.");
-      message.textContent = phase.label;
+      setScreen("Choix du duel", "Votre saloon doit choisir un duelliste.", "Clique sur Je vais au duel si c'est toi.");
     } else if (!player.role) {
-      setTask("Preparation", "Attends que les roles soient distribues.");
-      message.textContent = "Role pas encore distribue.";
+      setScreen("Preparation", "Attends ton role.", "Role pas encore distribue.");
     } else if (phase.name === "transition" || phase.name === "result") {
-      setTask(phase.label, "Suis l'indication affichee.");
-      message.textContent = phase.label;
+      setScreen(phase.label, "Suis l'indication affichee.", phase.label);
     } else {
-      setTask("Attente", "Attends le prochain timer.");
-      message.textContent = duel.leftId && duel.rightId ? "Observe le duel en cours." : "En attente du prochain duel.";
+      setScreen(duel.leftId && duel.rightId ? "Duel en cours" : "En attente", duel.leftId && duel.rightId ? "Observe le duel." : "Attends le lancement.", duel.leftId && duel.rightId ? "Un duel est en cours." : "En attente du prochain timer.");
     }
 
     if (phase.name === "transition" || phase.name === "discussion" || phase.name === "result") {
@@ -383,8 +379,7 @@ function render(nextState) {
 
   volunteerDuel.classList.add("hidden");
   const choice = myChoice(duel);
-  setTask("Duel", "Choisis secretement : tirer ou ne pas tirer.");
-  message.textContent = duel.revealed ? "Les choix sont reveles sur l'ecran du maitre de partie." : choiceLabel(choice);
+  setScreen("Duel en cours", "Choisis secretement.", duel.revealed ? "Les choix sont reveles." : choiceLabel(choice));
   choiceButtons.classList.toggle("hidden", Boolean(choice) || duel.revealed);
   sheriffPhoneShot.classList.toggle("hidden", player.role !== "Sheriff" || player.sheriffPower === false || duel.revealed);
 }

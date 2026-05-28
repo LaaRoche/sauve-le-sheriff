@@ -11,7 +11,7 @@
       <section class="panel phone-panel" aria-labelledby="player-title">
         <div class="phone-topbar">
           <div>
-            <p class="eyebrow">Sauve le Sheriff</p>
+            <p class="eyebrow">Sauve le Sheriff - v3 joueurs</p>
             <h1 id="player-title">Ecran joueur</h1>
           </div>
           <button class="ghost-button" data-rules-open type="button">Regles</button>
@@ -26,16 +26,18 @@
         </form>
 
         <div class="player-view hidden" id="player-view">
-          <div class="identity">
-            <span id="player-status">Connecte</span>
+          <div class="player-hero">
             <img class="role-art" id="role-art" src="assets/role-hidden.svg" alt="">
-            <strong id="player-display-name"></strong>
-            <small id="player-saloon"></small>
-            <em id="player-role">Role non attribue</em>
+            <div class="identity">
+              <span id="player-status">Connecte</span>
+              <strong id="player-display-name"></strong>
+              <small id="player-saloon"></small>
+              <em id="player-role">Role non attribue</em>
+            </div>
           </div>
 
           <div class="player-task">
-            <span>Phase</span>
+            <span>Phase actuelle</span>
             <strong id="player-phase">En attente</strong>
             <p id="player-action">Attends le lancement de la partie.</p>
           </div>

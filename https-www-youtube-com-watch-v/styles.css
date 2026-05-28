@@ -578,14 +578,21 @@ h3 {
 
 .player-view {
   display: grid;
-  gap: 18px;
+  gap: 14px;
   justify-items: stretch;
+}
+
+.player-hero {
+  display: grid;
+  gap: 12px;
 }
 
 .identity {
   display: grid;
-  gap: 4px;
+  gap: 6px;
   padding: 14px;
+  border-radius: 8px;
+  background: rgba(255, 248, 235, 0.86);
 }
 
 .player-task {
@@ -605,7 +612,7 @@ h3 {
 }
 
 .player-task strong {
-  font-size: clamp(1.35rem, 6vw, 2rem);
+  font-size: clamp(1.55rem, 7vw, 2.35rem);
 }
 
 .player-task p {
@@ -619,7 +626,7 @@ h3 {
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 12px;
   align-items: center;
-  padding: 16px;
+  padding: 12px;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: rgba(255, 248, 235, 0.78);
@@ -654,14 +661,14 @@ h3 {
 }
 
 .identity strong {
-  font-size: 1.6rem;
+  font-size: clamp(1.35rem, 6vw, 1.9rem);
 }
 
 .role-art {
   display: block;
   width: 100%;
-  max-height: 150px;
-  object-fit: cover;
+  max-height: 120px;
+  object-fit: contain;
   border: 1px solid rgba(127, 101, 85, 0.22);
   border-radius: 8px;
   background: var(--paper);

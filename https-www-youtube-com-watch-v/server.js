@@ -426,12 +426,13 @@ const server = http.createServer(async (req, res) => {
     state.hostMessage = "";
     const living = state.players.filter((player) => player.alive);
     state.hostMessage = "";
-    if (living.length < 5) {
-      state.hostMessage = "La partie peut commencer a partir de 5 joueurs.";
+    if (living.length < 3) {
+      state.hostMessage = "Ajoute au moins 3 joueurs pour demarrer une partie test.";
       emit();
       sendJson(res, publicState(req));
       return;
     }
+    if (living.length < 5) state.hostMessage = "Partie test possible. Pour une meilleure experience, joue a 5 joueurs ou plus.";
     const outlawCount = Math.max(1, Math.min(Number(body.outlawCount || 1), Math.max(1, living.length - 1)));
     const roles = ["Sheriff"];
     for (let index = 0; index < outlawCount; index += 1) roles.push("Hors-la-loi");

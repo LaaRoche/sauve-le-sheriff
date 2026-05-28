@@ -234,8 +234,8 @@ function renderRoleTools(players) {
     quickRoles.append(button);
   });
 
-  if (livingCount < 5) {
-    roleAdvice.textContent = "La partie peut commencer a partir de 5 joueurs.";
+  if (livingCount < 3) {
+    roleAdvice.textContent = "Ajoute au moins 3 joueurs pour demarrer une partie test.";
     return;
   }
 
@@ -356,10 +356,11 @@ document.querySelector("#set-duel").addEventListener("click", () => {
 document.querySelector("#assign-roles").addEventListener("click", () => {
   outlawCountInput.dataset.touched = "true";
   const livingCount = state.players.filter((player) => player.alive).length;
-  if (livingCount < 5) {
-    roleAdvice.textContent = "La partie peut commencer a partir de 5 joueurs.";
+  if (livingCount < 3) {
+    roleAdvice.textContent = "Ajoute au moins 3 joueurs pour demarrer une partie test.";
     return;
   }
+  if (livingCount < 5) roleAdvice.textContent = "Partie test possible. Pour une meilleure experience, joue a 5 joueurs ou plus.";
   const count = clampOutlawCount(outlawCountInput.value, livingCount);
   postJson("/api/assign-roles", { outlawCount: count });
 });
