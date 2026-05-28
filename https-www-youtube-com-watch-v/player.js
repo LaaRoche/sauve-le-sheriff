@@ -1,8 +1,11 @@
-let playerId = localStorage.getItem("sheriffPlayerId") || "";
+let gameCode = localStorage.getItem("sheriffGameCode") || new URLSearchParams(location.search).get("code") || "";
+let playerId = gameCode ? localStorage.getItem(`sheriffPlayerId:${gameCode}`) || "" : "";
 let state = null;
 
 const joinForm = document.querySelector("#join-form");
 const playerNameInput = document.querySelector("#player-name");
+const gameCodeInput = document.querySelector("#game-code");
+const createGameButton = document.querySelector("#create-game");
 const playerView = document.querySelector("#player-view");
 const displayName = document.querySelector("#player-display-name");
 const playerSaloon = document.querySelector("#player-saloon");
@@ -23,6 +26,7 @@ const voiceRoom = document.querySelector("#voice-room");
 const voiceStatus = document.querySelector("#voice-status");
 const remoteAudio = document.querySelector("#remote-audio");
 const hostTools = document.querySelector("#host-tools");
+const hostGameCode = document.querySelector("#host-game-code");
 const hostPlayerCount = document.querySelector("#host-player-count");
 const hostMessage = document.querySelector("#host-message");
 const hostOutlawCount = document.querySelector("#host-outlaw-count");
@@ -44,6 +48,7 @@ let lastVoiceMuted = null;
 let hostTimersTouched = false;
 const peers = new Map();
 const pendingCandidates = new Map();
+let events = null;
 
 function setupRulesModal() {
   const modal = document.querySelector("#rules-modal");
@@ -59,12 +64,35 @@ function setupRulesModal() {
 }
 
 async function postJson(url, body) {
+  const payload = { ...(body || {}) };
+  if (gameCode && !payload.code) payload.code = gameCode;
   const response = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body || {})
+    body: JSON.stringify(payload)
   });
   return response.json();
+}
+
+function storeSession(code, id) {
+  gameCode = code || gameCode;
+  playerId = id || playerId;
+  if (gameCode) localStorage.setItem("sheriffGameCode", gameCode);
+  if (gameCode && playerId) localStorage.setItem(`sheriffPlayerId:${gameCode}`, playerId);
+  if (gameCodeInput) gameCodeInput.value = gameCode;
+  connectEvents();
+}
+
+function connectEvents() {
+  if (!gameCode) return;
+  events?.close();
+  events = new EventSource(`/events?code=${encodeURIComponent(gameCode)}`);
+  events.addEventListener("state", (event) => render(JSON.parse(event.data)));
+  events.addEventListener("signal", (event) => {
+    handleSignal(event).catch(() => {
+      voiceStatus.textContent = "Connexion vocale interrompue.";
+    });
+  });
 }
 
 function myPlayer() {
@@ -399,6 +427,7 @@ function render(nextState) {
   hostTools.classList.toggle("hidden", !isHost || hasStarted);
   hostEndTools.classList.toggle("hidden", !isHost || !state.winner);
   if (isHost) {
+    hostGameCode.textContent = state.code || gameCode || "-----";
     const livingCount = state.players.filter((item) => item.alive).length;
     hostPlayerCount.textContent = `${livingCount} joueur(s) connecte(s)`;
     hostMessage.textContent = state.hostMessage || (livingCount < 3 ? "Tu peux tester a partir de 3 joueurs. L'experience complete est meilleure a 5 joueurs ou plus." : "Configure la partie puis lance quand tout le monde est pret.");
@@ -501,9 +530,25 @@ joinForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   const name = playerNameInput.value.trim();
   if (!name) return;
+  const wantedCode = gameCodeInput.value.trim().toUpperCase();
+  if (!wantedCode) {
+    gameCodeInput.focus();
+    return;
+  }
+  gameCode = wantedCode;
   const result = await postJson("/api/join", { name });
-  playerId = result.player.id;
-  localStorage.setItem("sheriffPlayerId", playerId);
+  storeSession(result.state.code, result.player.id);
+  render(result.state);
+});
+
+createGameButton.addEventListener("click", async () => {
+  const name = playerNameInput.value.trim();
+  if (!name) {
+    playerNameInput.focus();
+    return;
+  }
+  const result = await postJson("/api/create-game", { name });
+  storeSession(result.code, result.player.id);
   render(result.state);
 });
 
@@ -533,15 +578,21 @@ hostStartGame.addEventListener("click", async () => {
 });
 
 hostNewGame.addEventListener("click", async () => {
-  localStorage.removeItem("sheriffPlayerId");
+  const code = gameCode;
+  await postJson("/api/new-game", { code });
+  if (gameCode) localStorage.removeItem(`sheriffPlayerId:${gameCode}`);
+  localStorage.removeItem("sheriffGameCode");
   playerId = "";
-  await postJson("/api/new-game");
+  gameCode = "";
 });
 
 hostEndNewGame.addEventListener("click", async () => {
-  localStorage.removeItem("sheriffPlayerId");
+  const code = gameCode;
+  await postJson("/api/new-game", { code });
+  if (gameCode) localStorage.removeItem(`sheriffPlayerId:${gameCode}`);
+  localStorage.removeItem("sheriffGameCode");
   playerId = "";
-  await postJson("/api/new-game");
+  gameCode = "";
 });
 
 [hostDuelDuration, hostResultDuration, hostDiscussionDuration].forEach((input) => {
@@ -560,12 +611,9 @@ enableVoice.addEventListener("click", () => {
   });
 });
 
-const events = new EventSource("/events");
-events.addEventListener("state", (event) => render(JSON.parse(event.data)));
-events.addEventListener("signal", (event) => {
-  handleSignal(event).catch(() => {
-    voiceStatus.textContent = "Connexion vocale interrompue.";
-  });
-});
-fetch("/api/state").then((response) => response.json()).then(render);
+if (gameCodeInput) gameCodeInput.value = gameCode;
+if (gameCode) {
+  connectEvents();
+  fetch(`/api/state?code=${encodeURIComponent(gameCode)}`).then((response) => response.json()).then(render);
+}
 setupRulesModal();

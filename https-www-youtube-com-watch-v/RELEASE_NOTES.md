@@ -1,5 +1,13 @@
 # Release notes
 
+## v5.0
+
+- Ajout du mode jeu avec code de partie.
+- Un joueur peut creer une partie et obtenir un code a partager.
+- Les autres joueurs peuvent rejoindre avec leur pseudo et le code de partie.
+- Chaque code possede sa propre partie : joueurs, roles, saloons, votes, timers et vocaux sont separes.
+- Le premier joueur de chaque code reste organisateur et configure la partie depuis son interface.
+
 ## v4.9
 
 - Ajout du vocal Preparation avant le lancement de la partie.

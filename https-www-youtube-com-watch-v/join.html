@@ -11,7 +11,7 @@
       <section class="panel phone-panel" aria-label="Sauve l'Empire joueur">
         <div class="phone-topbar">
           <div>
-            <p class="eyebrow">v4.9</p>
+            <p class="eyebrow">v5.0</p>
             <img class="app-logo phone-logo" src="assets/logo-sauve-empire.png" alt="Sauve l'Empire">
           </div>
           <button class="ghost-button" data-rules-open type="button">Regles</button>
@@ -22,7 +22,14 @@
             Ton nom
             <input id="player-name" autocomplete="off" maxlength="24" required>
           </label>
-          <button class="primary" type="submit">Rejoindre</button>
+          <label>
+            Code de partie
+            <input id="game-code" autocomplete="off" maxlength="6" placeholder="Ex : A7K2P">
+          </label>
+          <div class="launch-actions">
+            <button class="primary" id="create-game" type="button">Creer une partie</button>
+            <button type="submit">Rejoindre</button>
+          </div>
         </form>
 
           <div class="player-view hidden" id="player-view">
@@ -31,6 +38,7 @@
               <span>Organisateur</span>
               <strong>Configuration</strong>
             </div>
+            <p class="game-code-display">Code partie : <strong id="host-game-code">-----</strong></p>
             <p id="host-player-count">0 joueur</p>
             <div class="host-timer-grid">
               <label>

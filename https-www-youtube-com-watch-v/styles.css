@@ -614,6 +614,12 @@ h3 {
   margin-top: 18px;
 }
 
+.launch-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
 .player-view {
   display: grid;
   gap: 14px;
@@ -799,6 +805,20 @@ h3 {
   margin: 0;
   color: #f4dfb5;
   font-weight: 800;
+}
+
+.game-code-display {
+  padding: 12px;
+  border: 1px solid rgba(217, 154, 39, 0.38);
+  border-radius: 7px;
+  background: rgba(8, 7, 6, 0.34);
+}
+
+.game-code-display strong {
+  display: inline;
+  color: #f2c46b;
+  font-size: 1.35rem;
+  letter-spacing: 0.08em;
 }
 
 .host-actions {
@@ -1047,7 +1067,8 @@ h3 {
   .host-timer-grid,
   .voice-panel,
   .inline-form,
-  .choice-buttons {
+  .choice-buttons,
+  .launch-actions {
     grid-template-columns: 1fr;
   }
 

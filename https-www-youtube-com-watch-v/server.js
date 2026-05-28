@@ -16,16 +16,50 @@ const clients = new Set();
 let resultResetTimer = null;
 let lastPublicOrigin = "";
 let activeSettings = { ...defaultSettings };
+let state = createGameState("GLOBAL");
+const games = new Map([[state.code, state]]);
 
-const state = {
-  players: [],
-  hostId: "",
-  hostMessage: "",
-  settings: activeSettings,
-  phase: freshPhase(),
-  duel: freshDuel(),
-  saloonVotes: freshSaloonVotes()
-};
+function createGameState(code) {
+  const settings = { ...defaultSettings };
+  return {
+    code,
+    players: [],
+    hostId: "",
+    hostMessage: "",
+    settings,
+    phase: freshPhase(),
+    duel: freshDuel(settings),
+    saloonVotes: freshSaloonVotes()
+  };
+}
+
+function gameCode(value) {
+  return String(value || "").trim().toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6);
+}
+
+function makeGameCode() {
+  const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let code = "";
+  do {
+    code = "";
+    for (let index = 0; index < 5; index += 1) {
+      code += alphabet[Math.floor(Math.random() * alphabet.length)];
+    }
+  } while (games.has(code));
+  return code;
+}
+
+function getGame(codeInput) {
+  const code = gameCode(codeInput) || "GLOBAL";
+  if (!games.has(code)) games.set(code, createGameState(code));
+  return games.get(code);
+}
+
+function useGame(codeInput) {
+  state = getGame(codeInput);
+  activeSettings = state.settings;
+  return state;
+}
 
 function freshPhase() {
   return {
@@ -38,7 +72,7 @@ function freshPhase() {
   };
 }
 
-function freshDuel() {
+function freshDuel(settings = activeSettings) {
   return {
     leftId: "",
     rightId: "",
@@ -46,7 +80,7 @@ function freshDuel() {
     rightChoice: "",
     running: false,
     startedAt: 0,
-    remaining: activeSettings.duelDuration,
+    remaining: settings.duelDuration,
     revealed: false,
     resolved: false,
     sheriffShot: false,
@@ -209,6 +243,7 @@ function publicState(req) {
   const origin = requestOrigin(req) || lastPublicOrigin || `http://${localAddress()}:${port}`;
   if (requestOrigin(req)) lastPublicOrigin = requestOrigin(req);
   return {
+    code: state.code,
     joinUrl: `${origin}/join.html`,
     players: state.players,
     hostId: state.hostId,
@@ -236,6 +271,25 @@ function sendJson(res, body) {
   res.end(JSON.stringify(body));
 }
 
+function addPlayer(name) {
+  const existing = state.players.find((player) => player.name.toLowerCase() === name.toLowerCase());
+  if (existing) return existing;
+  const player = {
+    id: makeId(),
+    name,
+    saloon: state.players.filter((item) => item.alive && item.saloon === "A").length <= state.players.filter((item) => item.alive && item.saloon === "B").length ? "A" : "B",
+    alive: true,
+    role: "",
+    sheriffPower: true,
+    voiceRoom: "",
+    voiceReady: false,
+    voiceMuted: false
+  };
+  state.players.push(player);
+  if (!state.hostId) state.hostId = player.id;
+  return player;
+}
+
 function readBody(req) {
   return new Promise((resolve) => {
     let data = "";
@@ -253,13 +307,26 @@ function readBody(req) {
 }
 
 function emit() {
+  emitGame(state);
+}
+
+function emitGame(game) {
+  const previous = state;
+  state = game;
+  activeSettings = game.settings;
   const payload = `event: state\ndata: ${JSON.stringify(publicState())}\n\n`;
-  for (const res of clients) res.write(payload);
+  for (const client of clients) {
+    if (client.code === game.code) client.res.write(payload);
+  }
+  state = previous;
+  activeSettings = previous.settings;
 }
 
 function emitSignal(signal) {
   const payload = `event: signal\ndata: ${JSON.stringify(signal)}\n\n`;
-  for (const res of clients) res.write(payload);
+  for (const client of clients) {
+    if (client.code === state.code) client.res.write(payload);
+  }
 }
 
 function moveToOtherSaloon(player) {
@@ -437,24 +504,38 @@ const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, "http://localhost");
 
   if (url.pathname === "/events") {
+    const game = useGame(url.searchParams.get("code"));
     res.writeHead(200, {
       "Content-Type": "text/event-stream; charset=utf-8",
       "Cache-Control": "no-cache",
       Connection: "keep-alive"
     });
-    clients.add(res);
+    const client = { res, code: game.code };
+    clients.add(client);
     res.write(`event: state\ndata: ${JSON.stringify(publicState(req))}\n\n`);
-    req.on("close", () => clients.delete(res));
+    req.on("close", () => clients.delete(client));
     return;
   }
 
   if (url.pathname === "/api/state") {
+    useGame(url.searchParams.get("code"));
     sendJson(res, publicState(req));
+    return;
+  }
+
+  if (req.method === "POST" && url.pathname === "/api/create-game") {
+    const body = await readBody(req);
+    const game = useGame(makeGameCode());
+    const name = String(body.name || "").trim().slice(0, 24) || "Joueur";
+    const player = addPlayer(name);
+    emit();
+    sendJson(res, { code: game.code, player, state: publicState(req) });
     return;
   }
 
   if (req.method === "POST" && url.pathname === "/api/join") {
     const body = await readBody(req);
+    useGame(body.code);
     const name = String(body.name || "").trim().slice(0, 24) || "Joueur";
     const existing = state.players.find((player) => player.name.toLowerCase() === name.toLowerCase());
     if (existing) {
@@ -483,6 +564,7 @@ const server = http.createServer(async (req, res) => {
 
   if (req.method === "POST" && url.pathname === "/api/player") {
     const body = await readBody(req);
+    useGame(body.code);
     const player = state.players.find((item) => item.id === body.id);
     state.hostMessage = "";
     if (player) {
@@ -496,6 +578,7 @@ const server = http.createServer(async (req, res) => {
 
   if (req.method === "POST" && url.pathname === "/api/delete-player") {
     const body = await readBody(req);
+    useGame(body.code);
     state.hostMessage = "";
     const index = state.players.findIndex((item) => item.id === body.id);
     if (index !== -1) state.players.splice(index, 1);
@@ -509,6 +592,8 @@ const server = http.createServer(async (req, res) => {
   }
 
   if (req.method === "POST" && url.pathname === "/api/new-game") {
+    const body = await readBody(req);
+    useGame(body.code);
     state.players.splice(0, state.players.length);
     state.hostId = "";
     state.hostMessage = "";
@@ -522,6 +607,7 @@ const server = http.createServer(async (req, res) => {
 
   if (req.method === "POST" && url.pathname === "/api/settings") {
     const body = await readBody(req);
+    useGame(body.code);
     activeSettings = normalizeSettings(body);
     state.settings = activeSettings;
     if (!state.duel.running && !state.duel.leftId && !state.duel.rightId) {
@@ -535,6 +621,7 @@ const server = http.createServer(async (req, res) => {
 
   if (req.method === "POST" && url.pathname === "/api/setup-game") {
     const body = await readBody(req);
+    useGame(body.code);
     setupGame(body.outlawCount);
     emit();
     sendJson(res, publicState(req));
@@ -543,6 +630,7 @@ const server = http.createServer(async (req, res) => {
 
   if (req.method === "POST" && url.pathname === "/api/signal") {
     const body = await readBody(req);
+    useGame(body.code);
     if (body.from && body.to && body.kind) {
       emitSignal({
         from: String(body.from),
@@ -557,6 +645,7 @@ const server = http.createServer(async (req, res) => {
 
   if (req.method === "POST" && url.pathname === "/api/assign-roles") {
     const body = await readBody(req);
+    useGame(body.code);
     setupGame(body.outlawCount);
     emit();
     sendJson(res, publicState(req));
@@ -564,6 +653,8 @@ const server = http.createServer(async (req, res) => {
   }
 
   if (req.method === "POST" && url.pathname === "/api/assign-saloons") {
+    const body = await readBody(req);
+    useGame(body.code);
     const living = state.players.filter((player) => player.alive);
     shuffle(living).forEach((player, index) => {
       player.saloon = index % 2 === 0 ? "A" : "B";
@@ -575,6 +666,7 @@ const server = http.createServer(async (req, res) => {
 
   if (req.method === "POST" && url.pathname === "/api/duel") {
     const body = await readBody(req);
+    useGame(body.code);
     state.hostMessage = "";
     const left = state.players.find((player) => player.id === body.leftId);
     const right = state.players.find((player) => player.id === body.rightId);
@@ -600,6 +692,8 @@ const server = http.createServer(async (req, res) => {
   }
 
   if (req.method === "POST" && url.pathname === "/api/start-duel") {
+    const body = await readBody(req);
+    useGame(body.code);
     startDuelTimer();
     emit();
     sendJson(res, publicState(req));
@@ -608,6 +702,7 @@ const server = http.createServer(async (req, res) => {
 
   if (req.method === "POST" && url.pathname === "/api/voice-room") {
     const body = await readBody(req);
+    useGame(body.code);
     const player = state.players.find((item) => item.id === body.playerId);
     if (player) {
       player.voiceRoom = String(body.room || "");
@@ -621,6 +716,8 @@ const server = http.createServer(async (req, res) => {
   }
 
   if (req.method === "POST" && url.pathname === "/api/start-discussion") {
+    const body = await readBody(req);
+    useGame(body.code);
     state.duel = freshDuel();
     state.saloonVotes = freshSaloonVotes();
     startPhase("discussion", "Discussion dans les saloons", state.settings.discussionDuration);
@@ -631,6 +728,7 @@ const server = http.createServer(async (req, res) => {
 
   if (req.method === "POST" && url.pathname === "/api/saloon-vote") {
     const body = await readBody(req);
+    useGame(body.code);
     const player = state.players.find((item) => item.id === body.playerId);
     const target = state.players.find((item) => item.id === body.targetId);
     state.hostMessage = "";
@@ -659,6 +757,7 @@ const server = http.createServer(async (req, res) => {
 
   if (req.method === "POST" && url.pathname === "/api/volunteer-duel") {
     const body = await readBody(req);
+    useGame(body.code);
     const player = state.players.find((item) => item.id === body.playerId);
     if (player) state.saloonVotes[player.saloon][player.id] = player.id;
     emit();
@@ -668,6 +767,7 @@ const server = http.createServer(async (req, res) => {
 
   if (req.method === "POST" && url.pathname === "/api/choice") {
     const body = await readBody(req);
+    useGame(body.code);
     state.hostMessage = "";
     if (state.duel.revealed || state.duel.resolved || state.duel.sheriffShot) {
       sendJson(res, publicState(req));
@@ -681,6 +781,8 @@ const server = http.createServer(async (req, res) => {
   }
 
   if (req.method === "POST" && url.pathname === "/api/reveal") {
+    const body = await readBody(req);
+    useGame(body.code);
     state.duel.revealed = true;
     state.hostMessage = "";
     state.duel.running = false;
@@ -693,6 +795,7 @@ const server = http.createServer(async (req, res) => {
 
   if (req.method === "POST" && url.pathname === "/api/sheriff-shot") {
     const body = await readBody(req);
+    useGame(body.code);
     state.hostMessage = "";
     if (body.playerId) {
       const player = state.players.find((item) => item.id === body.playerId);
@@ -722,6 +825,8 @@ const server = http.createServer(async (req, res) => {
   }
 
   if (req.method === "POST" && url.pathname === "/api/reset-duel") {
+    const body = await readBody(req);
+    useGame(body.code);
     state.duel = freshDuel();
     state.hostMessage = "";
     state.phase = freshPhase();
@@ -735,13 +840,20 @@ const server = http.createServer(async (req, res) => {
 });
 
 setInterval(() => {
-  const before = state.duel.remaining;
-  const wasRunning = state.duel.running;
-  const phaseBefore = state.phase.remaining;
-  const phaseWasRunning = state.phase.running;
-  computeDuel();
-  computePhase();
-  if (wasRunning || before !== state.duel.remaining || phaseWasRunning || phaseBefore !== state.phase.remaining) emit();
+  const previous = state;
+  for (const game of games.values()) {
+    state = game;
+    activeSettings = game.settings;
+    const before = state.duel.remaining;
+    const wasRunning = state.duel.running;
+    const phaseBefore = state.phase.remaining;
+    const phaseWasRunning = state.phase.running;
+    computeDuel();
+    computePhase();
+    if (wasRunning || before !== state.duel.remaining || phaseWasRunning || phaseBefore !== state.phase.remaining) emitGame(game);
+  }
+  state = previous;
+  activeSettings = previous.settings;
 }, 500);
 
 server.listen(port, "0.0.0.0", () => {
