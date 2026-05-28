@@ -33,7 +33,6 @@ const pinDisplay = document.querySelector("#pin-display");
 const pinMessage = document.querySelector("#pin-message");
 const duelDurationInput = document.querySelector("#duel-duration");
 const resultDurationInput = document.querySelector("#result-duration");
-const transitionDurationInput = document.querySelector("#transition-duration");
 const discussionDurationInput = document.querySelector("#discussion-duration");
 let adminUnlocked = false;
 let pinValue = "";
@@ -315,7 +314,6 @@ function renderSettings(settings) {
   if (duelDurationInput.dataset.dirty) return;
   duelDurationInput.value = settings.duelDuration || 30;
   resultDurationInput.value = settings.resultDuration || 15;
-  transitionDurationInput.value = settings.transitionDuration ?? 10;
   discussionDurationInput.value = settings.discussionDuration || 150;
 }
 
@@ -362,19 +360,18 @@ document.querySelector("#assign-roles").addEventListener("click", () => {
   }
   if (livingCount < 5) roleAdvice.textContent = "Partie test possible. Pour une meilleure experience, joue a 5 joueurs ou plus.";
   const count = clampOutlawCount(outlawCountInput.value, livingCount);
-  postJson("/api/assign-roles", { outlawCount: count });
+  postJson("/api/setup-game", { outlawCount: count });
 });
-document.querySelector("#assign-saloons").addEventListener("click", () => postJson("/api/assign-saloons"));
+document.querySelector("#assign-saloons").addEventListener("click", () => postJson("/api/setup-game", { outlawCount: outlawCountInput.value }));
 document.querySelector("#save-settings").addEventListener("click", () => {
   delete duelDurationInput.dataset.dirty;
   postJson("/api/settings", {
     duelDuration: duelDurationInput.value,
     resultDuration: resultDurationInput.value,
-    transitionDuration: transitionDurationInput.value,
     discussionDuration: discussionDurationInput.value
   });
 });
-[duelDurationInput, resultDurationInput, transitionDurationInput, discussionDurationInput].forEach((input) => {
+[duelDurationInput, resultDurationInput, discussionDurationInput].forEach((input) => {
   input.addEventListener("input", () => {
     duelDurationInput.dataset.dirty = "true";
   });

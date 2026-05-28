@@ -8,10 +8,19 @@
   </head>
   <body>
     <main class="players-test-shell">
-      <section class="panel">
+      <section class="panel admin-lock" id="test-admin-lock">
+        <p class="eyebrow">Admin</p>
+        <h1>Code admin</h1>
+        <form class="inline-form" id="test-admin-form">
+          <input id="test-admin-code" inputmode="numeric" placeholder="Code">
+          <button class="primary" type="submit">Entrer</button>
+        </form>
+        <p class="outcome" id="test-admin-message">Page reservee aux tests admin.</p>
+      </section>
+      <section class="panel hidden" id="test-admin-content">
         <div class="topbar">
           <div>
-            <p class="eyebrow">v4.3</p>
+            <p class="eyebrow">v4.5</p>
             <img class="app-logo" src="assets/logo-sauve-empire.png" alt="Sauve l'Empire">
             <h1>Pages joueurs</h1>
           </div>
@@ -41,8 +50,9 @@
           <li>Les choix de duel restent secrets jusqu'a la revelation.</li>
           <li>Le sheriff peut utiliser son pouvoir avant la fin du timer : sa cible meurt et le duel s'arrete.</li>
           <li>Si le sheriff tue un citoyen, il perd son pouvoir. S'il tue un hors-la-loi, il le garde.</li>
-          <li>Les citoyens gagnent quand tous les hors-la-loi sont morts.</li>
-          <li>Les hors-la-loi gagnent s'ils sont plus nombreux que les citoyens et le sheriff vivants.</li>
+          <li>L'Empire gagne quand tous les hors-la-loi sont morts.</li>
+          <li>Les hors-la-loi gagnent seulement s'ils sont strictement plus nombreux que le camp Empire vivant.</li>
+          <li>A 1 contre 1 avec un hors-la-loi, la partie passe en duel final.</li>
           <li>Les joueurs morts ne doivent plus parler.</li>
         </ol>
       </section>

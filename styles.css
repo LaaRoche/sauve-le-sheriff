@@ -699,6 +699,39 @@ h3 {
   background: var(--danger);
 }
 
+.host-tools {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid rgba(217, 154, 39, 0.48);
+  border-radius: 8px;
+  background: linear-gradient(180deg, rgba(244, 203, 116, 0.18), rgba(12, 10, 8, 0.74));
+}
+
+.host-tools span {
+  color: #b99a69;
+  font-size: 0.82rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.host-tools strong {
+  color: #f2c46b;
+  font-size: 1.25rem;
+}
+
+.host-tools p {
+  margin: 0;
+  color: #f4dfb5;
+  font-weight: 800;
+}
+
+.host-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
 .identity strong {
   font-size: clamp(1.35rem, 6vw, 1.9rem);
 }

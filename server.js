@@ -9,7 +9,6 @@ const port = Number(globalThis.process?.env?.PORT || 5205);
 const defaultSettings = {
   duelDuration: 30,
   resultDuration: 15,
-  transitionDuration: 10,
   discussionDuration: 150
 };
 const clients = new Set();
@@ -19,6 +18,7 @@ let activeSettings = { ...defaultSettings };
 
 const state = {
   players: [],
+  hostId: "",
   hostMessage: "",
   settings: activeSettings,
   phase: freshPhase(),
@@ -71,6 +71,33 @@ function setSaloonDuelist(saloon, playerId) {
   if (saloon === "B") state.duel.rightId = playerId;
 }
 
+function livingPlayers() {
+  return state.players.filter((player) => player.alive);
+}
+
+function livingCamps() {
+  const living = livingPlayers();
+  const outlaws = living.filter((player) => player.role === "Hors-la-loi");
+  const empire = living.filter((player) => player.role === "Citoyen" || player.role === "Sheriff");
+  return { living, outlaws, empire };
+}
+
+function setupFinalDuelIfNeeded() {
+  const { living, outlaws, empire } = livingCamps();
+  if (living.length !== 2 || outlaws.length !== 1 || empire.length !== 1) return false;
+  if (state.duel.leftId || state.duel.rightId || state.duel.running || state.duel.revealed) return false;
+  state.duel = { ...freshDuel(), leftId: living[0].id, rightId: living[1].id };
+  state.phase = {
+    name: "final",
+    label: "Duel final : rejoignez le vocal Duel",
+    remaining: 0,
+    running: false,
+    startedAt: 0,
+    duration: 0
+  };
+  return true;
+}
+
 function makeId() {
   return Math.random().toString(36).slice(2, 10);
 }
@@ -118,8 +145,6 @@ function computePhase() {
     phase.running = false;
   if (phase.name === "result") {
       state.duel = freshDuel();
-      startPhase("transition", "Temps mort : rejoignez vos saloons", state.settings.transitionDuration);
-    } else if (phase.name === "transition") {
       startPhase("discussion", "Discussion dans les saloons", state.settings.discussionDuration);
     } else if (phase.name === "discussion") {
       phase.label = state.duel.leftId && state.duel.rightId ? "Duel pret : les duellistes vont dans le vocal Duel" : "Discussion terminee : choisissez les duellistes";
@@ -131,11 +156,13 @@ function computePhase() {
 function publicState(req) {
   computeDuel();
   computePhase();
+  if (!getWinner()) setupFinalDuelIfNeeded();
   const origin = requestOrigin(req) || lastPublicOrigin || `http://${localAddress()}:${port}`;
   if (requestOrigin(req)) lastPublicOrigin = requestOrigin(req);
   return {
     joinUrl: `${origin}/join.html`,
     players: state.players,
+    hostId: state.hostId,
     winner: getWinner(),
     hostMessage: state.hostMessage,
     settings: state.settings,
@@ -145,14 +172,12 @@ function publicState(req) {
 }
 
 function getWinner() {
-  const living = state.players.filter((player) => player.alive);
-  const outlaws = living.filter((player) => player.role === "Hors-la-loi").length;
-  const citizens = living.filter((player) => player.role === "Citoyen" || player.role === "Sheriff").length;
+  const { outlaws, empire } = livingCamps();
   const hasRoles = state.players.some((player) => player.role);
 
   if (!hasRoles) return "";
-  if (outlaws === 0) return "Les citoyens";
-  if (outlaws > citizens) return "Les hors-la-loi";
+  if (outlaws.length === 0) return "L'Empire";
+  if (outlaws.length > empire.length) return "Les hors-la-loi";
   return "";
 }
 
@@ -262,9 +287,38 @@ function normalizeSettings(body) {
   return {
     duelDuration: clampDuration(body.duelDuration, 5, 300, defaultSettings.duelDuration),
     resultDuration: clampDuration(body.resultDuration, 3, 120, defaultSettings.resultDuration),
-    transitionDuration: clampDuration(body.transitionDuration, 0, 120, defaultSettings.transitionDuration),
     discussionDuration: clampDuration(body.discussionDuration, 10, 900, defaultSettings.discussionDuration)
   };
+}
+
+function setupGame(outlawCountInput) {
+  state.hostMessage = "";
+  const living = state.players.filter((player) => player.alive);
+  if (living.length < 3) {
+    state.hostMessage = "Ajoute au moins 3 joueurs pour demarrer une partie test.";
+    return false;
+  }
+  if (living.length < 5) state.hostMessage = "Partie test possible. Pour une meilleure experience, joue a 5 joueurs ou plus.";
+  const outlawCount = Math.max(1, Math.min(Number(outlawCountInput || 1), Math.max(1, living.length - 1)));
+  const roles = ["Sheriff"];
+  for (let index = 0; index < outlawCount; index += 1) roles.push("Hors-la-loi");
+  while (roles.length < living.length) roles.push("Citoyen");
+
+  const shuffledRoles = shuffle(roles);
+  living.forEach((player, index) => {
+    player.role = shuffledRoles[index] || "Citoyen";
+    player.sheriffPower = player.role === "Sheriff";
+  });
+  state.players.filter((player) => !player.alive).forEach((player) => {
+    player.role = "";
+    player.sheriffPower = false;
+  });
+  shuffle(living).forEach((player, index) => {
+    player.saloon = index % 2 === 0 ? "A" : "B";
+  });
+  state.duel = freshDuel();
+  startPhase("discussion", "Discussion dans les saloons", state.settings.discussionDuration);
+  return true;
 }
 
 function clampDuration(value, min, max, fallback) {
@@ -353,6 +407,7 @@ const server = http.createServer(async (req, res) => {
       voiceRoom: ""
     };
     state.players.push(player);
+    if (!state.hostId) state.hostId = player.id;
     emit();
     sendJson(res, { player, state: publicState(req) });
     return;
@@ -376,6 +431,7 @@ const server = http.createServer(async (req, res) => {
     state.hostMessage = "";
     const index = state.players.findIndex((item) => item.id === body.id);
     if (index !== -1) state.players.splice(index, 1);
+    if (state.hostId === body.id) state.hostId = state.players[0]?.id || "";
     if (state.duel.leftId === body.id || state.duel.rightId === body.id) {
       state.duel = freshDuel();
     }
@@ -386,6 +442,7 @@ const server = http.createServer(async (req, res) => {
 
   if (req.method === "POST" && url.pathname === "/api/new-game") {
     state.players.splice(0, state.players.length);
+    state.hostId = "";
     state.hostMessage = "";
     state.phase = freshPhase();
     state.duel = freshDuel();
@@ -407,6 +464,14 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  if (req.method === "POST" && url.pathname === "/api/setup-game") {
+    const body = await readBody(req);
+    setupGame(body.outlawCount);
+    emit();
+    sendJson(res, publicState(req));
+    return;
+  }
+
   if (req.method === "POST" && url.pathname === "/api/signal") {
     const body = await readBody(req);
     if (body.from && body.to && body.kind) {
@@ -423,31 +488,7 @@ const server = http.createServer(async (req, res) => {
 
   if (req.method === "POST" && url.pathname === "/api/assign-roles") {
     const body = await readBody(req);
-    state.hostMessage = "";
-    const living = state.players.filter((player) => player.alive);
-    state.hostMessage = "";
-    if (living.length < 3) {
-      state.hostMessage = "Ajoute au moins 3 joueurs pour demarrer une partie test.";
-      emit();
-      sendJson(res, publicState(req));
-      return;
-    }
-    if (living.length < 5) state.hostMessage = "Partie test possible. Pour une meilleure experience, joue a 5 joueurs ou plus.";
-    const outlawCount = Math.max(1, Math.min(Number(body.outlawCount || 1), Math.max(1, living.length - 1)));
-    const roles = ["Sheriff"];
-    for (let index = 0; index < outlawCount; index += 1) roles.push("Hors-la-loi");
-    while (roles.length < living.length) roles.push("Citoyen");
-
-    const shuffledRoles = shuffle(roles);
-    living.forEach((player, index) => {
-      player.role = shuffledRoles[index] || "Citoyen";
-      player.sheriffPower = player.role === "Sheriff";
-    });
-    state.players.filter((player) => !player.alive).forEach((player) => {
-      player.role = "";
-      player.sheriffPower = false;
-    });
-
+    setupGame(body.outlawCount);
     emit();
     sendJson(res, publicState(req));
     return;
@@ -522,6 +563,11 @@ const server = http.createServer(async (req, res) => {
     state.hostMessage = "";
 
     if (!player || !player.alive) {
+      sendJson(res, publicState(req));
+      return;
+    }
+
+    if (state.phase.name === "final") {
       sendJson(res, publicState(req));
       return;
     }

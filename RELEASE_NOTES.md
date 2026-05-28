@@ -1,5 +1,20 @@
 # Release notes
 
+## v4.5
+
+- Le premier joueur connecte devient organisateur et peut preparer/lancer la partie depuis l'ecran joueur.
+- Bouton unique "Preparer et lancer" : distribution des roles, saloons aleatoires et demarrage de la discussion.
+- Suppression du timer temps mort.
+- Fin de partie : tous les joueurs basculent vers le vocal Fin de partie.
+- Page test joueurs protegee par le code admin.
+
+## v4.4
+
+- Ajout de la regle de duel final.
+- Les hors-la-loi gagnent seulement en majorite stricte face au camp Empire.
+- A 1 contre 1 avec un hors-la-loi, l'app prepare automatiquement un duel final.
+- Le duel final envoie les deux derniers joueurs dans le vocal Duel, meme s'ils etaient dans le meme saloon.
+
 ## v4.3
 
 - Refonte des couleurs globales autour du logo : noir, or, cuir brun et papier western.
