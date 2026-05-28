@@ -11,7 +11,7 @@
       <section class="panel phone-panel" aria-label="Sauve l'Empire joueur">
         <div class="phone-topbar">
           <div>
-            <p class="eyebrow">v4.6</p>
+            <p class="eyebrow">v4.7</p>
             <img class="app-logo phone-logo" src="assets/logo-sauve-empire.png" alt="Sauve l'Empire">
           </div>
           <button class="ghost-button" data-rules-open type="button">Regles</button>
@@ -95,7 +95,12 @@
             <button class="primary" id="enable-voice" type="button">Activer le micro</button>
           </div>
 
-          <button class="primary hidden" id="volunteer-duel" type="button">Je vais au duel</button>
+          <div class="saloon-vote-panel hidden" id="saloon-vote-panel">
+            <span>Vote de saloon</span>
+            <strong>Qui va au duel ?</strong>
+            <div class="saloon-vote-list" id="saloon-vote-list"></div>
+            <p>En cas d'egalite, l'Empire tranche au hasard.</p>
+          </div>
 
           <button class="danger hidden" id="sheriff-phone-shot" type="button">Tir du sheriff</button>
 
@@ -124,7 +129,8 @@
         <ol class="rules-list">
           <li>Ton role est secret. Ne le montre pas.</li>
           <li>Va dans le vocal indique par ton saloon ou par l'ecran joueur.</li>
-          <li>Pendant la discussion, ton saloon choisit un duelliste.</li>
+          <li>Pendant la discussion, vote avec ton saloon pour choisir qui part au duel.</li>
+          <li>En cas d'egalite, l'Empire tranche au hasard.</li>
           <li>Si tu vas au duel, clique sur tirer ou ne pas tirer avant la fin du timer.</li>
           <li>Le sheriff peut utiliser son pouvoir avant la fin du timer : sa cible meurt et le duel s'arrete.</li>
           <li>Si le sheriff tue un citoyen, il perd son pouvoir. S'il tue un hors-la-loi, il le garde.</li>

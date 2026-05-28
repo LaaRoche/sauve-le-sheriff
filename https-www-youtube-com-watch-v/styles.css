@@ -687,6 +687,60 @@ h3 {
   background: linear-gradient(180deg, rgba(255, 238, 202, 0.12), rgba(8, 7, 6, 0.62));
 }
 
+.saloon-vote-panel {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid rgba(217, 154, 37, 0.42);
+  border-radius: 8px;
+  background: linear-gradient(180deg, rgba(255, 238, 202, 0.12), rgba(8, 7, 6, 0.66));
+}
+
+.saloon-vote-panel > span {
+  color: #b99a69;
+  font-size: 0.82rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.saloon-vote-panel > strong {
+  color: #fff0cf;
+  font-size: 1.35rem;
+}
+
+.saloon-vote-panel p {
+  margin: 0;
+  color: #c8b39b;
+  font-weight: 800;
+}
+
+.saloon-vote-list {
+  display: grid;
+  gap: 8px;
+}
+
+.saloon-vote-choice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 50px;
+  color: #1b130c;
+}
+
+.saloon-vote-choice span {
+  overflow-wrap: anywhere;
+}
+
+.saloon-vote-choice small {
+  font-weight: 900;
+}
+
+.saloon-vote-choice.selected {
+  color: var(--gold-light);
+  background: linear-gradient(180deg, #233f46, #101f24);
+}
+
 .voice-panel span {
   color: #b99a69;
   font-size: 0.82rem;
@@ -787,7 +841,7 @@ h3 {
 .player-view.is-host-setup .phone-clock,
 .player-view.is-host-setup .outcome,
 .player-view.is-host-setup .voice-panel,
-.player-view.is-host-setup #volunteer-duel,
+.player-view.is-host-setup .saloon-vote-panel,
 .player-view.is-host-setup #sheriff-phone-shot,
 .player-view.is-host-setup .choice-buttons {
   display: none !important;

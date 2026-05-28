@@ -14,7 +14,8 @@ const playerAction = document.querySelector("#player-action");
 const timeLeft = document.querySelector("#time-left");
 const clockRing = document.querySelector("#clock-ring");
 const message = document.querySelector("#player-message");
-const volunteerDuel = document.querySelector("#volunteer-duel");
+const saloonVotePanel = document.querySelector("#saloon-vote-panel");
+const saloonVoteList = document.querySelector("#saloon-vote-list");
 const choiceButtons = document.querySelector("#choice-buttons");
 const sheriffPhoneShot = document.querySelector("#sheriff-phone-shot");
 const enableVoice = document.querySelector("#enable-voice");
@@ -93,6 +94,11 @@ function mySaloonDuelist(duel, player) {
   return player.saloon === "A" ? duel.leftId : duel.rightId;
 }
 
+function mySaloonVote(player) {
+  if (!player || !state?.saloonVotes) return "";
+  return state.saloonVotes[player.saloon]?.[player.id] || "";
+}
+
 function playerName(id) {
   return state?.players.find((player) => player.id === id)?.name || "";
 }
@@ -169,6 +175,24 @@ function syncHostSettings() {
   hostDuelDuration.value = state.settings.duelDuration;
   hostResultDuration.value = state.settings.resultDuration;
   hostDiscussionDuration.value = state.settings.discussionDuration;
+}
+
+function renderSaloonVote(player) {
+  if (!player || !state) return;
+  const votingOpen = player.role && player.alive && state.phase?.name === "discussion" && !state.duel.leftId && !state.duel.rightId;
+  saloonVotePanel.classList.toggle("hidden", !votingOpen);
+  if (!votingOpen) {
+    saloonVoteList.innerHTML = "";
+    return;
+  }
+
+  const selectedId = mySaloonVote(player);
+  const candidates = state.players.filter((item) => item.alive && item.role && item.saloon === player.saloon);
+  saloonVoteList.innerHTML = candidates.map((candidate) => {
+    const selected = selectedId === candidate.id ? " selected" : "";
+    const label = selectedId === candidate.id ? "Vote choisi" : "Voter";
+    return `<button class="saloon-vote-choice${selected}" data-vote-target="${candidate.id}" type="button"><span>${escapeHtml(candidate.name)}</span><small>${label}</small></button>`;
+  }).join("");
 }
 
 async function sendSignal(to, kind, payload) {
@@ -396,7 +420,7 @@ function render(nextState) {
     message.textContent = `${state.winner} gagnent la partie.`;
     choiceButtons.classList.add("hidden");
     sheriffPhoneShot.classList.add("hidden");
-    volunteerDuel.classList.add("hidden");
+    saloonVotePanel.classList.add("hidden");
     setTask("Partie terminee", `${state.winner} gagnent. Rejoins le vocal Fin de partie.`);
     return;
   }
@@ -411,17 +435,15 @@ function render(nextState) {
     message.textContent = "Tu es mort. Garde le silence jusqu'a la fin de la partie.";
     choiceButtons.classList.add("hidden");
     sheriffPhoneShot.classList.add("hidden");
-    volunteerDuel.classList.add("hidden");
+    saloonVotePanel.classList.add("hidden");
     setScreen("Elimine", "Tu ne participes plus.", "Reste dans le vocal Elimines et garde le silence.");
     return;
   }
 
   clockRing.classList.remove("dead-ring");
+  renderSaloonVote(player);
 
   if (!isInDuel(duel) || duel.revealed) {
-    const canVolunteer = player.role && player.alive && (phase.name === "discussion" || phase.label === "Discussion terminee : choisissez les duellistes") && !saloonDuelist;
-    volunteerDuel.classList.toggle("hidden", !canVolunteer);
-
     if (duel.revealed && phase.name === "result") {
       const opponent = duelOpponent(duel);
       const shouldRevealOpponent = isInDuel(duel) && duel.leftChoice === "hold" && duel.rightChoice === "hold" && !duel.sheriffShot && opponent;
@@ -439,9 +461,10 @@ function render(nextState) {
     } else if (saloonDuelist) {
       setScreen("Duel a venir", `${playerName(saloonDuelist)} represente ton saloon.`, "Un duel va commencer.");
     } else if (phase.name === "discussion") {
-      setScreen("Discussion saloon", "Discute avec ton saloon.", "Choisissez ensemble qui ira au duel.");
+      const voteTarget = playerName(mySaloonVote(player));
+      setScreen("Discussion saloon", "Vote avec ton saloon.", voteTarget ? `Ton vote : ${voteTarget}.` : "Choisis qui partira au duel.");
     } else if (phase.label === "Discussion terminee : choisissez les duellistes") {
-      setScreen("Choix du duel", "Votre saloon doit choisir un duelliste.", "Clique sur Je vais au duel si c'est toi.");
+      setScreen("Vote termine", "L'Empire tranche.", "En cas d'egalite, un tirage aleatoire decide.");
     } else if (!player.role) {
       setScreen("Preparation", "Attends ton role.", "Role pas encore distribue.");
     } else if (phase.name === "result") {
@@ -460,7 +483,7 @@ function render(nextState) {
     return;
   }
 
-  volunteerDuel.classList.add("hidden");
+  saloonVotePanel.classList.add("hidden");
   const choice = myChoice(duel);
   setScreen("Duel en cours", "Choisis secretement.", duel.revealed ? "Les choix sont reveles." : choiceLabel(choice));
   choiceButtons.classList.toggle("hidden", Boolean(choice) || duel.revealed);
@@ -487,8 +510,10 @@ sheriffPhoneShot.addEventListener("click", async () => {
   await postJson("/api/sheriff-shot", { playerId });
 });
 
-volunteerDuel.addEventListener("click", async () => {
-  await postJson("/api/volunteer-duel", { playerId });
+saloonVoteList.addEventListener("click", async (event) => {
+  const button = event.target.closest("[data-vote-target]");
+  if (!button) return;
+  await postJson("/api/saloon-vote", { playerId, targetId: button.dataset.voteTarget });
 });
 
 hostStartGame.addEventListener("click", async () => {

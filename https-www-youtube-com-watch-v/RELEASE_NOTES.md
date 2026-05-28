@@ -1,5 +1,13 @@
 # Release notes
 
+## v4.7
+
+- Ajout du vote de saloon pendant la discussion.
+- Chaque joueur voit uniquement les membres vivants de son saloon et vote pour le duelliste.
+- A la fin du timer de discussion, l'app choisit automatiquement le plus vote.
+- En cas d'egalite, l'app tire au hasard entre les joueurs a egalite.
+- Le bouton "Je vais au duel" est remplace par l'interface de vote.
+
 ## v4.6
 
 - L'ecran joueur gagne de la place : le titre "Ecran joueur" est retire.

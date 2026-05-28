@@ -22,7 +22,8 @@ const state = {
   hostMessage: "",
   settings: activeSettings,
   phase: freshPhase(),
-  duel: freshDuel()
+  duel: freshDuel(),
+  saloonVotes: freshSaloonVotes()
 };
 
 function freshPhase() {
@@ -53,6 +54,10 @@ function freshDuel() {
   };
 }
 
+function freshSaloonVotes() {
+  return { A: {}, B: {} };
+}
+
 function startDuelTimer() {
   computeDuel();
   state.hostMessage = "";
@@ -69,6 +74,47 @@ function saloonDuelist(saloon) {
 function setSaloonDuelist(saloon, playerId) {
   if (saloon === "A") state.duel.leftId = playerId;
   if (saloon === "B") state.duel.rightId = playerId;
+}
+
+function candidatesForSaloon(saloon) {
+  return state.players.filter((player) => player.alive && player.role && player.saloon === saloon);
+}
+
+function clearInvalidVotes() {
+  for (const saloon of ["A", "B"]) {
+    const voters = candidatesForSaloon(saloon).map((player) => player.id);
+    const candidates = new Set(voters);
+    for (const [voterId, targetId] of Object.entries(state.saloonVotes[saloon] || {})) {
+      if (!voters.includes(voterId) || !candidates.has(targetId)) {
+        delete state.saloonVotes[saloon][voterId];
+      }
+    }
+  }
+}
+
+function pickSaloonVoteWinner(saloon) {
+  const candidates = candidatesForSaloon(saloon);
+  if (!candidates.length) return "";
+  const votes = state.saloonVotes[saloon] || {};
+  const scores = new Map(candidates.map((player) => [player.id, 0]));
+
+  Object.values(votes).forEach((targetId) => {
+    if (scores.has(targetId)) scores.set(targetId, scores.get(targetId) + 1);
+  });
+
+  const bestScore = Math.max(...scores.values());
+  const tied = candidates.filter((player) => scores.get(player.id) === bestScore);
+  return shuffle(tied)[0]?.id || "";
+}
+
+function resolveDiscussionVotes() {
+  clearInvalidVotes();
+  const leftId = pickSaloonVoteWinner("A");
+  const rightId = pickSaloonVoteWinner("B");
+  state.duel.leftId = leftId;
+  state.duel.rightId = rightId;
+  state.hostMessage = leftId && rightId ? "" : "Un saloon n'a pas de duelliste disponible.";
+  return Boolean(leftId && rightId);
 }
 
 function livingPlayers() {
@@ -141,12 +187,14 @@ function computePhase() {
 
   const elapsed = Math.floor((Date.now() - phase.startedAt) / 1000);
   phase.remaining = Math.max(0, phase.duration - elapsed);
-  if (phase.remaining === 0) {
+    if (phase.remaining === 0) {
     phase.running = false;
   if (phase.name === "result") {
       state.duel = freshDuel();
+      state.saloonVotes = freshSaloonVotes();
       startPhase("discussion", "Discussion dans les saloons", state.settings.discussionDuration);
     } else if (phase.name === "discussion") {
+      resolveDiscussionVotes();
       phase.label = state.duel.leftId && state.duel.rightId ? "Duel pret : les duellistes vont dans le vocal Duel" : "Discussion terminee : choisissez les duellistes";
     }
   }
@@ -167,7 +215,8 @@ function publicState(req) {
     hostMessage: state.hostMessage,
     settings: state.settings,
     phase: state.phase,
-    duel: state.duel
+    duel: state.duel,
+    saloonVotes: state.saloonVotes
   };
 }
 
@@ -215,6 +264,17 @@ function emitSignal(signal) {
 function moveToOtherSaloon(player) {
   if (!player) return;
   player.saloon = player.saloon === "A" ? "B" : "A";
+}
+
+function ensureBothSaloonsForDiscussion() {
+  const living = livingPlayers().filter((player) => player.role);
+  if (living.length < 2) return;
+  const saloonA = living.filter((player) => player.saloon === "A");
+  const saloonB = living.filter((player) => player.saloon === "B");
+  if (saloonA.length && saloonB.length) return;
+  const source = saloonA.length ? saloonA : saloonB;
+  const targetSaloon = saloonA.length ? "B" : "A";
+  shuffle(source)[0].saloon = targetSaloon;
 }
 
 function maybeStartDuelFromVoice() {
@@ -268,6 +328,10 @@ function applyResolution() {
 }
 
 function startPhase(name, label, seconds) {
+  if (name === "discussion") {
+    ensureBothSaloonsForDiscussion();
+    state.saloonVotes = freshSaloonVotes();
+  }
   state.phase = {
     name,
     label,
@@ -317,6 +381,7 @@ function setupGame(outlawCountInput) {
     player.saloon = index % 2 === 0 ? "A" : "B";
   });
   state.duel = freshDuel();
+  state.saloonVotes = freshSaloonVotes();
   startPhase("discussion", "Discussion dans les saloons", state.settings.discussionDuration);
   return true;
 }
@@ -446,6 +511,7 @@ const server = http.createServer(async (req, res) => {
     state.hostMessage = "";
     state.phase = freshPhase();
     state.duel = freshDuel();
+    state.saloonVotes = freshSaloonVotes();
     emit();
     sendJson(res, publicState(req));
     return;
@@ -551,18 +617,20 @@ const server = http.createServer(async (req, res) => {
 
   if (req.method === "POST" && url.pathname === "/api/start-discussion") {
     state.duel = freshDuel();
+    state.saloonVotes = freshSaloonVotes();
     startPhase("discussion", "Discussion dans les saloons", state.settings.discussionDuration);
     emit();
     sendJson(res, publicState(req));
     return;
   }
 
-  if (req.method === "POST" && url.pathname === "/api/volunteer-duel") {
+  if (req.method === "POST" && url.pathname === "/api/saloon-vote") {
     const body = await readBody(req);
     const player = state.players.find((item) => item.id === body.playerId);
+    const target = state.players.find((item) => item.id === body.targetId);
     state.hostMessage = "";
 
-    if (!player || !player.alive) {
+    if (!player || !target || !player.alive || !target.alive || player.saloon !== target.saloon) {
       sendJson(res, publicState(req));
       return;
     }
@@ -572,21 +640,22 @@ const server = http.createServer(async (req, res) => {
       return;
     }
 
-    if (state.phase.name !== "discussion" && state.phase.label !== "Discussion terminee : choisissez les duellistes") {
+    if (state.phase.name !== "discussion" || !state.phase.running) {
       sendJson(res, publicState(req));
       return;
     }
 
-    if (!saloonDuelist(player.saloon)) {
-      setSaloonDuelist(player.saloon, player.id);
-      if (state.duel.leftId && state.duel.rightId) {
-        state.phase.running = false;
-        state.phase.remaining = 0;
-        state.phase.label = "Duel pret : les duellistes vont dans le vocal Duel";
-        maybeStartDuelFromVoice();
-      }
-    }
+    state.saloonVotes[player.saloon][player.id] = target.id;
 
+    emit();
+    sendJson(res, publicState(req));
+    return;
+  }
+
+  if (req.method === "POST" && url.pathname === "/api/volunteer-duel") {
+    const body = await readBody(req);
+    const player = state.players.find((item) => item.id === body.playerId);
+    if (player) state.saloonVotes[player.saloon][player.id] = player.id;
     emit();
     sendJson(res, publicState(req));
     return;
@@ -651,6 +720,7 @@ const server = http.createServer(async (req, res) => {
     state.duel = freshDuel();
     state.hostMessage = "";
     state.phase = freshPhase();
+    state.saloonVotes = freshSaloonVotes();
     emit();
     sendJson(res, publicState(req));
     return;
