@@ -2,7 +2,7 @@
 
 Application web multijoueur pour animer une partie de Sauve l'Empire.
 
-Version actuelle : v5.6
+Version actuelle : v5.7
 
 ## Lancer en local
 

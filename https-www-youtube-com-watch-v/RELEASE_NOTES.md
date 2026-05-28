@@ -1,5 +1,10 @@
 # Release notes
 
+## v5.7
+
+- Les duellistes restent dans le vocal Duel pendant toute la phase de revelation/resultat.
+- Le retour vers les saloons se fait seulement apres la fin du resultat.
+
 ## v5.6
 
 - Le vocal Preparation est reserve au lobby avant le lancement de la partie.

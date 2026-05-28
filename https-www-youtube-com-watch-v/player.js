@@ -319,10 +319,12 @@ function voiceRoomFor(player, duel) {
   if (!player) return "";
   if (state?.winner) return "Fin de partie";
   if (!player.role) return gameHasStarted() ? "Hors partie" : "Preparation";
-  if (!player.alive) return "Elimines";
   const isDuelist = duel.leftId === player.id || duel.rightId === player.id;
+  const resultPhase = state?.phase?.name === "result";
   const duelPhase = state?.phase?.name === "duel-ready" || state?.phase?.name === "final" || duel.running;
+  if (isDuelist && resultPhase && duel.leftId && duel.rightId) return "Duel";
   if (isDuelist && duelPhase && duelIsOpen(duel)) return "Duel";
+  if (!player.alive) return "Elimines";
   if (state?.phase?.name === "idle") return `Saloon ${player.saloon}`;
   return `Saloon ${player.saloon}`;
 }
