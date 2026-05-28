@@ -206,8 +206,8 @@ h3 {
 }
 
 .phone-logo {
-  width: min(150px, 42vw);
-  margin-bottom: 10px;
+  width: min(132px, 38vw);
+  margin-bottom: 0;
 }
 
 .ghost-button {
@@ -622,7 +622,7 @@ h3 {
 
 .player-hero {
   display: grid;
-  gap: 12px;
+  gap: 0;
 }
 
 .identity {
@@ -632,6 +632,22 @@ h3 {
   border-radius: 8px;
   border: 1px solid rgba(217, 154, 37, 0.28);
   background: linear-gradient(180deg, rgba(18, 15, 13, 0.42), rgba(8, 7, 6, 0.72));
+}
+
+.player-view .identity {
+  position: relative;
+  min-height: 210px;
+  overflow: hidden;
+  align-content: end;
+  padding: 18px;
+}
+
+.identity-content {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 6px;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.55);
 }
 
 .player-task {
@@ -701,11 +717,16 @@ h3 {
 
 .host-tools {
   display: grid;
-  gap: 10px;
-  padding: 14px;
+  gap: 14px;
+  padding: 16px;
   border: 1px solid rgba(217, 154, 39, 0.48);
   border-radius: 8px;
   background: linear-gradient(180deg, rgba(244, 203, 116, 0.18), rgba(12, 10, 8, 0.74));
+}
+
+.host-tools-header {
+  display: grid;
+  gap: 4px;
 }
 
 .host-tools span {
@@ -732,6 +753,46 @@ h3 {
   gap: 10px;
 }
 
+.host-timer-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.host-player-list {
+  display: grid;
+  gap: 7px;
+  margin-top: 8px;
+}
+
+.host-player-list p {
+  color: #c8b39b;
+}
+
+.host-player-item {
+  padding: 10px 12px;
+  border: 1px solid rgba(217, 154, 39, 0.32);
+  border-radius: 7px;
+  color: #fff0cf;
+  font-weight: 900;
+  background: rgba(8, 7, 6, 0.32);
+}
+
+.host-end-tools {
+  display: grid;
+}
+
+.player-view.is-host-setup .player-hero,
+.player-view.is-host-setup .player-task,
+.player-view.is-host-setup .phone-clock,
+.player-view.is-host-setup .outcome,
+.player-view.is-host-setup .voice-panel,
+.player-view.is-host-setup #volunteer-duel,
+.player-view.is-host-setup #sheriff-phone-shot,
+.player-view.is-host-setup .choice-buttons {
+  display: none !important;
+}
+
 .identity strong {
   font-size: clamp(1.35rem, 6vw, 1.9rem);
 }
@@ -746,6 +807,30 @@ h3 {
   border-radius: 8px;
   background: #080706;
   box-shadow: inset 0 -55px 65px rgba(0, 0, 0, 0.55), 0 18px 34px rgba(0, 0, 0, 0.22);
+}
+
+.identity-role-art {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  height: 100%;
+  max-height: none;
+  opacity: 0.38;
+  filter: saturate(0.95) contrast(1.08);
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.player-view .identity::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background:
+    linear-gradient(180deg, rgba(10, 8, 6, 0.1), rgba(8, 7, 6, 0.42) 45%, rgba(8, 7, 6, 0.9)),
+    radial-gradient(circle at 78% 24%, rgba(214, 154, 39, 0.2), transparent 38%);
+  pointer-events: none;
 }
 
 .identity small {
@@ -905,6 +990,7 @@ h3 {
   .step-nav,
   .two-columns,
   .timer-settings,
+  .host-timer-grid,
   .voice-panel,
   .inline-form,
   .choice-buttons {

@@ -8,12 +8,11 @@
   </head>
   <body>
     <main class="phone-shell">
-      <section class="panel phone-panel" aria-labelledby="player-title">
+      <section class="panel phone-panel" aria-label="Sauve l'Empire joueur">
         <div class="phone-topbar">
           <div>
-            <p class="eyebrow">v4.5</p>
+            <p class="eyebrow">v4.6</p>
             <img class="app-logo phone-logo" src="assets/logo-sauve-empire.png" alt="Sauve l'Empire">
-            <h1 id="player-title">Ecran joueur</h1>
           </div>
           <button class="ghost-button" data-rules-open type="button">Regles</button>
         </div>
@@ -28,13 +27,34 @@
 
           <div class="player-view hidden" id="player-view">
           <div class="host-tools hidden" id="host-tools">
-            <span>Organisateur</span>
-            <strong id="host-player-count">0 joueur</strong>
+            <div class="host-tools-header">
+              <span>Organisateur</span>
+              <strong>Configuration</strong>
+            </div>
+            <p id="host-player-count">0 joueur</p>
+            <div class="host-timer-grid">
+              <label>
+                Duree duel
+                <input id="host-duel-duration" type="number" min="5" max="300" value="30">
+              </label>
+              <label>
+                Duree resultat
+                <input id="host-result-duration" type="number" min="3" max="120" value="15">
+              </label>
+              <label>
+                Duree discussion
+                <input id="host-discussion-duration" type="number" min="10" max="900" value="150">
+              </label>
+              <label>
+                Hors-la-loi
+                <input id="host-outlaw-count" type="number" min="1" max="8" value="1">
+              </label>
+            </div>
+            <div>
+              <span>Joueurs connectes</span>
+              <div class="host-player-list" id="host-player-list"></div>
+            </div>
             <p id="host-message">Le premier joueur connecte configure et lance la partie.</p>
-            <label>
-              Hors-la-loi
-              <input id="host-outlaw-count" type="number" min="1" max="4" value="1">
-            </label>
             <div class="host-actions">
               <button class="primary" id="host-start-game" type="button">Preparer et lancer</button>
               <button class="danger" id="host-new-game" type="button">Nouvelle partie</button>
@@ -42,12 +62,14 @@
           </div>
 
           <div class="player-hero">
-            <img class="role-art" id="role-art" src="assets/role-hidden.svg" alt="">
             <div class="identity">
+              <img class="role-art identity-role-art" id="role-art" src="assets/role-hidden.svg" alt="">
+              <div class="identity-content">
               <span id="player-status">Connecte</span>
               <strong id="player-display-name"></strong>
               <small id="player-saloon"></small>
               <em id="player-role">Role non attribue</em>
+              </div>
             </div>
           </div>
 
@@ -76,6 +98,10 @@
           <button class="primary hidden" id="volunteer-duel" type="button">Je vais au duel</button>
 
           <button class="danger hidden" id="sheriff-phone-shot" type="button">Tir du sheriff</button>
+
+          <div class="host-end-tools hidden" id="host-end-tools">
+            <button class="danger" id="host-end-new-game" type="button">Nouvelle partie</button>
+          </div>
 
           <div class="choice-buttons hidden" id="choice-buttons">
             <button class="danger" data-choice="shoot" type="button">Tirer</button>

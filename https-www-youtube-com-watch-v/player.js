@@ -25,13 +25,20 @@ const hostTools = document.querySelector("#host-tools");
 const hostPlayerCount = document.querySelector("#host-player-count");
 const hostMessage = document.querySelector("#host-message");
 const hostOutlawCount = document.querySelector("#host-outlaw-count");
+const hostDuelDuration = document.querySelector("#host-duel-duration");
+const hostResultDuration = document.querySelector("#host-result-duration");
+const hostDiscussionDuration = document.querySelector("#host-discussion-duration");
+const hostPlayerList = document.querySelector("#host-player-list");
 const hostStartGame = document.querySelector("#host-start-game");
 const hostNewGame = document.querySelector("#host-new-game");
+const hostEndTools = document.querySelector("#host-end-tools");
+const hostEndNewGame = document.querySelector("#host-end-new-game");
 
 let voiceEnabled = false;
 let muted = false;
 let localStream = null;
 let lastVoiceRoom = "";
+let hostTimersTouched = false;
 const peers = new Map();
 const pendingCandidates = new Map();
 
@@ -113,6 +120,16 @@ function roleImage(role) {
   return "assets/role-hidden.svg";
 }
 
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, (char) => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    "\"": "&quot;",
+    "'": "&#039;"
+  })[char]);
+}
+
 function voiceRoomFor(player, duel) {
   if (!player) return "";
   if (state?.winner) return "Fin de partie";
@@ -120,6 +137,38 @@ function voiceRoomFor(player, duel) {
   if (state?.phase?.name === "final" && (duel.leftId === player.id || duel.rightId === player.id)) return "Duel";
   if ((duel.leftId === player.id || duel.rightId === player.id) && duelIsOpen(duel)) return "Duel";
   return `Saloon ${player.saloon}`;
+}
+
+function gameHasStarted() {
+  if (!state) return false;
+  return Boolean(
+    state.winner ||
+    state.phase?.name !== "idle" ||
+    state.players.some((player) => player.role) ||
+    state.duel.leftId ||
+    state.duel.rightId
+  );
+}
+
+function renderHostPlayerList() {
+  if (!hostPlayerList || !state) return;
+  if (!state.players.length) {
+    hostPlayerList.innerHTML = "<p>Aucun joueur connecte.</p>";
+    return;
+  }
+  hostPlayerList.innerHTML = state.players
+    .map((player, index) => {
+      const suffix = state.hostId === player.id ? " - organisateur" : "";
+      return `<div class="host-player-item"><span>${index + 1}. ${escapeHtml(player.name)}${suffix}</span></div>`;
+    })
+    .join("");
+}
+
+function syncHostSettings() {
+  if (hostTimersTouched || !state?.settings) return;
+  hostDuelDuration.value = state.settings.duelDuration;
+  hostResultDuration.value = state.settings.resultDuration;
+  hostDiscussionDuration.value = state.settings.discussionDuration;
 }
 
 async function sendSignal(to, kind, payload) {
@@ -314,11 +363,16 @@ function render(nextState) {
   playerRole.textContent = player.role ? `Role : ${player.role}${sheriffPowerText}` : "Role non attribue";
   roleArt.src = roleImage(player.role);
   const isHost = state.hostId === player.id;
-  hostTools.classList.toggle("hidden", !isHost);
+  const hasStarted = gameHasStarted();
+  playerView.classList.toggle("is-host-setup", isHost && !hasStarted);
+  hostTools.classList.toggle("hidden", !isHost || hasStarted);
+  hostEndTools.classList.toggle("hidden", !isHost || !state.winner);
   if (isHost) {
     const livingCount = state.players.filter((item) => item.alive).length;
     hostPlayerCount.textContent = `${livingCount} joueur(s) connecte(s)`;
-    hostMessage.textContent = state.hostMessage || (livingCount < 3 ? "Ajoute au moins 3 joueurs pour demarrer." : "Tu peux preparer et lancer la partie.");
+    hostMessage.textContent = state.hostMessage || (livingCount < 3 ? "Tu peux tester a partir de 3 joueurs. L'experience complete est meilleure a 5 joueurs ou plus." : "Configure la partie puis lance quand tout le monde est pret.");
+    renderHostPlayerList();
+    syncHostSettings();
   }
 
   const duel = state.duel;
@@ -438,6 +492,11 @@ volunteerDuel.addEventListener("click", async () => {
 });
 
 hostStartGame.addEventListener("click", async () => {
+  await postJson("/api/settings", {
+    duelDuration: hostDuelDuration.value,
+    resultDuration: hostResultDuration.value,
+    discussionDuration: hostDiscussionDuration.value
+  });
   await postJson("/api/setup-game", { outlawCount: hostOutlawCount.value });
 });
 
@@ -445,6 +504,18 @@ hostNewGame.addEventListener("click", async () => {
   localStorage.removeItem("sheriffPlayerId");
   playerId = "";
   await postJson("/api/new-game");
+});
+
+hostEndNewGame.addEventListener("click", async () => {
+  localStorage.removeItem("sheriffPlayerId");
+  playerId = "";
+  await postJson("/api/new-game");
+});
+
+[hostDuelDuration, hostResultDuration, hostDiscussionDuration].forEach((input) => {
+  input.addEventListener("input", () => {
+    hostTimersTouched = true;
+  });
 });
 
 enableVoice.addEventListener("click", () => {

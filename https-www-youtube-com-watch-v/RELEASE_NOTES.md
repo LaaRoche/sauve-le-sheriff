@@ -1,5 +1,13 @@
 # Release notes
 
+## v4.6
+
+- L'ecran joueur gagne de la place : le titre "Ecran joueur" est retire.
+- L'illustration du role est maintenant fondue directement dans la carte d'identite du joueur.
+- Le premier joueur connecte dispose d'une vraie configuration de partie depuis son interface joueur : timers, nombre de hors-la-loi et liste des joueurs.
+- Apres le lancement, l'organisateur revient sur son interface joueur normale.
+- En fin de partie, l'organisateur garde un bouton pour recommencer une nouvelle partie.
+
 ## v4.5
 
 - Le premier joueur connecte devient organisateur et peut preparer/lancer la partie depuis l'ecran joueur.
