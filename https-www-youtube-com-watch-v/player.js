@@ -21,6 +21,12 @@ const enableVoice = document.querySelector("#enable-voice");
 const voiceRoom = document.querySelector("#voice-room");
 const voiceStatus = document.querySelector("#voice-status");
 const remoteAudio = document.querySelector("#remote-audio");
+const hostTools = document.querySelector("#host-tools");
+const hostPlayerCount = document.querySelector("#host-player-count");
+const hostMessage = document.querySelector("#host-message");
+const hostOutlawCount = document.querySelector("#host-outlaw-count");
+const hostStartGame = document.querySelector("#host-start-game");
+const hostNewGame = document.querySelector("#host-new-game");
 
 let voiceEnabled = false;
 let muted = false;
@@ -109,7 +115,9 @@ function roleImage(role) {
 
 function voiceRoomFor(player, duel) {
   if (!player) return "";
+  if (state?.winner) return "Fin de partie";
   if (!player.alive) return "Elimines";
+  if (state?.phase?.name === "final" && (duel.leftId === player.id || duel.rightId === player.id)) return "Duel";
   if ((duel.leftId === player.id || duel.rightId === player.id) && duelIsOpen(duel)) return "Duel";
   return `Saloon ${player.saloon}`;
 }
@@ -305,6 +313,13 @@ function render(nextState) {
   const sheriffPowerText = player.role === "Sheriff" && player.sheriffPower === false ? " - pouvoir utilise" : "";
   playerRole.textContent = player.role ? `Role : ${player.role}${sheriffPowerText}` : "Role non attribue";
   roleArt.src = roleImage(player.role);
+  const isHost = state.hostId === player.id;
+  hostTools.classList.toggle("hidden", !isHost);
+  if (isHost) {
+    const livingCount = state.players.filter((item) => item.alive).length;
+    hostPlayerCount.textContent = `${livingCount} joueur(s) connecte(s)`;
+    hostMessage.textContent = state.hostMessage || (livingCount < 3 ? "Ajoute au moins 3 joueurs pour demarrer." : "Tu peux preparer et lancer la partie.");
+  }
 
   const duel = state.duel;
   const phase = state.phase || {};
@@ -319,7 +334,7 @@ function render(nextState) {
 
   if (state.winner) {
     playerStatus.textContent = "Partie terminee";
-    playerSaloon.textContent = player.alive ? "Vivant" : "Mort";
+    playerSaloon.textContent = "Vocal Fin de partie";
     timeLeft.textContent = "";
     clockRing.classList.remove("warning");
     clockRing.classList.add("game-over-ring");
@@ -328,7 +343,7 @@ function render(nextState) {
     choiceButtons.classList.add("hidden");
     sheriffPhoneShot.classList.add("hidden");
     volunteerDuel.classList.add("hidden");
-    setTask("Partie terminee", `${state.winner} gagnent.`);
+    setTask("Partie terminee", `${state.winner} gagnent. Rejoins le vocal Fin de partie.`);
     return;
   }
 
@@ -363,8 +378,8 @@ function render(nextState) {
       } else {
         setScreen("Resultat du duel", `Rejoins ${voiceRoomFor(player, duel)}.`, duel.resultMessage || "Resultat du duel.");
       }
-    } else if (phase.name === "transition") {
-      setScreen("Temps mort", `Rejoins ${voiceRoomFor(player, duel)}.`, "Replace-toi avant la discussion.");
+    } else if (phase.name === "final" && isInDuel(duel)) {
+      setScreen("Duel final", "Va dans le vocal Duel.", "Il ne reste qu'un face-a-face. Le timer demarre quand les deux joueurs sont en vocal Duel.");
     } else if (isSelectedForDuel) {
       setScreen("Duel a venir", "Va dans le vocal Duel.", "Le timer demarre quand les deux duellistes sont en vocal Duel.");
     } else if (saloonDuelist) {
@@ -375,13 +390,13 @@ function render(nextState) {
       setScreen("Choix du duel", "Votre saloon doit choisir un duelliste.", "Clique sur Je vais au duel si c'est toi.");
     } else if (!player.role) {
       setScreen("Preparation", "Attends ton role.", "Role pas encore distribue.");
-    } else if (phase.name === "transition" || phase.name === "result") {
+    } else if (phase.name === "result") {
       setScreen(phase.label, "Suis l'indication affichee.", phase.label);
     } else {
       setScreen(duel.leftId && duel.rightId ? "Duel en cours" : "En attente", duel.leftId && duel.rightId ? "Observe le duel." : "Attends le lancement.", duel.leftId && duel.rightId ? "Un duel est en cours." : "En attente du prochain timer.");
     }
 
-    if (phase.name === "transition" || phase.name === "discussion" || phase.name === "result") {
+    if (phase.name === "discussion" || phase.name === "result") {
       if (!message.textContent) message.textContent = phase.label;
     } else {
       if (!message.textContent) message.textContent = player.role ? (duel.leftId && duel.rightId ? "Observe le duel en cours." : "En attente du prochain duel.") : "Role pas encore distribue.";
@@ -420,6 +435,16 @@ sheriffPhoneShot.addEventListener("click", async () => {
 
 volunteerDuel.addEventListener("click", async () => {
   await postJson("/api/volunteer-duel", { playerId });
+});
+
+hostStartGame.addEventListener("click", async () => {
+  await postJson("/api/setup-game", { outlawCount: hostOutlawCount.value });
+});
+
+hostNewGame.addEventListener("click", async () => {
+  localStorage.removeItem("sheriffPlayerId");
+  playerId = "";
+  await postJson("/api/new-game");
 });
 
 enableVoice.addEventListener("click", () => {

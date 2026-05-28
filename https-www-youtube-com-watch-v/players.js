@@ -1,6 +1,21 @@
 let state = null;
 
 const grid = document.querySelector("#players-phone-grid");
+const adminLock = document.querySelector("#test-admin-lock");
+const adminContent = document.querySelector("#test-admin-content");
+const adminForm = document.querySelector("#test-admin-form");
+const adminCode = document.querySelector("#test-admin-code");
+const adminMessage = document.querySelector("#test-admin-message");
+
+function adminUnlocked() {
+  return localStorage.getItem("sheriffTestAdmin") === "1994" || new URLSearchParams(location.search).get("admin") === "1994";
+}
+
+function renderAdmin() {
+  const unlocked = adminUnlocked();
+  adminLock.classList.toggle("hidden", unlocked);
+  adminContent.classList.toggle("hidden", !unlocked);
+}
 
 function setupRulesModal() {
   const modal = document.querySelector("#rules-modal");
@@ -32,6 +47,13 @@ function choiceLabel(choice) {
 
 function isInDuel(player, duel) {
   return duel.leftId === player.id || duel.rightId === player.id;
+}
+
+function voiceRoomFor(player, duel) {
+  if (!player.alive) return "Elimines";
+  if (state?.phase?.name === "final" && isInDuel(player, duel)) return "Duel";
+  if (duel.leftId && duel.rightId && !duel.revealed && isInDuel(player, duel)) return "Duel";
+  return `Saloon ${player.saloon}`;
 }
 
 function playerChoice(player, duel) {
@@ -90,7 +112,7 @@ function makePlayerCard(player) {
   const message = document.createElement("p");
   message.className = "outcome";
   message.classList.toggle("big-message", Boolean(state.winner));
-  message.textContent = state.winner ? `${state.winner} gagnent la partie.` : !player.alive ? "Mort : ne parle plus." : isInDuel(player, duel) ? choiceLabel(playerChoice(player, duel)) : phase.label || choiceLabel(playerChoice(player, duel));
+  message.textContent = state.winner ? `${state.winner} gagnent la partie.` : !player.alive ? "Mort : ne parle plus." : phase.name === "final" && isInDuel(player, duel) ? "Duel final : va dans le vocal Duel." : isInDuel(player, duel) ? choiceLabel(playerChoice(player, duel)) : phase.label || choiceLabel(playerChoice(player, duel));
 
   const actions = document.createElement("div");
   actions.className = "choice-buttons";
@@ -138,6 +160,8 @@ function makePlayerCard(player) {
 
 function render(nextState) {
   state = nextState;
+  renderAdmin();
+  if (!adminUnlocked()) return;
   grid.replaceChildren();
 
   if (!state.players.length) {
@@ -155,3 +179,14 @@ const events = new EventSource("/events");
 events.addEventListener("state", (event) => render(JSON.parse(event.data)));
 fetch("/api/state").then((response) => response.json()).then(render);
 setupRulesModal();
+adminForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+  if (adminCode.value === "1994") {
+    localStorage.setItem("sheriffTestAdmin", "1994");
+    adminMessage.textContent = "Acces admin ouvert.";
+    renderAdmin();
+    if (state) render(state);
+  } else {
+    adminMessage.textContent = "Code incorrect.";
+  }
+});
