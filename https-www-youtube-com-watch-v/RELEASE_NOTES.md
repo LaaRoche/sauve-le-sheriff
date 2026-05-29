@@ -7,6 +7,7 @@
 - Les choix Tirer / Ne pas tirer restent modifiables jusqu'a la fin du duel.
 - Le tir du sheriff reste instantane.
 - Les boutons Tirer, Ne pas tirer et Tir du sheriff passent en style western avec icones integrees.
+- Le theme visuel est assombri en noir/marron avec textures bois, fond western et touches saloon sur les ecrans existants.
 
 ## v6.7
 
