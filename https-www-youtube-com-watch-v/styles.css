@@ -1462,7 +1462,7 @@ a.test-link,
 }
 
 .phone-clock {
-  order: 3;
+  order: 4;
   width: min(61vw, 230px);
   margin: 6px 0;
 }
@@ -1487,7 +1487,7 @@ a.test-link,
 }
 
 .phone-panel .outcome {
-  order: 4;
+  order: 5;
   min-height: 48px;
   margin: 0;
   padding: 12px;
@@ -1500,11 +1500,11 @@ a.test-link,
 .saloon-vote-panel,
 .spectator-panel,
 .end-roles {
-  order: 4;
+  order: 6;
 }
 
 .voice-panel {
-  order: 5;
+  order: 7;
   grid-template-columns: minmax(0, 1fr) auto;
   border-color: rgba(217, 154, 37, 0.62);
   background:
@@ -1520,11 +1520,15 @@ a.test-link,
 }
 
 .choice-buttons {
-  order: 6;
+  order: 3;
 }
 
 .choice-buttons button {
   min-height: 54px;
+}
+
+#sheriff-phone-shot {
+  order: 3;
 }
 
 .saloon-vote-panel {
@@ -1570,11 +1574,7 @@ a.test-link,
 }
 
 .player-view[data-mode="vote"] .saloon-vote-panel {
-  order: 2;
-}
-
-.player-view[data-mode="vote"] .player-hero {
-  display: none;
+  order: 5;
 }
 
 .player-view[data-mode="duel"] .player-hero {

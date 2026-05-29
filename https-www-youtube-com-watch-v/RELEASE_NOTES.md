@@ -1,5 +1,17 @@
 # Release notes
 
+## v6.3
+
+- Les boutons Tirer / Ne pas tirer remontent juste sous la carte role pendant le duel.
+- Le bouton Tir du sheriff est place avec les actions de duel.
+- Le timer, le message et le vocal restent sous les actions.
+
+## v6.2
+
+- En discussion et pendant le vote, la carte role reste toujours visible.
+- Le bloc vote est ajoute sous le message de discussion au lieu de remplacer la carte role.
+- Le flow discussion suit : titre, role, timer, consigne, vote, vocal.
+
 ## v6.1
 
 - Reprise plus stricte de l'ecran joueur de reference.
