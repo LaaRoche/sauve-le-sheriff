@@ -944,6 +944,79 @@ h3 {
   color: var(--gold-light);
 }
 
+.spectator-panel {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid rgba(217, 154, 37, 0.46);
+  border-radius: 8px;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(242, 196, 107, 0.14), transparent 42%),
+    linear-gradient(180deg, rgba(255, 238, 202, 0.12), rgba(8, 7, 6, 0.7));
+}
+
+.spectator-panel > span {
+  color: #b99a69;
+  font-size: 0.82rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.spectator-panel > strong {
+  color: #fff0cf;
+  font-size: 1.45rem;
+}
+
+.spectator-panel > p,
+.spectator-grid p {
+  margin: 0;
+  color: #c8b39b;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.spectator-grid {
+  display: grid;
+  gap: 10px;
+}
+
+.spectator-grid section {
+  display: grid;
+  gap: 7px;
+  padding: 10px;
+  border: 1px solid rgba(217, 154, 37, 0.3);
+  border-radius: 7px;
+  background: rgba(8, 7, 6, 0.35);
+}
+
+.spectator-grid h3 {
+  margin: 0;
+  color: var(--gold-light);
+  font-size: 1rem;
+}
+
+.spectator-row {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  gap: 10px;
+  align-items: center;
+  padding: 8px;
+  border-radius: 6px;
+  color: #fff0cf;
+  background: rgba(255, 238, 202, 0.08);
+}
+
+.spectator-row span {
+  overflow-wrap: anywhere;
+  font-weight: 900;
+}
+
+.spectator-row strong {
+  color: var(--gold-light);
+  font-size: 0.92rem;
+  text-align: right;
+}
+
 .audio-settings {
   display: grid;
   gap: 18px;
@@ -1116,6 +1189,102 @@ h3 {
   max-height: min(760px, calc(100vh - 36px));
   overflow: auto;
   padding: clamp(18px, 4vw, 30px);
+}
+
+/* v5.9 unified western skin */
+.host-main,
+.flow-panel,
+.setup-panel,
+.rules-panel,
+.rules-modal-card,
+.test-phone-card {
+  color: #fff0cf;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(242, 196, 107, 0.14), transparent 42%),
+    linear-gradient(180deg, rgba(70, 49, 25, 0.96), rgba(22, 15, 10, 0.96));
+  border-color: rgba(217, 154, 37, 0.42);
+}
+
+.host-main h1,
+.flow-panel h1,
+.setup-panel h1,
+.rules-panel h2,
+.rules-modal-card h2,
+.players-test-shell h1 {
+  color: #fff5df;
+}
+
+.join-box,
+.phase-panel,
+.role-tools,
+.timer-settings,
+.admin-lock,
+.player-list li,
+.saloon,
+.test-phone-card .identity,
+.rules-modal-card {
+  background:
+    linear-gradient(180deg, rgba(255, 238, 202, 0.12), rgba(8, 7, 6, 0.58));
+  border-color: rgba(217, 154, 37, 0.38);
+}
+
+.join-box,
+.phase-panel,
+.outcome {
+  color: #fff0cf;
+}
+
+.join-box p,
+.rules-list,
+.rules-list li,
+.saloon small,
+.saloon span,
+.player-list small,
+.setup-panel p,
+.flow-panel p,
+.host-main p {
+  color: #d8c2a2;
+}
+
+label,
+.join-box span,
+.identity span {
+  color: #b99a69;
+}
+
+input,
+select {
+  color: #fff0cf;
+  background: rgba(8, 7, 6, 0.42);
+  border-color: rgba(217, 154, 37, 0.52);
+}
+
+input::placeholder {
+  color: rgba(255, 240, 207, 0.52);
+}
+
+.ghost-button {
+  color: #f5d98d;
+  background: rgba(255, 238, 202, 0.12);
+  border-color: rgba(217, 154, 37, 0.44);
+}
+
+.primary,
+a.test-link,
+.step-nav button.selected,
+.icon-button {
+  color: var(--gold-light);
+  background: linear-gradient(180deg, #193f46, #0a1d21);
+}
+
+.step-nav button:not(.selected) {
+  color: #241609;
+  background: linear-gradient(180deg, #f0c978, #bd7f25);
+}
+
+.phone-panel,
+.test-phone-card {
+  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.42);
 }
 
 @media (max-width: 980px) {

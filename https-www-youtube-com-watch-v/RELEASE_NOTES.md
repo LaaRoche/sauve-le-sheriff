@@ -1,5 +1,12 @@
 # Release notes
 
+## v5.9
+
+- Unification visuelle vers un theme western sombre/or sur les ecrans de jeu.
+- Ajout d'une vue spectateur pour les joueurs elimines.
+- Les joueurs elimines voient les saloons, le duel, les elimines et les roles reveles.
+- Les joueurs vivants gardent leur affichage normal et ne voient pas cette vue.
+
 ## v5.8
 
 - Suppression de l'ambiance sonore de saloon.

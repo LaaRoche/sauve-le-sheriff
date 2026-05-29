@@ -20,6 +20,8 @@ const clockRing = document.querySelector("#clock-ring");
 const message = document.querySelector("#player-message");
 const saloonVotePanel = document.querySelector("#saloon-vote-panel");
 const saloonVoteList = document.querySelector("#saloon-vote-list");
+const spectatorPanel = document.querySelector("#spectator-panel");
+const spectatorGrid = document.querySelector("#spectator-grid");
 const choiceButtons = document.querySelector("#choice-buttons");
 const sheriffPhoneShot = document.querySelector("#sheriff-phone-shot");
 const enableVoice = document.querySelector("#enable-voice");
@@ -368,6 +370,33 @@ function renderSaloonVote(player) {
   saloonVotePanel.querySelector("p").textContent = `${totalVotes}/${candidates.length} votes recus. En cas d'egalite, l'Empire tranche au hasard.`;
 }
 
+function spectatorRole(player) {
+  if (!player.role) return "Hors partie";
+  return player.alive ? player.role : `${player.role} - elimine`;
+}
+
+function spectatorGroup(title, players) {
+  const rows = players.length
+    ? players.map((item) => `<div class="spectator-row"><span>${escapeHtml(item.name)}</span><strong>${escapeHtml(spectatorRole(item))}</strong></div>`).join("")
+    : "<p>Aucun joueur</p>";
+  return `<section><h3>${escapeHtml(title)}</h3>${rows}</section>`;
+}
+
+function renderSpectatorView(duel) {
+  if (!spectatorGrid || !state) return;
+  const duelIds = [duel.leftId, duel.rightId].filter(Boolean);
+  const duelists = state.players.filter((item) => duelIds.includes(item.id));
+  const saloonA = state.players.filter((item) => item.alive && item.role && item.saloon === "A" && !duelIds.includes(item.id));
+  const saloonB = state.players.filter((item) => item.alive && item.role && item.saloon === "B" && !duelIds.includes(item.id));
+  const eliminated = state.players.filter((item) => !item.alive && item.role);
+  spectatorGrid.innerHTML = [
+    spectatorGroup("Saloon A", saloonA),
+    spectatorGroup("Saloon B", saloonB),
+    spectatorGroup("Duel", duelists),
+    spectatorGroup("Elimines", eliminated)
+  ].join("");
+}
+
 async function sendSignal(to, kind, payload) {
   await postJson("/api/signal", { from: playerId, to, kind, payload });
 }
@@ -610,6 +639,7 @@ function render(nextState) {
     choiceButtons.classList.add("hidden");
     sheriffPhoneShot.classList.add("hidden");
     saloonVotePanel.classList.add("hidden");
+    spectatorPanel.classList.add("hidden");
     endRoles.classList.remove("hidden");
     endRoleList.innerHTML = state.players.map((item) => `<div class="end-role-item"><span>${escapeHtml(item.name)}</span><strong>${escapeHtml(item.role || "Sans role")}</strong></div>`).join("");
     setTask("Partie terminee", `${state.winner} gagnent. Rejoins le vocal Fin de partie.`);
@@ -619,6 +649,7 @@ function render(nextState) {
   message.classList.remove("big-message");
   clockRing.classList.remove("game-over-ring");
   endRoles.classList.add("hidden");
+  spectatorPanel.classList.add("hidden");
 
   if (!player.alive) {
     playerStatus.textContent = "Tu es mort";
@@ -631,6 +662,8 @@ function render(nextState) {
     } else {
       message.textContent = "Tu es mort. Garde le silence jusqu'a la fin de la partie.";
       setScreen("Elimine", "Tu ne participes plus.", "Reste dans le vocal Elimines et garde le silence.");
+      renderSpectatorView(duel);
+      spectatorPanel.classList.remove("hidden");
     }
     choiceButtons.classList.add("hidden");
     sheriffPhoneShot.classList.add("hidden");
