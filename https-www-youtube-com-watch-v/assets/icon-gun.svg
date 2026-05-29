@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 120" role="img" aria-label="Tirer">
+  <defs>
+    <linearGradient id="metal" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#7b5a30"/>
+      <stop offset=".42" stop-color="#f1d28b"/>
+      <stop offset=".72" stop-color="#8a5525"/>
+      <stop offset="1" stop-color="#2a160a"/>
+    </linearGradient>
+    <linearGradient id="wood" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#9a4f25"/>
+      <stop offset="1" stop-color="#2a1009"/>
+    </linearGradient>
+  </defs>
+  <g transform="translate(15 20) rotate(-12 64 42)" fill="none" stroke="#f6d78d" stroke-linejoin="round" stroke-linecap="round">
+    <path d="M8 34h76c12 0 20 5 25 15l5 10H88l-5-8H8z" fill="url(#metal)" stroke-width="6"/>
+    <path d="M88 29h39c7 0 12 5 12 12v7H89z" fill="#4a3020" stroke-width="6"/>
+    <path d="M28 25h45c7 0 11 3 13 9H25z" fill="url(#metal)" stroke-width="5"/>
+    <path d="M50 53c8 4 12 11 10 20-2 11-12 18-22 16" stroke="#f6d78d" stroke-width="8"/>
+    <path d="M69 55h24L78 101l-23-7z" fill="url(#wood)" stroke-width="6"/>
+  </g>
+</svg>

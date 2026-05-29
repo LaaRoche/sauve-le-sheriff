@@ -12,6 +12,7 @@ const displayName = document.querySelector("#player-display-name");
 const playerSaloon = document.querySelector("#player-saloon");
 const playerStatus = document.querySelector("#player-status");
 const playerRole = document.querySelector("#player-role");
+const roleCard = document.querySelector(".role-card");
 const roleArt = document.querySelector("#role-art");
 const playerPhase = document.querySelector("#player-phase");
 const playerAction = document.querySelector("#player-action");
@@ -638,6 +639,10 @@ function render(nextState) {
   const sheriffPowerText = player.role === "Sheriff" && player.sheriffPower === false ? " - pouvoir utilise" : "";
   playerRole.textContent = player.role ? `${player.role}${sheriffPowerText}` : "Role non attribue";
   roleArt.src = roleImage(player.role);
+  roleCard.classList.toggle("is-citizen", player.role === "Citoyen");
+  roleCard.classList.toggle("is-outlaw", player.role === "Hors-la-loi");
+  roleCard.classList.toggle("is-sheriff", player.role === "Sheriff");
+  roleCard.classList.toggle("is-hidden-role", !player.role);
   const isHost = state.hostId === player.id;
   const hasStarted = gameHasStarted();
   playerView.classList.toggle("is-host-setup", isHost && !hasStarted);

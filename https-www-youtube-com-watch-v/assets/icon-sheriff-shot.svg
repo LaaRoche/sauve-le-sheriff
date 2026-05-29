@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 190 130" role="img" aria-label="Tir du sheriff">
+  <defs>
+    <linearGradient id="gold" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#8d5516"/>
+      <stop offset=".38" stop-color="#ffe7a4"/>
+      <stop offset=".68" stop-color="#d39a2d"/>
+      <stop offset="1" stop-color="#6d3c12"/>
+    </linearGradient>
+    <linearGradient id="metal" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#6d4d27"/>
+      <stop offset=".5" stop-color="#f1d28b"/>
+      <stop offset="1" stop-color="#2a160a"/>
+    </linearGradient>
+  </defs>
+  <g transform="translate(10 13)">
+    <path d="M63 4l13 31 34 4-25 23 7 34-29-18-29 18 7-34-25-23 34-4z" fill="url(#gold)" stroke="#fff1a7" stroke-width="5" stroke-linejoin="round"/>
+    <path d="M63 28l6 15 17 2-13 12 3 17-13-9-14 9 3-17-13-12 17-2z" fill="#3b210d" opacity=".58"/>
+  </g>
+  <g transform="translate(80 48) rotate(-12 50 25)" fill="none" stroke="#f6d78d" stroke-linejoin="round" stroke-linecap="round">
+    <path d="M5 24h62c10 0 17 5 21 13l4 8H70l-4-7H5z" fill="url(#metal)" stroke-width="5"/>
+    <path d="M72 20h32c6 0 10 4 10 10v6H73z" fill="#44291a" stroke-width="5"/>
+    <path d="M54 41h21L62 80l-19-6z" fill="#7d3f20" stroke-width="5"/>
+  </g>
+</svg>

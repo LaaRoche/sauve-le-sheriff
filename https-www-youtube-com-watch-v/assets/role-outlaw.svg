@@ -1,32 +1,34 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 360" role="img" aria-label="Hors-la-loi">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="Hors-la-loi">
   <defs>
-    <linearGradient id="night" x1="0" x2="1" y1="0" y2="1">
-      <stop offset="0" stop-color="#030507"/>
-      <stop offset=".48" stop-color="#1b1412"/>
-      <stop offset="1" stop-color="#5a2118"/>
+    <linearGradient id="metal" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#1b1712"/>
+      <stop offset=".28" stop-color="#6d6251"/>
+      <stop offset=".5" stop-color="#d0b783"/>
+      <stop offset=".74" stop-color="#514332"/>
+      <stop offset="1" stop-color="#0b0806"/>
     </linearGradient>
-    <radialGradient id="smoke" cx="50%" cy="42%" r="70%">
-      <stop offset="0" stop-color="#6d5b4a" stop-opacity=".42"/>
-      <stop offset=".52" stop-color="#141414" stop-opacity=".48"/>
-      <stop offset="1" stop-color="#000" stop-opacity=".8"/>
-    </radialGradient>
+    <linearGradient id="darkMetal" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#0b0907"/>
+      <stop offset=".42" stop-color="#4a4034"/>
+      <stop offset="1" stop-color="#130d08"/>
+    </linearGradient>
+    <linearGradient id="wood" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#7d3f20"/>
+      <stop offset=".55" stop-color="#3a1d12"/>
+      <stop offset="1" stop-color="#120806"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-30%" width="150%" height="160%">
+      <feDropShadow dx="0" dy="11" stdDeviation="7" flood-color="#120804" flood-opacity=".62"/>
+    </filter>
   </defs>
-  <rect width="720" height="360" fill="url(#night)"/>
-  <rect width="720" height="360" fill="url(#smoke)"/>
-  <path d="M0 278c106-40 205-45 302-16 146 44 262 28 418-46v144H0z" fill="#070707" opacity=".68"/>
-  <g fill="#111" stroke="#d29a42" stroke-width="5" stroke-linejoin="round">
-    <path d="M180 122h86l20 32H160z"/>
-    <path d="M144 154h170l-24 24H169z"/>
-    <path d="M220 178c-44 0-73 31-78 99h155c-6-68-34-99-77-99z"/>
-    <path d="M322 106h93l18 32H301z"/>
-    <path d="M285 139h188l-29 25H312z"/>
-    <path d="M369 164c-47 0-83 34-91 115h178c-7-81-40-115-87-115z"/>
-    <path d="M492 126h78l19 30H474z"/>
-    <path d="M452 156h160l-24 22H477z"/>
-    <path d="M532 178c-42 0-70 31-76 98h151c-5-67-33-98-75-98z"/>
-    <path d="M96 150h68l17 26H78z"/>
-    <path d="M67 176h137l-20 20H88z"/>
-    <path d="M132 196c-35 0-58 26-64 79h128c-5-53-28-79-64-79z"/>
+  <g filter="url(#shadow)" transform="translate(32 28) rotate(-10 128 62)">
+    <path d="M35 42h157c19 0 34 10 41 28l7 19h-43l-7-17H34z" fill="url(#metal)" stroke="#26160d" stroke-width="7" stroke-linejoin="round"/>
+    <path d="M202 37h51c10 0 18 8 18 18v9h-67z" fill="url(#darkMetal)" stroke="#26160d" stroke-width="7" stroke-linejoin="round"/>
+    <path d="M53 31h82c8 0 15 5 17 13H49c0-7 2-11 4-13z" fill="url(#metal)" stroke="#26160d" stroke-width="6" stroke-linejoin="round"/>
+    <path d="M87 73c8 2 15 8 18 17 5 17-5 35-22 40-11 3-23 0-31-8l16-18c4 3 9 4 13 3 5-2 9-8 7-14-1-3-4-6-8-7z" fill="none" stroke="#21140c" stroke-width="12" stroke-linecap="round"/>
+    <path d="M128 78h44l-24 71c-4 12-17 19-29 14l-14-5z" fill="url(#wood)" stroke="#26160d" stroke-width="7" stroke-linejoin="round"/>
+    <path d="M129 91h31" stroke="#a76d35" stroke-width="5" stroke-linecap="round" opacity=".7"/>
+    <path d="M118 55h38" stroke="#f0d49b" stroke-width="5" stroke-linecap="round" opacity=".48"/>
+    <circle cx="182" cy="70" r="8" fill="#19110b" opacity=".72"/>
   </g>
-  <text x="360" y="321" fill="#e0b56a" font-size="38" font-family="Georgia, serif" font-weight="900" text-anchor="middle">HORS-LA-LOI</text>
 </svg>

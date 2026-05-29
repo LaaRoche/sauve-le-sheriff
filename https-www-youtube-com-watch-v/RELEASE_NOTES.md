@@ -6,6 +6,7 @@
 - La revelation de duel s'affiche dans un panneau a droite, sans remplacer la carte role du joueur.
 - Les choix Tirer / Ne pas tirer restent modifiables jusqu'a la fin du duel.
 - Le tir du sheriff reste instantane.
+- Les boutons Tirer, Ne pas tirer et Tir du sheriff passent en style western avec icones integrees.
 
 ## v6.7
 
