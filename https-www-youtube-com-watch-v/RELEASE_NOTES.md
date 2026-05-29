@@ -1,5 +1,12 @@
 # Release notes
 
+## v6.1
+
+- Reprise plus stricte de l'ecran joueur de reference.
+- Le role est affiche dans une vraie carte centrale "Ton role".
+- Le role reste visible pendant la discussion et les autres phases.
+- Suppression de l'onde micro decorative dans le bloc vocal.
+
 ## v6.0
 
 - Refonte du flow visuel des ecrans joueurs pour coller a la planche de reference.

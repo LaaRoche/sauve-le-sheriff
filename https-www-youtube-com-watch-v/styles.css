@@ -655,7 +655,9 @@ h3 {
   padding: 18px;
 }
 
-.identity-content {
+.identity-content,
+.identity-player,
+.role-card {
   position: relative;
   z-index: 1;
   display: grid;
@@ -1364,9 +1366,10 @@ a.test-link,
 
 .player-task strong {
   color: #ffe3a1;
+  font-family: Georgia, "Times New Roman", serif;
   font-size: clamp(2rem, 9vw, 3.2rem);
   line-height: 0.95;
-  text-transform: uppercase;
+  text-transform: none;
 }
 
 .player-task p {
@@ -1385,14 +1388,47 @@ a.test-link,
 }
 
 .player-view .identity {
-  min-height: 188px;
-  padding: 16px;
-  align-content: end;
+  min-height: 0;
+  padding: 10px;
+  align-content: stretch;
+  gap: 10px;
 }
 
 .identity-content {
   justify-items: center;
   text-align: center;
+}
+
+.identity-player {
+  justify-items: start;
+  text-align: left;
+  padding: 8px 10px;
+  border: 1px solid rgba(217, 154, 37, 0.28);
+  border-radius: 7px;
+  background: rgba(7, 6, 5, 0.42);
+}
+
+.role-card {
+  min-height: 210px;
+  justify-items: center;
+  align-content: center;
+  padding: 16px 12px;
+  border: 2px solid rgba(89, 52, 20, 0.78);
+  border-radius: 7px;
+  color: #20140a;
+  text-align: center;
+  text-shadow: none;
+  background:
+    radial-gradient(circle at 50% 22%, rgba(255, 243, 209, 0.76), transparent 34%),
+    linear-gradient(180deg, #d9bc82, #9f7041);
+  box-shadow: inset 0 0 0 1px rgba(255, 239, 196, 0.28), 0 10px 24px rgba(0, 0, 0, 0.3);
+}
+
+.role-card > span {
+  color: #3b2818;
+  font-size: 0.78rem;
+  font-weight: 900;
+  text-transform: uppercase;
 }
 
 .identity strong {
@@ -1401,21 +1437,28 @@ a.test-link,
 }
 
 .identity em {
-  color: var(--gold-light);
-  font-size: clamp(1.65rem, 7vw, 2.35rem);
+  color: #1a1008;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(1.95rem, 8vw, 2.8rem);
   line-height: 1.05;
   text-transform: uppercase;
 }
 
 .identity-role-art {
-  opacity: 0.5;
-  filter: sepia(0.18) saturate(1.05) contrast(1.12);
+  position: static;
+  width: min(160px, 70%);
+  height: auto;
+  aspect-ratio: 1.4 / 1;
+  opacity: 1;
+  filter: sepia(0.18) saturate(0.95) contrast(1.02);
+  object-fit: contain;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 .player-view .identity::after {
-  background:
-    linear-gradient(180deg, rgba(10, 8, 6, 0.08), rgba(8, 7, 6, 0.26) 42%, rgba(8, 7, 6, 0.95)),
-    radial-gradient(circle at 50% 20%, rgba(214, 154, 39, 0.26), transparent 36%);
+  content: none;
 }
 
 .phone-clock {
@@ -1473,15 +1516,7 @@ a.test-link,
 }
 
 .voice-panel p::after {
-  content: "";
-  display: block;
-  height: 22px;
-  margin-top: 7px;
-  border-radius: 3px;
-  opacity: 0.8;
-  background:
-    repeating-linear-gradient(90deg, #2aa162 0 3px, transparent 3px 8px),
-    linear-gradient(90deg, rgba(42, 161, 98, 0.3), transparent);
+  content: none;
 }
 
 .choice-buttons {

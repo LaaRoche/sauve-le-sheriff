@@ -610,7 +610,7 @@ function render(nextState) {
   playerSaloon.textContent = "";
   playerStatus.textContent = player.alive ? "Connecte" : "Hors partie";
   const sheriffPowerText = player.role === "Sheriff" && player.sheriffPower === false ? " - pouvoir utilise" : "";
-  playerRole.textContent = player.role ? `Role : ${player.role}${sheriffPowerText}` : "Role non attribue";
+  playerRole.textContent = player.role ? `${player.role}${sheriffPowerText}` : "Role non attribue";
   roleArt.src = roleImage(player.role);
   const isHost = state.hostId === player.id;
   const hasStarted = gameHasStarted();
