@@ -1,5 +1,11 @@
 # Release notes
 
+## v6.5
+
+- Reprise de la disposition desktop joueur pour eviter le layout mobile agrandi.
+- Suppression du bloc message redondant en bas a gauche sur PC.
+- Sur PC, les panneaux sont organises en zones : phase, role, timer, actions, vocal et contenu secondaire.
+
 ## v6.4
 
 - Ajout d'une vraie disposition PC navigateur pour l'ecran joueur.

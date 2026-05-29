@@ -1599,7 +1599,7 @@ a.test-link,
 
 @media (min-width: 900px) {
   .phone-shell {
-    width: min(100% - 32px, 1180px);
+    width: min(100% - 32px, 1220px);
     min-height: 100vh;
     padding: 16px 0;
   }
@@ -1608,7 +1608,7 @@ a.test-link,
     min-height: auto;
     max-height: calc(100vh - 32px);
     padding: 16px;
-    overflow: auto;
+    overflow: hidden;
   }
 
   .phone-topbar {
@@ -1634,22 +1634,22 @@ a.test-link,
     grid-template-columns: 1fr;
   }
 
-  .player-view {
+  .player-view:not(.is-host-setup) {
     display: grid;
-    grid-template-columns: minmax(270px, 330px) minmax(220px, 280px) minmax(300px, 1fr);
+    grid-template-columns: minmax(280px, 340px) minmax(240px, 300px) minmax(300px, 1fr);
+    grid-template-rows: auto minmax(280px, 1fr) auto;
     grid-template-areas:
       "phase phase phase"
       "role timer side"
-      "sheriff timer side"
-      "actions timer side"
-      "message voice side";
+      "actions voice side";
     gap: 12px;
     align-items: stretch;
+    min-height: min(690px, calc(100vh - 185px));
   }
 
   .player-task {
     grid-area: phase;
-    min-height: 90px;
+    min-height: 84px;
     padding: 14px;
   }
 
@@ -1670,7 +1670,7 @@ a.test-link,
   }
 
   .role-card {
-    min-height: 235px;
+    min-height: 255px;
   }
 
   .identity-role-art {
@@ -1691,7 +1691,7 @@ a.test-link,
   }
 
   #sheriff-phone-shot {
-    grid-area: sheriff;
+    grid-area: actions;
     align-self: stretch;
     min-height: 52px;
   }
@@ -1701,9 +1701,13 @@ a.test-link,
     align-self: stretch;
   }
 
+  #sheriff-phone-shot:not(.hidden) + .host-end-tools + .end-roles + .choice-buttons,
+  #sheriff-phone-shot:not(.hidden) ~ .choice-buttons {
+    margin-top: 64px;
+  }
+
   .phone-panel .outcome {
-    grid-area: message;
-    align-self: stretch;
+    display: none;
   }
 
   .voice-panel {
@@ -1737,7 +1741,6 @@ a.test-link,
     grid-template-areas:
       "phase side"
       "role side"
-      "message side"
       "voice side";
   }
 
