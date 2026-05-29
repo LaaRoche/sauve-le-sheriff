@@ -1,5 +1,12 @@
 # Release notes
 
+## v6.4
+
+- Ajout d'une vraie disposition PC navigateur pour l'ecran joueur.
+- Sur grand ecran, role, timer, vote/actions, message et vocal sont visibles en colonnes.
+- Reduction du besoin de scroller avec la molette sur PC.
+- La disposition mobile verticale reste conservee pour les petits ecrans.
+
 ## v6.3
 
 - Les boutons Tirer / Ne pas tirer remontent juste sous la carte role pendant le duel.

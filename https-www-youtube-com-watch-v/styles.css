@@ -1597,6 +1597,177 @@ a.test-link,
   display: none !important;
 }
 
+@media (min-width: 900px) {
+  .phone-shell {
+    width: min(100% - 32px, 1180px);
+    min-height: 100vh;
+    padding: 16px 0;
+  }
+
+  .phone-panel {
+    min-height: auto;
+    max-height: calc(100vh - 32px);
+    padding: 16px;
+    overflow: auto;
+  }
+
+  .phone-topbar {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: start;
+  }
+
+  .phone-logo {
+    width: 104px;
+  }
+
+  .top-actions {
+    align-items: start;
+  }
+
+  .join-form {
+    grid-template-columns: 1fr 1fr auto;
+    align-items: end;
+  }
+
+  .launch-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .player-view {
+    display: grid;
+    grid-template-columns: minmax(270px, 330px) minmax(220px, 280px) minmax(300px, 1fr);
+    grid-template-areas:
+      "phase phase phase"
+      "role timer side"
+      "sheriff timer side"
+      "actions timer side"
+      "message voice side";
+    gap: 12px;
+    align-items: stretch;
+  }
+
+  .player-task {
+    grid-area: phase;
+    min-height: 90px;
+    padding: 14px;
+  }
+
+  .player-task strong {
+    font-size: clamp(2rem, 4vw, 3.3rem);
+  }
+
+  .player-hero {
+    grid-area: role;
+  }
+
+  .player-view .identity {
+    height: 100%;
+  }
+
+  .identity-player {
+    min-height: 72px;
+  }
+
+  .role-card {
+    min-height: 235px;
+  }
+
+  .identity-role-art {
+    width: min(170px, 72%);
+  }
+
+  .phone-clock {
+    grid-area: timer;
+    align-self: center;
+    justify-self: center;
+    width: min(24vw, 255px);
+    min-width: 220px;
+    margin: 0;
+  }
+
+  .phone-panel .clock-ring span {
+    font-size: clamp(4rem, 7vw, 6.2rem);
+  }
+
+  #sheriff-phone-shot {
+    grid-area: sheriff;
+    align-self: stretch;
+    min-height: 52px;
+  }
+
+  .choice-buttons {
+    grid-area: actions;
+    align-self: stretch;
+  }
+
+  .phone-panel .outcome {
+    grid-area: message;
+    align-self: stretch;
+  }
+
+  .voice-panel {
+    grid-area: voice;
+    min-height: 96px;
+  }
+
+  .saloon-vote-panel,
+  .spectator-panel,
+  .end-roles {
+    grid-area: side;
+    align-self: stretch;
+    min-height: 100%;
+  }
+
+  .saloon-vote-list,
+  .spectator-grid,
+  #end-role-list {
+    align-content: start;
+  }
+
+  .player-view[data-mode="default"] .saloon-vote-panel.hidden,
+  .player-view[data-mode="discussion"] .saloon-vote-panel.hidden,
+  .player-view[data-mode="duel"] .saloon-vote-panel.hidden,
+  .player-view[data-mode="result"] .saloon-vote-panel.hidden {
+    display: none !important;
+  }
+
+  .player-view[data-mode="spectator"] {
+    grid-template-columns: minmax(280px, 350px) minmax(300px, 1fr);
+    grid-template-areas:
+      "phase side"
+      "role side"
+      "message side"
+      "voice side";
+  }
+
+  .player-view.is-host-setup {
+    display: block;
+  }
+
+  .host-tools {
+    grid-template-columns: minmax(220px, 0.8fr) minmax(380px, 1.4fr) minmax(220px, 0.8fr);
+    align-items: start;
+  }
+
+  .host-tools-header,
+  .game-code-display,
+  #host-player-count,
+  #host-message,
+  .host-actions {
+    grid-column: 1 / 2;
+  }
+
+  .host-timer-grid {
+    grid-column: 2 / 3;
+  }
+
+  .host-tools > div:has(.host-player-list) {
+    grid-column: 3 / 4;
+    grid-row: 1 / span 5;
+  }
+}
+
 @media (max-width: 980px) {
   .host-flow,
   .host-shell {
