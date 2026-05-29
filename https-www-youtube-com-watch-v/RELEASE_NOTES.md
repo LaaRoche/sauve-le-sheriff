@@ -1,5 +1,17 @@
 # Release notes
 
+## v6.8
+
+- Le bloc Phase actuelle est uniformise pour les joueurs vivants : Discussion Saloon ou Duel en cours.
+- La revelation de duel s'affiche dans un panneau a droite, sans remplacer la carte role du joueur.
+- Les choix Tirer / Ne pas tirer restent modifiables jusqu'a la fin du duel.
+- Le tir du sheriff reste instantane.
+
+## v6.7
+
+- Les actions de duel sont regroupees au centre de la zone droite sur PC.
+- Tir du sheriff reste au-dessus de Tirer / Ne pas tirer.
+
 ## v6.6
 
 - Les joueurs hors duel voient maintenant "Duel en cours" quand leur representant est parti.

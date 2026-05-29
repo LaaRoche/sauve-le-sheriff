@@ -702,7 +702,8 @@ h3 {
   background: linear-gradient(180deg, rgba(255, 238, 202, 0.12), rgba(8, 7, 6, 0.62));
 }
 
-.saloon-vote-panel {
+.saloon-vote-panel,
+.reveal-panel {
   display: grid;
   gap: 10px;
   padding: 14px;
@@ -711,22 +712,51 @@ h3 {
   background: linear-gradient(180deg, rgba(255, 238, 202, 0.12), rgba(8, 7, 6, 0.66));
 }
 
-.saloon-vote-panel > span {
+.saloon-vote-panel > span,
+.reveal-panel > span {
   color: #b99a69;
   font-size: 0.82rem;
   font-weight: 900;
   text-transform: uppercase;
 }
 
-.saloon-vote-panel > strong {
+.saloon-vote-panel > strong,
+.reveal-panel > strong {
   color: #fff0cf;
   font-size: 1.35rem;
 }
 
-.saloon-vote-panel p {
+.saloon-vote-panel p,
+.reveal-panel p {
   margin: 0;
   color: #c8b39b;
   font-weight: 800;
+}
+
+.reveal-card {
+  display: grid;
+  gap: 8px;
+  justify-items: center;
+  padding: 16px;
+  border: 1px solid rgba(217, 154, 37, 0.62);
+  border-radius: 6px;
+  background: linear-gradient(180deg, rgba(218, 181, 116, 0.95), rgba(157, 105, 50, 0.95));
+  color: #1b130c;
+  box-shadow: inset 0 0 34px rgba(255, 236, 180, 0.26);
+}
+
+.reveal-card img {
+  width: min(170px, 75%);
+  max-height: 92px;
+}
+
+.reveal-card em {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(1.9rem, 8vw, 3rem);
+  font-style: normal;
+  font-weight: 900;
+  text-align: center;
+  text-transform: uppercase;
 }
 
 .saloon-vote-list {
@@ -1030,6 +1060,7 @@ h3 {
 .player-view.is-host-setup .phone-clock,
 .player-view.is-host-setup .outcome,
 .player-view.is-host-setup .saloon-vote-panel,
+.player-view.is-host-setup .reveal-panel,
 .player-view.is-host-setup #sheriff-phone-shot,
 .player-view.is-host-setup .choice-buttons {
   display: none !important;
@@ -1502,6 +1533,7 @@ a.test-link,
 }
 
 .saloon-vote-panel,
+.reveal-panel,
 .spectator-panel,
 .end-roles {
   order: 6;
@@ -1531,17 +1563,24 @@ a.test-link,
   min-height: 54px;
 }
 
+.choice-buttons button.selected-choice {
+  outline: 2px solid var(--gold-light);
+  box-shadow: 0 0 0 3px rgba(245, 189, 75, 0.22), 0 0 28px rgba(245, 189, 75, 0.28);
+}
+
 #sheriff-phone-shot {
   order: 3;
 }
 
-.saloon-vote-panel {
+.saloon-vote-panel,
+.reveal-panel {
   border-color: rgba(217, 154, 37, 0.62);
   background:
     linear-gradient(180deg, rgba(38, 24, 13, 0.94), rgba(8, 7, 6, 0.94));
 }
 
-.saloon-vote-panel > strong {
+.saloon-vote-panel > strong,
+.reveal-panel > strong {
   color: #ffe3a1;
   font-size: clamp(1.65rem, 7vw, 2.2rem);
   text-align: center;
@@ -1597,7 +1636,8 @@ a.test-link,
 
 .player-view[data-mode="spectator"] .phone-clock,
 .player-view[data-mode="spectator"] .choice-buttons,
-.player-view[data-mode="spectator"] #sheriff-phone-shot {
+.player-view[data-mode="spectator"] #sheriff-phone-shot,
+.player-view[data-mode="spectator"] .reveal-panel {
   display: none !important;
 }
 
@@ -1696,15 +1736,17 @@ a.test-link,
 
   #sheriff-phone-shot {
     grid-area: side;
-    align-self: start;
+    align-self: center;
     justify-self: stretch;
     min-height: 52px;
+    margin-bottom: 68px;
   }
 
   .choice-buttons {
     grid-area: side;
-    align-self: end;
+    align-self: center;
     justify-self: stretch;
+    margin-top: 72px;
   }
 
   #sheriff-phone-shot:not(.hidden) + .host-end-tools + .end-roles + .choice-buttons,
@@ -1721,10 +1763,11 @@ a.test-link,
     min-height: 96px;
   }
 
-  .saloon-vote-panel,
-  .spectator-panel,
-  .end-roles {
-    grid-area: side;
+.saloon-vote-panel,
+.reveal-panel,
+.spectator-panel,
+.end-roles {
+  grid-area: side;
     align-self: stretch;
     min-height: 100%;
   }
@@ -1738,7 +1781,11 @@ a.test-link,
   .player-view[data-mode="default"] .saloon-vote-panel.hidden,
   .player-view[data-mode="discussion"] .saloon-vote-panel.hidden,
   .player-view[data-mode="duel"] .saloon-vote-panel.hidden,
-  .player-view[data-mode="result"] .saloon-vote-panel.hidden {
+  .player-view[data-mode="result"] .saloon-vote-panel.hidden,
+  .player-view[data-mode="default"] .reveal-panel.hidden,
+  .player-view[data-mode="discussion"] .reveal-panel.hidden,
+  .player-view[data-mode="duel"] .reveal-panel.hidden,
+  .player-view[data-mode="result"] .reveal-panel.hidden {
     display: none !important;
   }
 
@@ -1751,9 +1798,11 @@ a.test-link,
   }
 
   .player-view[data-mode="duel"] .saloon-vote-panel,
+  .player-view[data-mode="duel"] .reveal-panel,
   .player-view[data-mode="duel"] .spectator-panel,
   .player-view[data-mode="duel"] .end-roles,
   .player-view[data-mode="duel-ready"] .saloon-vote-panel,
+  .player-view[data-mode="duel-ready"] .reveal-panel,
   .player-view[data-mode="duel-ready"] .spectator-panel,
   .player-view[data-mode="duel-ready"] .end-roles {
     display: none !important;

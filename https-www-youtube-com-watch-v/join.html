@@ -11,7 +11,7 @@
       <section class="panel phone-panel" aria-label="Sauve l'Empire joueur">
         <div class="phone-topbar">
           <div>
-            <p class="eyebrow">v6.6</p>
+            <p class="eyebrow">v6.8</p>
             <img class="app-logo phone-logo" src="assets/logo-sauve-empire.png" alt="Sauve l'Empire">
           </div>
           <div class="top-actions">
@@ -123,6 +123,16 @@
             <strong>Qui va au duel ?</strong>
             <div class="saloon-vote-list" id="saloon-vote-list"></div>
             <p>En cas d'egalite, l'Empire tranche au hasard.</p>
+          </div>
+
+          <div class="reveal-panel hidden" id="reveal-panel">
+            <span id="reveal-kicker">Resultat du duel</span>
+            <strong id="reveal-title">Le duel est termine</strong>
+            <div class="reveal-card hidden" id="reveal-card">
+              <img id="reveal-art" src="assets/role-hidden.svg" alt="">
+              <em id="reveal-role"></em>
+            </div>
+            <p id="reveal-detail">Rejoins ton vocal.</p>
           </div>
 
           <button class="danger hidden" id="sheriff-phone-shot" type="button">Tir du sheriff</button>

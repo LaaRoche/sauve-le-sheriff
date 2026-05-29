@@ -20,6 +20,13 @@ const clockRing = document.querySelector("#clock-ring");
 const message = document.querySelector("#player-message");
 const saloonVotePanel = document.querySelector("#saloon-vote-panel");
 const saloonVoteList = document.querySelector("#saloon-vote-list");
+const revealPanel = document.querySelector("#reveal-panel");
+const revealKicker = document.querySelector("#reveal-kicker");
+const revealTitle = document.querySelector("#reveal-title");
+const revealCard = document.querySelector("#reveal-card");
+const revealArt = document.querySelector("#reveal-art");
+const revealRole = document.querySelector("#reveal-role");
+const revealDetail = document.querySelector("#reveal-detail");
 const spectatorPanel = document.querySelector("#spectator-panel");
 const spectatorGrid = document.querySelector("#spectator-grid");
 const choiceButtons = document.querySelector("#choice-buttons");
@@ -283,6 +290,23 @@ function setScreen(phase, action, note) {
   else if (text.includes("discussion")) setViewMode("discussion");
   else if (text.includes("preparation")) setViewMode("lobby");
   else setViewMode("default");
+}
+
+function setRevealPanel({ kicker, title, detail, role, art }) {
+  revealKicker.textContent = kicker || "Resultat du duel";
+  revealTitle.textContent = title || "Le duel est termine";
+  revealDetail.textContent = detail || "Rejoins ton vocal.";
+  revealCard.classList.toggle("hidden", !role);
+  if (role) {
+    revealRole.textContent = role;
+    revealArt.src = art || roleImage(role);
+  }
+  revealPanel.classList.remove("hidden");
+}
+
+function hideRevealPanel() {
+  revealPanel.classList.add("hidden");
+  revealCard.classList.add("hidden");
 }
 
 function roleImage(role) {
@@ -657,6 +681,7 @@ function render(nextState) {
     choiceButtons.classList.add("hidden");
     sheriffPhoneShot.classList.add("hidden");
     saloonVotePanel.classList.add("hidden");
+    hideRevealPanel();
     spectatorPanel.classList.add("hidden");
     endRoles.classList.remove("hidden");
     endRoleList.innerHTML = state.players.map((item) => `<div class="end-role-item"><span>${escapeHtml(item.name)}</span><strong>${escapeHtml(item.role || "Sans role")}</strong></div>`).join("");
@@ -668,6 +693,7 @@ function render(nextState) {
   clockRing.classList.remove("game-over-ring");
   endRoles.classList.add("hidden");
   spectatorPanel.classList.add("hidden");
+  hideRevealPanel();
 
   if (!player.alive) {
     playerStatus.textContent = "Tu es mort";
@@ -686,6 +712,7 @@ function render(nextState) {
     choiceButtons.classList.add("hidden");
     sheriffPhoneShot.classList.add("hidden");
     saloonVotePanel.classList.add("hidden");
+    hideRevealPanel();
     return;
   }
 
@@ -697,23 +724,36 @@ function render(nextState) {
       const opponent = duelOpponent(duel);
       const shouldRevealOpponent = isInDuel(duel) && duel.leftChoice === "hold" && duel.rightChoice === "hold" && !duel.sheriffShot && opponent;
       if (shouldRevealOpponent) {
-        roleArt.src = roleImage(opponent.role);
-        playerRole.textContent = `Carte adverse : ${opponent.role}`;
-        setScreen("Carte revelee", `${opponent.name} est ${opponent.role}.`, "Regarde la carte adverse, puis rejoins ton nouveau saloon.");
+        setScreen("Duel en cours", "", "Carte adverse revelee.");
+        setRevealPanel({
+          kicker: "Carte adverse",
+          title: `${opponent.name}`,
+          detail: "Personne n'a tire. La carte adverse est revelee.",
+          role: opponent.role,
+          art: roleImage(opponent.role)
+        });
+        setViewMode("result");
       } else if (isInDuel(duel)) {
-        setScreen("Resultat du duel", "Rejoins ton vocal.", duel.resultMessage || "Resultat du duel.");
+        setScreen("Duel en cours", "", duel.resultMessage || "Resultat du duel.");
+        setRevealPanel({
+          kicker: "Resultat du duel",
+          title: "Le duel est termine",
+          detail: duel.resultMessage || "Rejoins ton vocal."
+        });
+        setViewMode("result");
       } else {
-        setScreen("Resultat du duel", "Le duel est termine.", "Rejoins ton vocal. Le detail reste secret pour les autres saloons.");
+        setScreen("Duel en cours", "", "Rejoins ton vocal. Le detail reste secret pour les autres saloons.");
+        setViewMode("result");
       }
     } else if (phase.name === "final" && isInDuel(duel)) {
-      setScreen("Duel final", "Tu es designe.", "");
+      setScreen("Duel en cours", "", "Tu es designe.");
     } else if (isSelectedForDuel) {
-      setScreen("Duel a venir", "Tu es designe.", "");
+      setScreen("Duel en cours", "", "Tu es designe.");
     } else if (saloonDuelist) {
-      setScreen("Duel en cours", `${playerName(saloonDuelist)} represente ton saloon.`, "Reste dans ton saloon pendant son duel.");
+      setScreen("Duel en cours", "", `${playerName(saloonDuelist)} represente ton saloon.`);
     } else if (phase.name === "discussion") {
       const voteTarget = playerName(mySaloonVote(player));
-      setScreen("Discussion saloon", "", voteTarget ? `Ton vote : ${voteTarget}. Lui seul ira au vocal Duel.` : "Choisis un representant : lui seul ira au vocal Duel.");
+      setScreen("Discussion Saloon", "", voteTarget ? `Ton vote : ${voteTarget}.` : "Choisis un representant.");
     } else if (phase.label === "Discussion terminee : choisissez les duellistes") {
       setScreen("Vote termine", "L'Empire tranche.", "En cas d'egalite, un tirage aleatoire decide.");
     } else if (!player.role) {
@@ -721,7 +761,7 @@ function render(nextState) {
     } else if (phase.name === "result") {
       setScreen(phase.label, "Suis l'indication affichee.", phase.label);
     } else {
-      setScreen(duel.leftId && duel.rightId ? "Duel en cours" : "En attente", duel.leftId && duel.rightId ? "Observe le duel." : "Attends le lancement.", duel.leftId && duel.rightId ? "Un duel est en cours." : "En attente du prochain timer.");
+      setScreen(duel.leftId && duel.rightId ? "Duel en cours" : "En attente", duel.leftId && duel.rightId ? "" : "Attends le lancement.", duel.leftId && duel.rightId ? "Un duel est en cours." : "En attente du prochain timer.");
     }
 
     if (phase.name === "discussion" || phase.name === "result") {
@@ -736,8 +776,11 @@ function render(nextState) {
 
   saloonVotePanel.classList.add("hidden");
   const choice = myChoice(duel);
-  setScreen("Duel en cours", "Choisis secretement.", duel.revealed ? "Les choix sont reveles." : choiceLabel(choice));
-  choiceButtons.classList.toggle("hidden", Boolean(choice) || duel.revealed);
+  setScreen("Duel en cours", "", duel.revealed ? "Les choix sont reveles." : choiceLabel(choice));
+  choiceButtons.classList.toggle("hidden", duel.revealed);
+  choiceButtons.querySelectorAll("[data-choice]").forEach((button) => {
+    button.classList.toggle("selected-choice", button.dataset.choice === choice);
+  });
   sheriffPhoneShot.classList.toggle("hidden", player.role !== "Sheriff" || player.sheriffPower === false || duel.revealed);
 }
 
