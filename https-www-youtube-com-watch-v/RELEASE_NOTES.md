@@ -1,5 +1,12 @@
 # Release notes
 
+## v6.0
+
+- Refonte du flow visuel des ecrans joueurs pour coller a la planche de reference.
+- La phase devient le titre principal de chaque ecran joueur.
+- Les ecrans discussion, vote, duel, resultat et spectateur ont un ordre visuel dedie.
+- Theme western sombre/or renforce sur les cartes, timers, boutons et panneaux.
+
 ## v5.9
 
 - Unification visuelle vers un theme western sombre/or sur les ecrans de jeu.

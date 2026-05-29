@@ -1287,6 +1287,281 @@ a.test-link,
   box-shadow: 0 30px 90px rgba(0, 0, 0, 0.42);
 }
 
+/* v6.0 player flow, matching the reference screens */
+.phone-shell {
+  width: min(100% - 22px, 410px);
+}
+
+.phone-panel {
+  position: relative;
+  overflow: hidden;
+  padding: 14px;
+  border-color: rgba(217, 154, 37, 0.65);
+  background:
+    radial-gradient(circle at 50% 4%, rgba(233, 158, 35, 0.22), transparent 30%),
+    linear-gradient(180deg, rgba(9, 11, 12, 0.98), rgba(25, 16, 10, 0.98) 58%, rgba(42, 24, 13, 0.98)),
+    #080706;
+}
+
+.phone-panel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(217, 154, 37, 0.18), transparent 18%, transparent 82%, rgba(217, 154, 37, 0.18)),
+    radial-gradient(circle at 50% 12%, rgba(242, 196, 107, 0.12), transparent 34%);
+  opacity: 0.8;
+}
+
+.phone-panel > * {
+  position: relative;
+  z-index: 1;
+}
+
+.phone-topbar {
+  align-items: start;
+  margin-bottom: 8px;
+}
+
+.phone-logo {
+  width: 116px;
+  border-color: rgba(217, 154, 37, 0.7);
+  box-shadow: 0 0 0 1px rgba(7, 5, 3, 0.9), 0 16px 36px rgba(0, 0, 0, 0.42);
+}
+
+.top-actions {
+  gap: 7px;
+}
+
+.top-actions .ghost-button,
+.top-actions .icon-button {
+  min-height: 36px;
+  padding: 0 10px;
+  font-size: 0.82rem;
+}
+
+.player-view {
+  gap: 10px;
+}
+
+.player-task {
+  order: 1;
+  min-height: 104px;
+  justify-items: center;
+  text-align: center;
+  border: 1px solid rgba(217, 154, 37, 0.55);
+  border-left-width: 1px;
+  background:
+    radial-gradient(circle at 50% 15%, rgba(217, 154, 37, 0.16), transparent 46%),
+    linear-gradient(180deg, rgba(35, 24, 15, 0.94), rgba(7, 6, 5, 0.92));
+}
+
+.player-task span {
+  color: #d59b35;
+  letter-spacing: 0.02em;
+}
+
+.player-task strong {
+  color: #ffe3a1;
+  font-size: clamp(2rem, 9vw, 3.2rem);
+  line-height: 0.95;
+  text-transform: uppercase;
+}
+
+.player-task p {
+  color: #fff4d4;
+}
+
+.player-hero {
+  order: 2;
+}
+
+.identity {
+  border-color: rgba(217, 154, 37, 0.62);
+  background:
+    radial-gradient(circle at 50% 10%, rgba(242, 196, 107, 0.2), transparent 38%),
+    linear-gradient(180deg, rgba(86, 55, 25, 0.54), rgba(8, 7, 6, 0.9));
+}
+
+.player-view .identity {
+  min-height: 188px;
+  padding: 16px;
+  align-content: end;
+}
+
+.identity-content {
+  justify-items: center;
+  text-align: center;
+}
+
+.identity strong {
+  color: #fff3d3;
+  font-size: clamp(1.15rem, 5vw, 1.55rem);
+}
+
+.identity em {
+  color: var(--gold-light);
+  font-size: clamp(1.65rem, 7vw, 2.35rem);
+  line-height: 1.05;
+  text-transform: uppercase;
+}
+
+.identity-role-art {
+  opacity: 0.5;
+  filter: sepia(0.18) saturate(1.05) contrast(1.12);
+}
+
+.player-view .identity::after {
+  background:
+    linear-gradient(180deg, rgba(10, 8, 6, 0.08), rgba(8, 7, 6, 0.26) 42%, rgba(8, 7, 6, 0.95)),
+    radial-gradient(circle at 50% 20%, rgba(214, 154, 39, 0.26), transparent 36%);
+}
+
+.phone-clock {
+  order: 3;
+  width: min(61vw, 230px);
+  margin: 6px 0;
+}
+
+.phone-panel .clock-ring {
+  border-width: 9px;
+  border-color: #e69b15;
+  background:
+    radial-gradient(circle at 50% 44%, #241408 0 32%, #6b340d 33%, #150b05 34% 100%);
+  box-shadow: inset 0 0 0 5px rgba(255, 198, 75, 0.12), 0 0 28px rgba(230, 155, 21, 0.22);
+}
+
+.phone-panel .clock-ring span {
+  color: #ffc247;
+  font-size: clamp(3.2rem, 15vw, 5.7rem);
+  text-shadow: 0 0 18px rgba(255, 178, 43, 0.35);
+}
+
+.phone-panel .clock-ring small {
+  color: #f2d59b;
+  text-transform: lowercase;
+}
+
+.phone-panel .outcome {
+  order: 4;
+  min-height: 48px;
+  margin: 0;
+  padding: 12px;
+  color: #fff2cf;
+  border: 1px solid rgba(217, 154, 37, 0.52);
+  border-left: 5px solid var(--gold);
+  background: linear-gradient(180deg, rgba(38, 24, 13, 0.92), rgba(8, 7, 6, 0.92));
+}
+
+.saloon-vote-panel,
+.spectator-panel,
+.end-roles {
+  order: 4;
+}
+
+.voice-panel {
+  order: 5;
+  grid-template-columns: minmax(0, 1fr) auto;
+  border-color: rgba(217, 154, 37, 0.62);
+  background:
+    linear-gradient(180deg, rgba(56, 38, 19, 0.82), rgba(8, 7, 6, 0.88));
+}
+
+.voice-panel strong {
+  color: #fff0cf;
+}
+
+.voice-panel p::after {
+  content: "";
+  display: block;
+  height: 22px;
+  margin-top: 7px;
+  border-radius: 3px;
+  opacity: 0.8;
+  background:
+    repeating-linear-gradient(90deg, #2aa162 0 3px, transparent 3px 8px),
+    linear-gradient(90deg, rgba(42, 161, 98, 0.3), transparent);
+}
+
+.choice-buttons {
+  order: 6;
+}
+
+.choice-buttons button {
+  min-height: 54px;
+}
+
+.saloon-vote-panel {
+  border-color: rgba(217, 154, 37, 0.62);
+  background:
+    linear-gradient(180deg, rgba(38, 24, 13, 0.94), rgba(8, 7, 6, 0.94));
+}
+
+.saloon-vote-panel > strong {
+  color: #ffe3a1;
+  font-size: clamp(1.65rem, 7vw, 2.2rem);
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.saloon-vote-choice {
+  min-height: 60px;
+  color: #fff0cf;
+  border-color: rgba(217, 154, 37, 0.45);
+  background: linear-gradient(180deg, rgba(70, 47, 23, 0.72), rgba(10, 8, 6, 0.88));
+}
+
+.saloon-vote-choice i {
+  background: rgba(42, 161, 98, 0.45);
+}
+
+.saloon-vote-choice.selected {
+  color: var(--gold-light);
+  border-color: rgba(242, 196, 107, 0.8);
+}
+
+.spectator-grid {
+  grid-template-columns: 1fr 1fr;
+}
+
+.spectator-grid section {
+  background: linear-gradient(180deg, rgba(58, 38, 18, 0.76), rgba(7, 6, 5, 0.86));
+}
+
+.spectator-grid section:nth-child(3),
+.spectator-grid section:nth-child(4) {
+  grid-column: 1 / -1;
+}
+
+.player-view[data-mode="vote"] .saloon-vote-panel {
+  order: 2;
+}
+
+.player-view[data-mode="vote"] .player-hero {
+  display: none;
+}
+
+.player-view[data-mode="duel"] .player-hero {
+  order: 2;
+}
+
+.player-view[data-mode="duel"] .player-task strong,
+.player-view[data-mode="result"] .player-task strong {
+  color: #f5bd4b;
+  font-size: clamp(1.55rem, 7vw, 2.35rem);
+}
+
+.player-view[data-mode="result"] .identity {
+  min-height: 150px;
+}
+
+.player-view[data-mode="spectator"] .phone-clock,
+.player-view[data-mode="spectator"] .choice-buttons,
+.player-view[data-mode="spectator"] #sheriff-phone-shot {
+  display: none !important;
+}
+
 @media (max-width: 980px) {
   .host-flow,
   .host-shell {

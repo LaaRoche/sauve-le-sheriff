@@ -267,9 +267,22 @@ function setTask(phase, action) {
   playerAction.textContent = action;
 }
 
+function setViewMode(mode) {
+  playerView.dataset.mode = mode || "default";
+}
+
 function setScreen(phase, action, note) {
   setTask(phase, action);
   message.textContent = note || action;
+  const text = `${phase} ${action} ${note || ""}`.toLowerCase();
+  if (text.includes("vote")) setViewMode("vote");
+  else if (text.includes("duel en cours")) setViewMode("duel");
+  else if (text.includes("duel") && text.includes("venir")) setViewMode("duel-ready");
+  else if (text.includes("carte") || text.includes("resultat")) setViewMode("result");
+  else if (text.includes("elimine") || text.includes("mort")) setViewMode("spectator");
+  else if (text.includes("discussion")) setViewMode("discussion");
+  else if (text.includes("preparation")) setViewMode("lobby");
+  else setViewMode("default");
 }
 
 function roleImage(role) {
@@ -584,6 +597,7 @@ function render(nextState) {
     joinForm.classList.remove("hidden");
     playerView.classList.add("hidden");
     leaveGameButton.classList.add("hidden");
+    setViewMode("join");
     return;
   }
 
@@ -601,6 +615,7 @@ function render(nextState) {
   const isHost = state.hostId === player.id;
   const hasStarted = gameHasStarted();
   playerView.classList.toggle("is-host-setup", isHost && !hasStarted);
+  if (isHost && !hasStarted) setViewMode("host-setup");
   hostTools.classList.toggle("hidden", !isHost || hasStarted);
   hostEndTools.classList.toggle("hidden", !isHost || !state.winner);
   if (isHost) {
@@ -630,6 +645,7 @@ function render(nextState) {
 
   if (state.winner) {
     playerStatus.textContent = "Partie terminee";
+    setViewMode("game-over");
     playerSaloon.textContent = "";
     timeLeft.textContent = "";
     clockRing.classList.remove("warning");
