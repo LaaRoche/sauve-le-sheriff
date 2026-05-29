@@ -1,5 +1,12 @@
 # Release notes
 
+## v6.6
+
+- Les joueurs hors duel voient maintenant "Duel en cours" quand leur representant est parti.
+- Le bloc de vote affiche le saloon du joueur puis "Choisir qui va au duel".
+- Le sous-texte redondant est retire du bloc Phase actuelle pendant la discussion.
+- Sur PC, les actions Tirer / Ne pas tirer et Tir du sheriff passent dans la zone de droite.
+
 ## v6.5
 
 - Reprise de la disposition desktop joueur pour eviter le layout mobile agrandi.

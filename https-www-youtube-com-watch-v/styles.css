@@ -1376,6 +1376,10 @@ a.test-link,
   color: #fff4d4;
 }
 
+.player-task p:empty {
+  display: none;
+}
+
 .player-hero {
   order: 2;
 }
@@ -1691,19 +1695,21 @@ a.test-link,
   }
 
   #sheriff-phone-shot {
-    grid-area: actions;
-    align-self: stretch;
+    grid-area: side;
+    align-self: start;
+    justify-self: stretch;
     min-height: 52px;
   }
 
   .choice-buttons {
-    grid-area: actions;
-    align-self: stretch;
+    grid-area: side;
+    align-self: end;
+    justify-self: stretch;
   }
 
   #sheriff-phone-shot:not(.hidden) + .host-end-tools + .end-roles + .choice-buttons,
   #sheriff-phone-shot:not(.hidden) ~ .choice-buttons {
-    margin-top: 64px;
+    margin-top: 0;
   }
 
   .phone-panel .outcome {
@@ -1742,6 +1748,15 @@ a.test-link,
       "phase side"
       "role side"
       "voice side";
+  }
+
+  .player-view[data-mode="duel"] .saloon-vote-panel,
+  .player-view[data-mode="duel"] .spectator-panel,
+  .player-view[data-mode="duel"] .end-roles,
+  .player-view[data-mode="duel-ready"] .saloon-vote-panel,
+  .player-view[data-mode="duel-ready"] .spectator-panel,
+  .player-view[data-mode="duel-ready"] .end-roles {
+    display: none !important;
   }
 
   .player-view.is-host-setup {

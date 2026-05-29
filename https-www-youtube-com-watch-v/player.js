@@ -368,6 +368,8 @@ function renderSaloonVote(player) {
   const votes = state.saloonVotes?.[player.saloon] || {};
   const voterIds = new Set(candidates.map((candidate) => candidate.id));
   const totalVotes = Object.entries(votes).filter(([voterId]) => voterIds.has(voterId)).length || 0;
+  saloonVotePanel.querySelector("span").textContent = `Saloon ${player.saloon}`;
+  saloonVotePanel.querySelector("strong").textContent = "Choisir qui va au duel";
   saloonVoteList.innerHTML = candidates.map((candidate) => {
     const selected = selectedId === candidate.id ? " selected" : "";
     const label = selectedId === candidate.id ? "Vote choisi" : "Voter";
@@ -380,7 +382,7 @@ function renderSaloonVote(player) {
       <b>${label}</b>
     </button>`;
   }).join("");
-  saloonVotePanel.querySelector("p").textContent = `${totalVotes}/${candidates.length} votes recus. En cas d'egalite, l'Empire tranche au hasard.`;
+  saloonVotePanel.querySelector("p").textContent = `${totalVotes}/${candidates.length} votes recus. En cas d'egalite, l'Empire tranche.`;
 }
 
 function spectatorRole(player) {
@@ -708,10 +710,10 @@ function render(nextState) {
     } else if (isSelectedForDuel) {
       setScreen("Duel a venir", "Tu es designe.", "");
     } else if (saloonDuelist) {
-      setScreen("Duel a venir", `${playerName(saloonDuelist)} represente ton saloon.`, "Reste dans ton saloon pendant son duel.");
+      setScreen("Duel en cours", `${playerName(saloonDuelist)} represente ton saloon.`, "Reste dans ton saloon pendant son duel.");
     } else if (phase.name === "discussion") {
       const voteTarget = playerName(mySaloonVote(player));
-      setScreen("Discussion saloon", "Vote avec ton saloon.", voteTarget ? `Ton vote : ${voteTarget}. Lui seul ira au vocal Duel.` : "Choisis un representant : lui seul ira au vocal Duel.");
+      setScreen("Discussion saloon", "", voteTarget ? `Ton vote : ${voteTarget}. Lui seul ira au vocal Duel.` : "Choisis un representant : lui seul ira au vocal Duel.");
     } else if (phase.label === "Discussion terminee : choisissez les duellistes") {
       setScreen("Vote termine", "L'Empire tranche.", "En cas d'egalite, un tirage aleatoire decide.");
     } else if (!player.role) {
