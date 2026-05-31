@@ -6,6 +6,9 @@ const joinForm = document.querySelector("#join-form");
 const playerNameInput = document.querySelector("#player-name");
 const gameCodeInput = document.querySelector("#game-code");
 const createGameButton = document.querySelector("#create-game");
+const createPublicGameButton = document.querySelector("#create-public-game");
+const refreshGamesButton = document.querySelector("#refresh-games");
+const publicGameList = document.querySelector("#public-game-list");
 const leaveGameButton = document.querySelector("#leave-game");
 const playerView = document.querySelector("#player-view");
 const displayName = document.querySelector("#player-display-name");
@@ -173,6 +176,45 @@ async function postJson(url, body) {
     body: JSON.stringify(payload)
   });
   return response.json();
+}
+
+async function refreshPublicGames() {
+  if (!publicGameList) return;
+  const response = await fetch("/api/games");
+  const data = await response.json();
+  const games = data.games || [];
+  if (!games.length) {
+    publicGameList.innerHTML = "<p>Aucune partie publique en preparation.</p>";
+    return;
+  }
+  publicGameList.innerHTML = games.map((game) => `<button class="public-game-item" data-public-code="${game.code}" type="button">
+    <span>${escapeHtml(game.hostName)}</span>
+    <strong>${game.playerCount} joueur(s)</strong>
+    <small>Rejoindre</small>
+  </button>`).join("");
+}
+
+function showJoinError(text) {
+  if (!publicGameList) return;
+  publicGameList.innerHTML = `<p>${escapeHtml(text)}</p>`;
+}
+
+async function joinWithCode(code) {
+  const name = playerNameInput.value.trim();
+  if (!name) {
+    playerNameInput.focus();
+    return;
+  }
+  const previousCode = gameCode;
+  gameCode = String(code || "").trim().toUpperCase();
+  const result = await postJson("/api/join", { name, code: gameCode });
+  if (result.error) {
+    gameCode = previousCode;
+    showJoinError(result.error);
+    return;
+  }
+  storeSession(result.state.code, result.player.id);
+  render(result.state);
 }
 
 function storeSession(code, id) {
@@ -791,28 +833,41 @@ function render(nextState) {
 
 joinForm.addEventListener("submit", async (event) => {
   event.preventDefault();
-  const name = playerNameInput.value.trim();
-  if (!name) return;
   const wantedCode = gameCodeInput.value.trim().toUpperCase();
   if (!wantedCode) {
     gameCodeInput.focus();
     return;
   }
-  gameCode = wantedCode;
-  const result = await postJson("/api/join", { name });
-  storeSession(result.state.code, result.player.id);
-  render(result.state);
+  await joinWithCode(wantedCode);
 });
 
-createGameButton.addEventListener("click", async () => {
+async function createGame(visibility) {
   const name = playerNameInput.value.trim();
   if (!name) {
     playerNameInput.focus();
     return;
   }
-  const result = await postJson("/api/create-game", { name });
+  const result = await postJson("/api/create-game", { name, visibility });
   storeSession(result.code, result.player.id);
   render(result.state);
+}
+
+createGameButton.addEventListener("click", async () => {
+  await createGame("private");
+});
+
+createPublicGameButton.addEventListener("click", async () => {
+  await createGame("public");
+});
+
+refreshGamesButton.addEventListener("click", () => {
+  refreshPublicGames();
+});
+
+publicGameList.addEventListener("click", async (event) => {
+  const button = event.target.closest("[data-public-code]");
+  if (!button) return;
+  await joinWithCode(button.dataset.publicCode);
 });
 
 leaveGameButton.addEventListener("click", () => {
@@ -905,5 +960,9 @@ if (gameCode) {
   connectEvents();
   fetch(`/api/state?code=${encodeURIComponent(gameCode)}`).then((response) => response.json()).then(render);
 }
+refreshPublicGames();
+setInterval(() => {
+  if (!joinForm.classList.contains("hidden")) refreshPublicGames();
+}, 5000);
 setupRulesModal();
 setupAudioSettings();

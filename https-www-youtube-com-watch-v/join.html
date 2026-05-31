@@ -11,7 +11,7 @@
       <section class="panel phone-panel" aria-label="Sauve l'Empire joueur">
         <div class="phone-topbar">
           <div>
-            <p class="eyebrow">v6.8</p>
+            <p class="eyebrow">v6.9</p>
             <img class="app-logo phone-logo" src="assets/logo-sauve-empire.png" alt="Sauve l'Empire">
           </div>
           <div class="top-actions">
@@ -27,13 +27,23 @@
             <input id="player-name" autocomplete="off" maxlength="24" required>
           </label>
           <label>
-            Code de partie
+            Code de partie privee
             <input id="game-code" autocomplete="off" maxlength="6" placeholder="Ex : A7K2P">
           </label>
           <div class="launch-actions">
-            <button class="primary" id="create-game" type="button">Creer une partie</button>
-            <button type="submit">Rejoindre</button>
+            <button class="primary" id="create-public-game" type="button">Creer publique</button>
+            <button id="create-game" type="button">Creer privee</button>
+            <button type="submit">Rejoindre par code</button>
           </div>
+          <section class="public-games" aria-label="Parties publiques">
+            <div>
+              <span>Parties publiques</span>
+              <button class="ghost-button" id="refresh-games" type="button">Actualiser</button>
+            </div>
+            <div class="public-game-list" id="public-game-list">
+              <p>Aucune partie publique en preparation.</p>
+            </div>
+          </section>
         </form>
 
           <div class="player-view hidden" id="player-view">

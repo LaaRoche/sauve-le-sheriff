@@ -23,6 +23,7 @@ function createGameState(code) {
   const settings = { ...defaultSettings };
   return {
     code,
+    visibility: "private",
     players: [],
     hostId: "",
     hostMessage: "",
@@ -53,6 +54,11 @@ function getGame(codeInput) {
   const code = gameCode(codeInput) || "GLOBAL";
   if (!games.has(code)) games.set(code, createGameState(code));
   return games.get(code);
+}
+
+function findGame(codeInput) {
+  const code = gameCode(codeInput);
+  return code ? games.get(code) : null;
 }
 
 function useGame(codeInput) {
@@ -248,6 +254,7 @@ function publicState(req) {
   if (requestOrigin(req)) lastPublicOrigin = requestOrigin(req);
   return {
     code: state.code,
+    visibility: state.visibility,
     joinUrl: `${origin}/join.html`,
     players: state.players,
     hostId: state.hostId,
@@ -258,6 +265,27 @@ function publicState(req) {
     duel: state.duel,
     saloonVotes: state.saloonVotes
   };
+}
+
+function publicGameList(req) {
+  const origin = requestOrigin(req) || lastPublicOrigin || `http://${localAddress()}:${port}`;
+  if (requestOrigin(req)) lastPublicOrigin = requestOrigin(req);
+  return [...games.values()]
+    .filter((game) => {
+      const previous = state;
+      state = game;
+      activeSettings = game.settings;
+      const open = game.visibility === "public" && !gameHasStarted();
+      state = previous;
+      activeSettings = previous.settings;
+      return open;
+    })
+    .map((game) => ({
+      code: game.code,
+      hostName: game.players.find((player) => player.id === game.hostId)?.name || "Organisateur",
+      playerCount: game.players.filter((player) => player.alive).length,
+      joinUrl: `${origin}/join.html?code=${game.code}`
+    }));
 }
 
 function getWinner() {
@@ -509,7 +537,11 @@ function serveFile(req, res) {
       ".html": "text/html; charset=utf-8",
       ".css": "text/css; charset=utf-8",
       ".js": "text/javascript; charset=utf-8",
-      ".svg": "image/svg+xml; charset=utf-8"
+      ".svg": "image/svg+xml; charset=utf-8",
+      ".png": "image/png",
+      ".jpg": "image/jpeg",
+      ".jpeg": "image/jpeg",
+      ".webp": "image/webp"
     };
     res.writeHead(200, {
       "Content-Type": types[path.extname(file)] || "application/octet-stream",
@@ -542,9 +574,15 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  if (url.pathname === "/api/games") {
+    sendJson(res, { games: publicGameList(req) });
+    return;
+  }
+
   if (req.method === "POST" && url.pathname === "/api/create-game") {
     const body = await readBody(req);
     const game = useGame(makeGameCode());
+    game.visibility = body.visibility === "public" ? "public" : "private";
     const name = String(body.name || "").trim().slice(0, 24) || "Joueur";
     const player = addPlayer(name);
     emit();
@@ -554,6 +592,11 @@ const server = http.createServer(async (req, res) => {
 
   if (req.method === "POST" && url.pathname === "/api/join") {
     const body = await readBody(req);
+    const requested = findGame(body.code);
+    if (!requested) {
+      sendJson(res, { error: "Partie introuvable." });
+      return;
+    }
     useGame(body.code);
     const name = String(body.name || "").trim().slice(0, 24) || "Joueur";
     const existing = state.players.find((player) => player.name.toLowerCase() === name.toLowerCase());

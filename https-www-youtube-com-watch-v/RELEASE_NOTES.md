@@ -1,5 +1,12 @@
 # Release notes
 
+## v6.9
+
+- Ajout des parties publiques visibles directement sur la page joueur.
+- Ajout de la creation de partie publique ou privee depuis le lobby joueur.
+- Ajout de la jonction par code pour les parties privees, avec message si le code est introuvable.
+- Correction du chargement des images sur le serveur deploye.
+
 ## v6.8
 
 - Le bloc Phase actuelle est uniformise pour les joueurs vivants : Discussion Saloon ou Duel en cours.
