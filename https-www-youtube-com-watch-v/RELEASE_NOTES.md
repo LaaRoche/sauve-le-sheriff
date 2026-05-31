@@ -1,5 +1,21 @@
 # Release notes
 
+## v6.14
+
+- Cartes de role plus premium avec effet papier western, bordures renforcees et meilleure lisibilite.
+- Optimisation PC : grille plus large, zones role / timer / action mieux equilibrees.
+- Vue spectateur PC plus large pour mieux suivre les saloons et le duel.
+- Regles simplifiees pour etre comprises plus rapidement.
+
+## v6.13
+
+- Refonte du lobby joueur avec sections Profil, Creation, Rejoindre par code et parties en preparation.
+- Reconnexion plus solide via le pseudo et le code de partie sauvegardes localement.
+- Les nouveaux joueurs ne peuvent plus rejoindre une partie deja demarree.
+- Les joueurs deja presents peuvent revenir dans leur partie avec le meme pseudo.
+- Le lobby indique aussi le nombre de micros actifs par partie.
+- La vue spectateur elimine affiche mieux la phase en cours et l'etat de la partie.
+
 ## v6.12
 
 - Le bloc vocal joueur occupe maintenant toute la largeur disponible comme celui de l'organisateur.

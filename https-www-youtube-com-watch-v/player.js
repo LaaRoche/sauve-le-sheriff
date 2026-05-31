@@ -197,7 +197,8 @@ async function refreshPublicGames() {
     return `<button class="public-game-item ${isPublic ? "is-public" : "is-private"}" ${isPublic ? `data-public-code="${game.code}"` : "data-private-game"} type="button">
     <span>${escapeHtml(game.hostName)}</span>
     <strong>${game.playerCount} joueur(s)</strong>
-    <small>${isPublic ? "Public - rejoindre" : "Privee - code requis"}</small>
+    <em>${game.readyCount || 0} micro(s)</em>
+    <small>${isPublic ? "Publique - entrer" : "Privee - code"}</small>
   </button>`;
   }).join("");
 }
@@ -230,8 +231,21 @@ function storeSession(code, id) {
   playerId = id || playerId;
   if (gameCode) localStorage.setItem("sheriffGameCode", gameCode);
   if (gameCode && playerId) localStorage.setItem(`sheriffPlayerId:${gameCode}`, playerId);
+  const name = playerNameInput.value.trim();
+  if (name) localStorage.setItem("sheriffPlayerName", name);
   if (gameCodeInput) gameCodeInput.value = gameCode;
   connectEvents();
+}
+
+async function reconnectStoredPlayer() {
+  const storedName = localStorage.getItem("sheriffPlayerName") || playerNameInput.value.trim();
+  if (!gameCode || !storedName) return false;
+  playerNameInput.value = storedName;
+  const result = await postJson("/api/join", { name: storedName, code: gameCode });
+  if (result.error) return false;
+  storeSession(result.state.code, result.player.id);
+  render(result.state);
+  return true;
 }
 
 async function leaveCurrentGame() {
@@ -478,6 +492,10 @@ function spectatorGroup(title, players) {
 
 function renderSpectatorView(duel) {
   if (!spectatorGrid || !state) return;
+  const title = spectatorPanel.querySelector("strong");
+  const detail = spectatorPanel.querySelector("p");
+  if (title) title.textContent = state.phase?.label || (duel.leftId && duel.rightId ? "Duel en cours" : "La partie continue");
+  if (detail) detail.textContent = "Vue spectateur : suis les saloons, le duel et les roles reveles.";
   const duelIds = [duel.leftId, duel.rightId].filter(Boolean);
   const duelists = state.players.filter((item) => duelIds.includes(item.id));
   const saloonA = state.players.filter((item) => item.alive && item.role && item.saloon === "A" && !duelIds.includes(item.id));
@@ -1023,9 +1041,15 @@ deafenVoiceButton.addEventListener("click", () => {
 });
 
 if (gameCodeInput) gameCodeInput.value = gameCode;
+const storedPlayerName = localStorage.getItem("sheriffPlayerName") || "";
+if (storedPlayerName && !playerNameInput.value) playerNameInput.value = storedPlayerName;
 if (gameCode) {
-  connectEvents();
-  fetch(`/api/state?code=${encodeURIComponent(gameCode)}`).then((response) => response.json()).then(render);
+  reconnectStoredPlayer().then((connected) => {
+    if (!connected) {
+      connectEvents();
+      fetch(`/api/state?code=${encodeURIComponent(gameCode)}`).then((response) => response.json()).then(render);
+    }
+  });
 }
 refreshPublicGames();
 setInterval(() => {

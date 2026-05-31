@@ -285,6 +285,7 @@ function publicGameList(req) {
       visibility: game.visibility,
       hostName: game.players.find((player) => player.id === game.hostId)?.name || "Organisateur",
       playerCount: game.players.filter((player) => player.alive).length,
+      readyCount: game.players.filter((player) => player.alive && player.voiceReady).length,
       joinUrl: game.visibility === "public" ? `${origin}/join.html?code=${game.code}` : ""
     }));
 }
@@ -608,11 +609,15 @@ const server = http.createServer(async (req, res) => {
     }
 
     const started = gameHasStarted();
+    if (started) {
+      sendJson(res, { error: "Partie deja demarree. Attends la prochaine manche." });
+      return;
+    }
     const player = {
       id: makeId(),
       name,
       saloon: state.players.filter((item) => item.alive && item.saloon === "A").length <= state.players.filter((item) => item.alive && item.saloon === "B").length ? "A" : "B",
-      alive: !started,
+      alive: true,
       role: "",
       sheriffPower: true,
       voiceRoom: "",

@@ -11,7 +11,7 @@
       <section class="panel phone-panel" aria-label="Sauve l'Empire joueur">
         <div class="phone-topbar">
           <div>
-            <p class="eyebrow">v6.12</p>
+            <p class="eyebrow">v6.14</p>
             <img class="app-logo phone-logo" src="assets/logo-sauve-empire.png" alt="Sauve l'Empire">
           </div>
           <div class="top-actions">
@@ -22,19 +22,33 @@
         </div>
 
         <form class="join-form" id="join-form">
-          <label>
-            Ton nom
-            <input id="player-name" autocomplete="off" maxlength="24" required>
-          </label>
-          <label>
-            Code de partie privee
-            <input id="game-code" autocomplete="off" maxlength="6" placeholder="Ex : A7K2P">
-          </label>
-          <div class="launch-actions">
-            <button class="primary" id="create-public-game" type="button">Creer publique</button>
-            <button id="create-game" type="button">Creer privee</button>
-            <button type="submit">Rejoindre par code</button>
-          </div>
+          <section class="join-card">
+            <span>Profil joueur</span>
+            <label>
+              Ton pseudo
+              <input id="player-name" autocomplete="off" maxlength="24" required>
+            </label>
+            <p>Utilise le meme pseudo pour retrouver ta partie apres un refresh.</p>
+          </section>
+
+          <section class="join-card">
+            <span>Creer une partie</span>
+            <div class="launch-actions">
+              <button class="primary" id="create-public-game" type="button">Partie publique</button>
+              <button id="create-game" type="button">Partie privee</button>
+            </div>
+            <p>Publique : visible par tous. Privee : entree par code.</p>
+          </section>
+
+          <section class="join-card">
+            <span>Rejoindre par code</span>
+            <label>
+              Code de partie
+              <input id="game-code" autocomplete="off" maxlength="6" placeholder="Ex : A7K2P">
+            </label>
+            <button type="submit">Rejoindre</button>
+          </section>
+
           <section class="public-games" aria-label="Parties en preparation">
             <div>
               <span>Parties en preparation</span>
@@ -180,17 +194,15 @@
         </div>
         <ol class="rules-list">
           <li>Ton role est secret. Ne le montre pas.</li>
-          <li>Va dans le vocal indique par ton saloon ou par l'ecran joueur.</li>
-          <li>Pendant la discussion, vote avec ton saloon pour choisir qui part au duel.</li>
-          <li>En cas d'egalite, l'Empire tranche au hasard.</li>
-          <li>Si tu vas au duel, clique sur tirer ou ne pas tirer avant la fin du timer.</li>
-          <li>Le sheriff peut utiliser son pouvoir avant la fin du timer : sa cible meurt et le duel s'arrete.</li>
-          <li>Si le sheriff tue un citoyen, il perd son pouvoir. S'il tue un hors-la-loi, il le garde.</li>
-          <li>Si personne ne tire, chaque duelliste voit la carte adverse pendant le resultat, puis ils echangent de saloon.</li>
-          <li>L'Empire gagne quand tous les hors-la-loi sont morts.</li>
-          <li>Les hors-la-loi gagnent seulement s'ils sont strictement plus nombreux que le camp Empire vivant.</li>
-          <li>A 1 contre 1 avec un hors-la-loi, la partie passe en duel final.</li>
-          <li>Si tu meurs, garde le silence jusqu'a la fin de la partie.</li>
+          <li>Sheriff et citoyens jouent ensemble : ils doivent trouver les hors-la-loi.</li>
+          <li>Les hors-la-loi doivent mentir, survivre et devenir plus nombreux.</li>
+          <li>Pendant la discussion, ton saloon vote pour choisir qui va au duel.</li>
+          <li>Au duel, choisis secretement : tirer ou ne pas tirer.</li>
+          <li>Le sheriff peut tirer avant la fin du duel avec son pouvoir special.</li>
+          <li>Si personne ne tire, les deux duellistes voient le role de l'autre.</li>
+          <li>L'Empire gagne quand tous les hors-la-loi sont elimines.</li>
+          <li>Les hors-la-loi gagnent s'ils sont plus nombreux que l'Empire.</li>
+          <li>Si tu es elimine, tu regardes la partie sans aider les vivants.</li>
         </ol>
       </section>
     </div>
