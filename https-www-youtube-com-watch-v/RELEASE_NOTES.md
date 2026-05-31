@@ -1,5 +1,12 @@
 # Release notes
 
+## v6.11
+
+- Les parties privees en preparation apparaissent maintenant dans le lobby.
+- Les parties privees restent protegees : le code n'est pas affiche dans la liste.
+- Un clic sur une partie privee invite le joueur a saisir le code pour la rejoindre.
+- La liste du lobby affiche maintenant toutes les parties en preparation, publiques et privees.
+
 ## v6.10
 
 - Separation des controles vocaux joueur.

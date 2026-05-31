@@ -275,16 +275,17 @@ function publicGameList(req) {
       const previous = state;
       state = game;
       activeSettings = game.settings;
-      const open = game.visibility === "public" && !gameHasStarted();
+      const open = game.code !== "GLOBAL" && game.players.length > 0 && !gameHasStarted();
       state = previous;
       activeSettings = previous.settings;
       return open;
     })
     .map((game) => ({
-      code: game.code,
+      code: game.visibility === "public" ? game.code : "",
+      visibility: game.visibility,
       hostName: game.players.find((player) => player.id === game.hostId)?.name || "Organisateur",
       playerCount: game.players.filter((player) => player.alive).length,
-      joinUrl: `${origin}/join.html?code=${game.code}`
+      joinUrl: game.visibility === "public" ? `${origin}/join.html?code=${game.code}` : ""
     }));
 }
 

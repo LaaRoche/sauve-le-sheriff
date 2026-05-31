@@ -725,6 +725,17 @@ h3 {
   font-weight: 900;
 }
 
+.public-game-item.is-private {
+  border-color: rgba(242, 205, 117, 0.2);
+  color: #d7c1a2;
+  background:
+    linear-gradient(180deg, rgba(31, 22, 15, 0.88), rgba(8, 6, 5, 0.92));
+}
+
+.public-game-item.is-private small {
+  color: #c69f6a;
+}
+
 .player-view {
   display: grid;
   gap: 14px;

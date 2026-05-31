@@ -189,14 +189,17 @@ async function refreshPublicGames() {
   const data = await response.json();
   const games = data.games || [];
   if (!games.length) {
-    publicGameList.innerHTML = "<p>Aucune partie publique en preparation.</p>";
+    publicGameList.innerHTML = "<p>Aucune partie en preparation.</p>";
     return;
   }
-  publicGameList.innerHTML = games.map((game) => `<button class="public-game-item" data-public-code="${game.code}" type="button">
+  publicGameList.innerHTML = games.map((game) => {
+    const isPublic = game.visibility === "public";
+    return `<button class="public-game-item ${isPublic ? "is-public" : "is-private"}" ${isPublic ? `data-public-code="${game.code}"` : "data-private-game"} type="button">
     <span>${escapeHtml(game.hostName)}</span>
     <strong>${game.playerCount} joueur(s)</strong>
-    <small>Rejoindre</small>
-  </button>`).join("");
+    <small>${isPublic ? "Public - rejoindre" : "Privee - code requis"}</small>
+  </button>`;
+  }).join("");
 }
 
 function showJoinError(text) {
@@ -919,7 +922,13 @@ refreshGamesButton.addEventListener("click", () => {
 
 publicGameList.addEventListener("click", async (event) => {
   const button = event.target.closest("[data-public-code]");
-  if (!button) return;
+  if (!button) {
+    if (event.target.closest("[data-private-game]")) {
+      gameCodeInput.focus();
+      showJoinError("Entre le code de la partie privee pour la rejoindre.");
+    }
+    return;
+  }
   await joinWithCode(button.dataset.publicCode);
 });
 
