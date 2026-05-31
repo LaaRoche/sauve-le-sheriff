@@ -681,13 +681,13 @@ function updateVoiceControls() {
     deafenVoiceButton.classList.add("hidden");
     return;
   }
-  enableVoice.textContent = deafened ? "Sourdine active" : micMuted ? "Micro coupe" : "Micro actif";
+  enableVoice.textContent = deafened ? "Tout coupe" : micMuted ? "Micro coupe" : "Micro actif";
   enableVoice.classList.toggle("voice-on", !micMuted && !deafened);
   enableVoice.classList.toggle("voice-muted", micMuted || deafened);
   muteMicButton.classList.remove("hidden");
   deafenVoiceButton.classList.remove("hidden");
-  muteMicButton.textContent = micMuted && !deafened ? "Reactiver micro" : "Couper micro";
-  deafenVoiceButton.textContent = deafened ? "Quitter sourdine" : "Sourdine totale";
+  muteMicButton.textContent = micMuted && !deafened ? "Reactiver" : "Couper micro";
+  deafenVoiceButton.textContent = deafened ? "Revenir" : "Tout couper";
   muteMicButton.classList.toggle("voice-on", !micMuted && !deafened);
   muteMicButton.classList.toggle("voice-muted", micMuted && !deafened);
   deafenVoiceButton.classList.toggle("voice-muted", deafened);

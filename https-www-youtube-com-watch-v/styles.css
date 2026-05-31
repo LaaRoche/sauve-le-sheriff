@@ -819,7 +819,9 @@ h3 {
 }
 
 .voice-actions button {
-  min-width: 132px;
+  min-width: 118px;
+  padding: 0 12px;
+  white-space: nowrap;
 }
 
 .saloon-vote-panel,
@@ -1008,6 +1010,13 @@ h3 {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
+}
+
+.host-actions button {
+  min-width: 0;
+  padding: 0 10px;
+  overflow-wrap: anywhere;
+  line-height: 1.12;
 }
 
 .host-timer-grid {
@@ -2077,11 +2086,13 @@ a.test-link,
 
   .voice-panel {
     grid-area: voice;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-self: stretch;
     min-height: 96px;
   }
 
   .voice-actions {
-    max-width: 430px;
+    max-width: none;
   }
 
 .saloon-vote-panel,

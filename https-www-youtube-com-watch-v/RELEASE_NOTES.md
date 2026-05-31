@@ -1,5 +1,11 @@
 # Release notes
 
+## v6.12
+
+- Le bloc vocal joueur occupe maintenant toute la largeur disponible comme celui de l'organisateur.
+- Les libelles des boutons organisateur sont raccourcis pour mieux tenir dans l'interface.
+- Les boutons vocaux joueur sont clarifies : Couper micro / Tout couper / Revenir.
+
 ## v6.11
 
 - Les parties privees en preparation apparaissent maintenant dans le lobby.
