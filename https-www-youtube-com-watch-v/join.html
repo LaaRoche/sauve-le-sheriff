@@ -11,7 +11,7 @@
       <section class="panel phone-panel" aria-label="Sauve l'Empire joueur">
         <div class="phone-topbar">
           <div>
-            <p class="eyebrow">v6.14</p>
+            <p class="eyebrow">v6.15</p>
             <img class="app-logo phone-logo" src="assets/logo-sauve-empire.png" alt="Sauve l'Empire">
           </div>
           <div class="top-actions">
@@ -68,23 +68,30 @@
             </div>
             <p class="game-code-display">Code partie : <strong id="host-game-code">-----</strong></p>
             <p id="host-player-count">0 joueur</p>
-            <div class="host-timer-grid">
-              <label>
-                Duree duel
-                <input id="host-duel-duration" type="number" min="5" max="300" value="30">
-              </label>
-              <label>
-                Duree resultat
-                <input id="host-result-duration" type="number" min="3" max="120" value="15">
-              </label>
-              <label>
-                Duree discussion
-                <input id="host-discussion-duration" type="number" min="10" max="900" value="150">
-              </label>
-              <label>
-                Hors-la-loi
-                <input id="host-outlaw-count" type="number" min="1" max="8" value="1">
-              </label>
+            <div class="host-config-grid">
+              <div class="host-config-card">
+                <span>Timers</span>
+                <label>
+                  Duel
+                  <input id="host-duel-duration" type="number" min="5" max="300" value="30">
+                </label>
+                <label>
+                  Resultat
+                  <input id="host-result-duration" type="number" min="3" max="120" value="15">
+                </label>
+                <label>
+                  Discussion
+                  <input id="host-discussion-duration" type="number" min="10" max="900" value="150">
+                </label>
+              </div>
+              <div class="host-config-card host-role-card">
+                <span>Roles</span>
+                <label>
+                  Hors-la-loi
+                  <input id="host-outlaw-count" type="number" min="1" max="8" value="1">
+                </label>
+                <p>Conseil auto : 1 jusqu'a 5 joueurs, 2 a partir de 6, 3 a partir de 9.</p>
+              </div>
             </div>
             <div>
               <span>Joueurs connectes</span>
@@ -94,7 +101,7 @@
             <div class="host-actions">
               <button class="primary" id="host-start-game" type="button">Lancer</button>
               <button id="host-force-start" type="button">Forcer</button>
-              <button class="danger" id="host-new-game" type="button">Reset</button>
+              <button class="danger" id="host-new-game" type="button">Annuler</button>
             </div>
           </div>
 

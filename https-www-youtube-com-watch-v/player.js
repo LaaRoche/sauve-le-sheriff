@@ -72,6 +72,7 @@ let lastVoiceReady = null;
 let lastVoiceMuted = null;
 let lastVoiceDeafened = null;
 let hostTimersTouched = false;
+let hostOutlawTouched = false;
 const peers = new Map();
 const pendingCandidates = new Map();
 let events = null;
@@ -441,10 +442,21 @@ function renderHostPlayerList() {
 }
 
 function syncHostSettings() {
-  if (hostTimersTouched || !state?.settings) return;
-  hostDuelDuration.value = state.settings.duelDuration;
-  hostResultDuration.value = state.settings.resultDuration;
-  hostDiscussionDuration.value = state.settings.discussionDuration;
+  if (!state?.settings) return;
+  if (!hostTimersTouched) {
+    hostDuelDuration.value = state.settings.duelDuration;
+    hostResultDuration.value = state.settings.resultDuration;
+    hostDiscussionDuration.value = state.settings.discussionDuration;
+  }
+  if (!hostOutlawTouched) {
+    hostOutlawCount.value = String(recommendedOutlawCount(state.players.filter((player) => player.alive).length));
+  }
+}
+
+function recommendedOutlawCount(playerCount) {
+  if (playerCount >= 9) return 3;
+  if (playerCount >= 6) return 2;
+  return 1;
 }
 
 function renderSaloonVote(player) {
@@ -1023,6 +1035,10 @@ hostEndNewGame.addEventListener("click", async () => {
   input.addEventListener("input", () => {
     hostTimersTouched = true;
   });
+});
+
+hostOutlawCount.addEventListener("input", () => {
+  hostOutlawTouched = true;
 });
 
 enableVoice.addEventListener("click", () => {

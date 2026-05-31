@@ -1,5 +1,13 @@
 # Release notes
 
+## v6.15
+
+- Le bouton Reset devient Annuler pour mieux decrire son action.
+- Configuration organisateur restructuree : timers regroupes et roles separes.
+- Le nombre conseille de hors-la-loi s'ajuste automatiquement au nombre de joueurs.
+- Regle automatique : 1 hors-la-loi jusqu'a 5 joueurs, 2 a partir de 6, 3 a partir de 9.
+- Le nombre de hors-la-loi reste modifiable manuellement.
+
 ## v6.14
 
 - Cartes de role plus premium avec effet papier western, bordures renforcees et meilleure lisibilite.

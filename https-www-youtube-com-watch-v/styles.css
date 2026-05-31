@@ -1053,10 +1053,37 @@ h3 {
   line-height: 1.12;
 }
 
-.host-timer-grid {
+.host-config-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.host-config-card {
+  display: grid;
   gap: 10px;
+  padding: 12px;
+  border: 1px solid rgba(217, 154, 39, 0.34);
+  border-radius: 8px;
+  background: rgba(8, 7, 6, 0.28);
+}
+
+.host-config-card > span {
+  color: var(--gold-light);
+  font-size: 0.82rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.host-config-card p {
+  margin: 0;
+  color: #c8b39b;
+  font-size: 0.92rem;
+  line-height: 1.35;
+}
+
+.host-role-card {
+  align-content: start;
 }
 
 .host-player-list {
@@ -2203,7 +2230,7 @@ a.test-link,
     grid-column: 1 / 2;
   }
 
-  .host-timer-grid {
+  .host-config-grid {
     grid-column: 2 / 3;
   }
 
@@ -2256,7 +2283,7 @@ a.test-link,
   .step-nav,
   .two-columns,
   .timer-settings,
-  .host-timer-grid,
+  .host-config-grid,
   .host-actions,
   .voice-panel,
   .inline-form,
