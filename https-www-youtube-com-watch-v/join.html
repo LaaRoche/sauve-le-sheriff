@@ -11,7 +11,7 @@
       <section class="panel phone-panel" aria-label="Sauve l'Empire joueur">
         <div class="phone-topbar">
           <div>
-            <p class="eyebrow">v6.9</p>
+            <p class="eyebrow">v6.10</p>
             <img class="app-logo phone-logo" src="assets/logo-sauve-empire.png" alt="Sauve l'Empire">
           </div>
           <div class="top-actions">
@@ -125,7 +125,11 @@
               <strong id="voice-room">Non connecte</strong>
               <p id="voice-status">Active ton micro pour rejoindre le vocal de ta phase.</p>
             </div>
-            <button class="primary" id="enable-voice" type="button">Activer le micro</button>
+            <div class="voice-actions">
+              <button class="primary" id="enable-voice" type="button">Activer le micro</button>
+              <button class="hidden" id="mute-mic" type="button">Couper micro</button>
+              <button class="danger hidden" id="deafen-voice" type="button">Sourdine</button>
+            </div>
           </div>
 
           <div class="saloon-vote-panel hidden" id="saloon-vote-panel">

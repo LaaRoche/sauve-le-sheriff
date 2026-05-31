@@ -800,6 +800,17 @@ h3 {
   background: linear-gradient(180deg, rgba(255, 238, 202, 0.12), rgba(8, 7, 6, 0.62));
 }
 
+.voice-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.voice-actions button {
+  min-width: 132px;
+}
+
 .saloon-vote-panel,
 .reveal-panel {
   display: grid;
@@ -2058,6 +2069,10 @@ a.test-link,
     min-height: 96px;
   }
 
+  .voice-actions {
+    max-width: 430px;
+  }
+
 .saloon-vote-panel,
 .reveal-panel,
 .spectator-panel,
@@ -2180,6 +2195,14 @@ a.test-link,
   .choice-buttons,
   .launch-actions {
     grid-template-columns: 1fr;
+  }
+
+  .voice-actions {
+    justify-content: stretch;
+  }
+
+  .voice-actions button {
+    width: 100%;
   }
 
   .saloon {

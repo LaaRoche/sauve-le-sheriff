@@ -1,5 +1,12 @@
 # Release notes
 
+## v6.10
+
+- Separation des controles vocaux joueur.
+- Ajout d'un bouton pour couper uniquement son micro tout en continuant d'entendre le vocal.
+- Ajout d'un bouton sourdine totale qui coupe le micro et l'ecoute.
+- Le joueur mute reste dans son vocal et peut toujours entendre les autres.
+
 ## v6.9
 
 - Ajout des parties publiques visibles directement sur la page joueur.

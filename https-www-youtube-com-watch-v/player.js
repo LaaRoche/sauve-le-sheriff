@@ -36,6 +36,8 @@ const spectatorGrid = document.querySelector("#spectator-grid");
 const choiceButtons = document.querySelector("#choice-buttons");
 const sheriffPhoneShot = document.querySelector("#sheriff-phone-shot");
 const enableVoice = document.querySelector("#enable-voice");
+const muteMicButton = document.querySelector("#mute-mic");
+const deafenVoiceButton = document.querySelector("#deafen-voice");
 const voiceRoom = document.querySelector("#voice-room");
 const voiceStatus = document.querySelector("#voice-status");
 const remoteAudio = document.querySelector("#remote-audio");
@@ -62,11 +64,13 @@ const endRoles = document.querySelector("#end-roles");
 const endRoleList = document.querySelector("#end-role-list");
 
 let voiceEnabled = false;
-let muted = false;
+let micMuted = false;
+let deafened = false;
 let localStream = null;
 let lastVoiceRoom = "";
 let lastVoiceReady = null;
 let lastVoiceMuted = null;
+let lastVoiceDeafened = null;
 let hostTimersTouched = false;
 const peers = new Map();
 const pendingCandidates = new Map();
@@ -147,7 +151,8 @@ function playGunshot() {
 
 function updateRemoteAudioVolume() {
   document.querySelectorAll("#remote-audio audio").forEach((audio) => {
-    audio.volume = audioSettings.voice / 100;
+    audio.volume = deafened ? 0 : audioSettings.voice / 100;
+    audio.muted = deafened;
   });
 }
 
@@ -235,12 +240,16 @@ async function leaveCurrentGame() {
   localStream?.getTracks().forEach((track) => track.stop());
   localStream = null;
   voiceEnabled = false;
-  muted = false;
+  micMuted = false;
+  deafened = false;
   lastVoiceRoom = "";
   lastVoiceReady = null;
   lastVoiceMuted = null;
+  lastVoiceDeafened = null;
   enableVoice.textContent = "Activer le micro";
   enableVoice.classList.remove("voice-on", "voice-muted");
+  muteMicButton.classList.add("hidden");
+  deafenVoiceButton.classList.add("hidden");
   if (oldCode && oldPlayerId) {
     await postJson("/api/delete-player", { code: oldCode, id: oldPlayerId });
     localStorage.removeItem(`sheriffPlayerId:${oldCode}`);
@@ -403,8 +412,8 @@ function renderHostPlayerList() {
   hostPlayerList.innerHTML = state.players
     .map((player, index) => {
       const suffix = state.hostId === player.id ? " - organisateur" : "";
-      const micReady = player.voiceReady && !player.voiceMuted;
-      const status = micReady ? "Micro actif" : "Micro manquant";
+      const micReady = player.voiceReady;
+      const status = player.voiceReady ? (player.voiceMuted ? "Micro coupe" : "Micro actif") : "Micro manquant";
       const canKick = state.hostId !== player.id && !gameHasStarted();
       return `<div class="host-player-item">
         <div><span>${index + 1}. ${escapeHtml(player.name)}${suffix}</span><small class="${micReady ? "ready" : "not-ready"}">${status}</small></div>
@@ -488,7 +497,7 @@ function voiceTargetIds() {
   if (!voiceEnabled || !player || !state) return [];
   const myRoom = voiceRoomFor(player, state.duel);
   return state.players
-    .filter((other) => other.id !== playerId && other.voiceRoom === myRoom && other.voiceReady && !other.voiceMuted)
+    .filter((other) => other.id !== playerId && other.voiceRoom === myRoom && other.voiceReady)
     .map((other) => other.id);
 }
 
@@ -503,7 +512,8 @@ function ensureAudioElement(id) {
     audio.id = peerKey(id);
     audio.autoplay = true;
     audio.playsInline = true;
-    audio.volume = audioSettings.voice / 100;
+    audio.volume = deafened ? 0 : audioSettings.voice / 100;
+    audio.muted = deafened;
     remoteAudio.append(audio);
   }
   return audio;
@@ -610,12 +620,14 @@ async function syncVoicePeers() {
 
   const myRoom = voiceRoomFor(player, state.duel);
   voiceRoom.textContent = myRoom;
-  const ready = voiceEnabled && !muted;
-  if (myRoom !== lastVoiceRoom || ready !== lastVoiceReady || muted !== lastVoiceMuted) {
+  const ready = voiceEnabled && !deafened;
+  const muted = micMuted || deafened;
+  if (myRoom !== lastVoiceRoom || ready !== lastVoiceReady || muted !== lastVoiceMuted || deafened !== lastVoiceDeafened) {
     lastVoiceRoom = myRoom;
     lastVoiceReady = ready;
     lastVoiceMuted = muted;
-    await postJson("/api/voice-room", { playerId, room: myRoom, ready, muted });
+    lastVoiceDeafened = deafened;
+    await postJson("/api/voice-room", { playerId, room: myRoom, ready, muted, deafened });
   }
   const targetIds = voiceTargetIds();
 
@@ -630,30 +642,71 @@ async function syncVoicePeers() {
     }
   }
 
-  voiceStatus.textContent = targetIds.length ? `${targetIds.length} joueur(s) connecte(s) au meme vocal.` : "Tu es seul dans ce vocal pour l'instant.";
+  updateVoiceControls();
+  if (deafened) {
+    voiceStatus.textContent = "Sourdine totale : tu n'entends plus et ton micro est coupe.";
+  } else if (micMuted) {
+    voiceStatus.textContent = targetIds.length ? `Micro coupe. Tu entends ${targetIds.length} joueur(s).` : "Micro coupe. Tu restes dans le vocal.";
+  } else {
+    voiceStatus.textContent = targetIds.length ? `${targetIds.length} joueur(s) connecte(s) au meme vocal.` : "Tu es seul dans ce vocal pour l'instant.";
+  }
 }
 
 async function enableVoiceChat() {
   localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
   voiceEnabled = true;
-  muted = false;
-  enableVoice.textContent = "Micro actif";
-  enableVoice.classList.add("voice-on");
-  enableVoice.classList.remove("voice-muted");
+  micMuted = false;
+  deafened = false;
+  updateVoiceTrackState();
+  updateVoiceControls();
   await syncVoicePeers();
   await Promise.all(voiceTargetIds().map((id) => sendSignal(id, "ready", null)));
 }
 
-function toggleMute() {
+function updateVoiceTrackState() {
   if (!localStream) return;
-  muted = !muted;
   localStream.getAudioTracks().forEach((track) => {
-    track.enabled = !muted;
+    track.enabled = !micMuted && !deafened;
   });
-  enableVoice.textContent = muted ? "Micro coupe" : "Micro actif";
-  enableVoice.classList.toggle("voice-muted", muted);
-  enableVoice.classList.toggle("voice-on", !muted);
-  voiceStatus.textContent = muted ? "Ton micro est coupe." : "Ton micro est actif.";
+}
+
+function updateVoiceControls() {
+  if (!voiceEnabled) {
+    enableVoice.textContent = "Activer le micro";
+    enableVoice.classList.remove("voice-on", "voice-muted");
+    muteMicButton.classList.add("hidden");
+    deafenVoiceButton.classList.add("hidden");
+    return;
+  }
+  enableVoice.textContent = deafened ? "Sourdine active" : micMuted ? "Micro coupe" : "Micro actif";
+  enableVoice.classList.toggle("voice-on", !micMuted && !deafened);
+  enableVoice.classList.toggle("voice-muted", micMuted || deafened);
+  muteMicButton.classList.remove("hidden");
+  deafenVoiceButton.classList.remove("hidden");
+  muteMicButton.textContent = micMuted && !deafened ? "Reactiver micro" : "Couper micro";
+  deafenVoiceButton.textContent = deafened ? "Quitter sourdine" : "Sourdine totale";
+  muteMicButton.classList.toggle("voice-on", !micMuted && !deafened);
+  muteMicButton.classList.toggle("voice-muted", micMuted && !deafened);
+  deafenVoiceButton.classList.toggle("voice-muted", deafened);
+}
+
+function toggleMicMute() {
+  if (!localStream) return;
+  if (deafened) deafened = false;
+  micMuted = !micMuted;
+  updateVoiceTrackState();
+  updateRemoteAudioVolume();
+  updateVoiceControls();
+  syncVoicePeers();
+}
+
+function toggleDeafen() {
+  if (!localStream) return;
+  deafened = !deafened;
+  if (deafened) micMuted = true;
+  updateVoiceTrackState();
+  updateRemoteAudioVolume();
+  updateVoiceControls();
   syncVoicePeers();
 }
 
@@ -698,7 +751,7 @@ function render(nextState) {
     hostMessage.textContent = state.hostMessage || (livingCount < 3 ? "Tu peux tester a partir de 3 joueurs. L'experience complete est meilleure a 5 joueurs ou plus." : "Configure la partie puis lance quand tout le monde est pret.");
     renderHostPlayerList();
     syncHostSettings();
-    const missingMic = state.players.filter((item) => item.alive && (!item.voiceReady || item.voiceMuted));
+    const missingMic = state.players.filter((item) => item.alive && !item.voiceReady);
     hostForceStart.classList.toggle("hidden", !missingMic.length);
     if (!state.hostMessage && missingMic.length) {
       hostMessage.textContent = `Micro manquant : ${missingMic.map((item) => item.name).join(", ")}.`;
@@ -946,13 +999,18 @@ hostEndNewGame.addEventListener("click", async () => {
 });
 
 enableVoice.addEventListener("click", () => {
-  if (voiceEnabled) {
-    toggleMute();
-    return;
-  }
+  if (voiceEnabled) return;
   enableVoiceChat().catch(() => {
     voiceStatus.textContent = "Micro bloque par le navigateur. Autorise le micro puis recharge.";
   });
+});
+
+muteMicButton.addEventListener("click", () => {
+  toggleMicMute();
+});
+
+deafenVoiceButton.addEventListener("click", () => {
+  toggleDeafen();
 });
 
 if (gameCodeInput) gameCodeInput.value = gameCode;

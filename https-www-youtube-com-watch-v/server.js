@@ -159,7 +159,7 @@ function resolveDiscussionVotes() {
 }
 
 function missingVoicePlayers() {
-  return state.players.filter((player) => player.alive && (!player.voiceReady || player.voiceMuted));
+  return state.players.filter((player) => player.alive && !player.voiceReady);
 }
 
 function livingPlayers() {
@@ -393,7 +393,7 @@ function maybeStartDuelFromVoice() {
   const left = state.players.find((player) => player.id === duel.leftId);
   const right = state.players.find((player) => player.id === duel.rightId);
   if (!left?.alive || !right?.alive) return false;
-  if (left.voiceRoom === "Duel" && right.voiceRoom === "Duel" && left.voiceReady && right.voiceReady && !left.voiceMuted && !right.voiceMuted) {
+  if (left.voiceRoom === "Duel" && right.voiceRoom === "Duel" && left.voiceReady && right.voiceReady) {
     startDuelTimer();
     return true;
   }
