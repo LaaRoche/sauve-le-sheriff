@@ -4,10 +4,10 @@
   --paper-dark: #9b7141;
   --ink: #1b130c;
   --muted: #73583b;
-  --line: #8d642e;
+  --line: #6f5233;
   --cactus: #17343a;
-  --gold: #d69a27;
-  --gold-light: #f2cd75;
+  --gold: #b77b22;
+  --gold-light: #dfbc73;
   --danger: #9f2f25;
   --shadow: 0 24px 70px rgba(5, 6, 8, 0.34);
 }
@@ -63,7 +63,7 @@ a.test-link {
 }
 
 button {
-  border: 1px solid rgba(242, 205, 117, 0.32);
+  border: 1px solid rgba(150, 113, 65, 0.24);
   padding: 0 16px;
   color: #1b130c;
   font-weight: 800;
@@ -156,7 +156,7 @@ h3 {
 }
 
 .panel {
-  border: 1px solid rgba(242, 205, 117, 0.36);
+  border: 1px solid rgba(150, 113, 65, 0.26);
   border-radius: 8px;
   background:
     radial-gradient(circle at 50% 0%, rgba(242, 196, 107, 0.16), transparent 42%),
@@ -176,7 +176,7 @@ h3 {
     linear-gradient(180deg, rgba(42, 25, 13, 0.82), rgba(10, 7, 5, 0.94)),
     url("assets/western-wood.webp") center / cover no-repeat,
     #120b07;
-  border-color: rgba(217, 154, 37, 0.48);
+  border-color: rgba(132, 96, 54, 0.32);
 }
 
 .host-main,
@@ -231,7 +231,7 @@ h3 {
   width: min(230px, 52vw);
   aspect-ratio: 1;
   margin: 8px 0 12px;
-  border: 1px solid rgba(217, 154, 37, 0.45);
+  border: 1px solid rgba(132, 96, 54, 0.30);
   border-radius: 8px;
   object-fit: cover;
   box-shadow: 0 18px 35px rgba(33, 22, 17, 0.2);
@@ -657,7 +657,7 @@ h3 {
   display: grid;
   gap: 10px;
   padding: 14px;
-  border: 1px solid rgba(217, 154, 37, 0.46);
+  border: 1px solid rgba(132, 96, 54, 0.32);
   border-radius: 8px;
   background:
     linear-gradient(180deg, rgba(56, 38, 19, 0.72), rgba(8, 7, 6, 0.78));
@@ -692,7 +692,7 @@ h3 {
   grid-column: 1 / -1;
   gap: 10px;
   padding: 12px;
-  border: 1px solid rgba(217, 154, 37, 0.55);
+  border: 1px solid rgba(132, 96, 54, 0.36);
   border-radius: 8px;
   background:
     linear-gradient(180deg, rgba(20, 12, 7, 0.72), rgba(7, 5, 4, 0.86)),
@@ -786,7 +786,7 @@ h3 {
   gap: 6px;
   padding: 14px;
   border-radius: 8px;
-  border: 1px solid rgba(217, 154, 37, 0.28);
+  border: 1px solid rgba(132, 96, 54, 0.24);
   background: linear-gradient(180deg, rgba(18, 15, 13, 0.42), rgba(8, 7, 6, 0.72));
 }
 
@@ -840,7 +840,7 @@ h3 {
   gap: 12px;
   align-items: center;
   padding: 12px;
-  border: 1px solid rgba(217, 154, 37, 0.42);
+  border: 1px solid rgba(132, 96, 54, 0.30);
   border-radius: 8px;
   background: linear-gradient(180deg, rgba(255, 238, 202, 0.12), rgba(8, 7, 6, 0.62));
 }
@@ -863,7 +863,7 @@ h3 {
   display: grid;
   gap: 10px;
   padding: 14px;
-  border: 1px solid rgba(217, 154, 37, 0.42);
+  border: 1px solid rgba(132, 96, 54, 0.30);
   border-radius: 8px;
   background: linear-gradient(180deg, rgba(255, 238, 202, 0.12), rgba(8, 7, 6, 0.66));
 }
@@ -894,7 +894,7 @@ h3 {
   gap: 8px;
   justify-items: center;
   padding: 16px;
-  border: 1px solid rgba(217, 154, 37, 0.62);
+  border: 1px solid rgba(132, 96, 54, 0.40);
   border-radius: 6px;
   background: linear-gradient(180deg, rgba(218, 181, 116, 0.95), rgba(157, 105, 50, 0.95));
   color: #1b130c;
@@ -1136,7 +1136,7 @@ h3 {
   display: grid;
   gap: 10px;
   padding: 14px;
-  border: 1px solid rgba(217, 154, 37, 0.42);
+  border: 1px solid rgba(132, 96, 54, 0.30);
   border-radius: 8px;
   background: linear-gradient(180deg, rgba(255, 238, 202, 0.12), rgba(8, 7, 6, 0.66));
 }
@@ -1170,7 +1170,7 @@ h3 {
   display: grid;
   gap: 12px;
   padding: 14px;
-  border: 1px solid rgba(217, 154, 37, 0.46);
+  border: 1px solid rgba(132, 96, 54, 0.32);
   border-radius: 8px;
   background:
     radial-gradient(circle at 50% 0%, rgba(242, 196, 107, 0.14), transparent 42%),
@@ -1266,7 +1266,7 @@ h3 {
   aspect-ratio: 2 / 1;
   max-height: none;
   object-fit: cover;
-  border: 1px solid rgba(217, 154, 37, 0.42);
+  border: 1px solid rgba(132, 96, 54, 0.30);
   border-radius: 8px;
   background: #080706;
   box-shadow: inset 0 -55px 65px rgba(0, 0, 0, 0.55), 0 18px 34px rgba(0, 0, 0, 0.22);
@@ -1506,7 +1506,7 @@ h3 {
     radial-gradient(circle at 50% 0%, rgba(242, 196, 107, 0.16), transparent 44%),
     linear-gradient(180deg, rgba(8, 6, 5, 0.9), rgba(25, 13, 8, 0.96)),
     url("assets/western-wood.webp") center / cover no-repeat;
-  border-color: rgba(217, 154, 37, 0.54);
+  border-color: rgba(132, 96, 54, 0.36);
 }
 
 .host-main h1,
@@ -1529,7 +1529,7 @@ h3 {
 .rules-modal-card {
   background:
     linear-gradient(180deg, rgba(255, 238, 202, 0.12), rgba(8, 7, 6, 0.58));
-  border-color: rgba(217, 154, 37, 0.38);
+  border-color: rgba(132, 96, 54, 0.28);
 }
 
 .join-box,
@@ -1560,7 +1560,7 @@ input,
 select {
   color: #fff0cf;
   background: rgba(8, 7, 6, 0.42);
-  border-color: rgba(217, 154, 37, 0.52);
+  border-color: rgba(132, 96, 54, 0.34);
 }
 
 input::placeholder {
@@ -1570,7 +1570,7 @@ input::placeholder {
 .ghost-button {
   color: #f5d98d;
   background: rgba(255, 238, 202, 0.12);
-  border-color: rgba(217, 154, 37, 0.44);
+  border-color: rgba(132, 96, 54, 0.30);
 }
 
 .primary,
@@ -1600,7 +1600,7 @@ a.test-link,
   position: relative;
   overflow: hidden;
   padding: 14px;
-  border-color: rgba(217, 154, 37, 0.65);
+  border-color: rgba(132, 96, 54, 0.42);
   background:
     linear-gradient(180deg, rgba(5, 4, 3, 0.88), rgba(19, 10, 5, 0.94)),
     url("assets/western-wood.webp") center / cover no-repeat,
@@ -1617,7 +1617,7 @@ a.test-link,
   inset: 0;
   pointer-events: none;
   background:
-    linear-gradient(90deg, rgba(217, 154, 37, 0.14), transparent 18%, transparent 82%, rgba(217, 154, 37, 0.14)),
+    linear-gradient(90deg, rgba(132, 96, 54, 0.10), transparent 18%, transparent 82%, rgba(132, 96, 54, 0.10)),
     radial-gradient(circle at 50% 12%, rgba(242, 196, 107, 0.13), transparent 34%),
     linear-gradient(180deg, rgba(0, 0, 0, 0.24), transparent 18%, rgba(0, 0, 0, 0.36));
   opacity: 0.95;
@@ -1672,10 +1672,10 @@ a.test-link,
   min-height: 104px;
   justify-items: center;
   text-align: center;
-  border: 1px solid rgba(217, 154, 37, 0.55);
+  border: 1px solid rgba(132, 96, 54, 0.36);
   border-left-width: 1px;
   background:
-    radial-gradient(circle at 50% 15%, rgba(217, 154, 37, 0.16), transparent 46%),
+    radial-gradient(circle at 50% 15%, rgba(132, 96, 54, 0.12), transparent 46%),
     linear-gradient(180deg, rgba(35, 24, 15, 0.94), rgba(7, 6, 5, 0.92));
 }
 
@@ -1705,7 +1705,7 @@ a.test-link,
 }
 
 .identity {
-  border-color: rgba(217, 154, 37, 0.62);
+  border-color: rgba(132, 96, 54, 0.40);
   background:
     radial-gradient(circle at 50% 10%, rgba(242, 196, 107, 0.2), transparent 38%),
     linear-gradient(180deg, rgba(86, 55, 25, 0.54), rgba(8, 7, 6, 0.9));
@@ -1727,7 +1727,7 @@ a.test-link,
   justify-items: start;
   text-align: left;
   padding: 8px 10px;
-  border: 1px solid rgba(217, 154, 37, 0.28);
+  border: 1px solid rgba(132, 96, 54, 0.24);
   border-radius: 7px;
   background: rgba(7, 6, 5, 0.42);
 }
@@ -1859,16 +1859,16 @@ a.test-link,
 
 .role-card.is-sheriff {
   background:
-    radial-gradient(circle at 50% 28%, rgba(255, 233, 144, 0.5), transparent 24%),
-    linear-gradient(180deg, #dcbf80 0%, #b88952 58%, #8e6238 100%);
+    radial-gradient(circle at 50% 28%, rgba(80, 58, 34, 0.42), transparent 24%),
+    linear-gradient(180deg, #c9ad75 0%, #9b7044 58%, #684425 100%);
 }
 
 .role-card.is-sheriff .identity-role-art {
   width: min(150px, 56%);
   aspect-ratio: 1 / 1;
   filter:
-    sepia(0.12) saturate(1.15) contrast(1.08)
-    drop-shadow(0 0 10px rgba(255, 227, 130, 0.72))
+    sepia(0.18) saturate(0.62) contrast(1.14)
+    drop-shadow(0 0 8px rgba(40, 28, 16, 0.42))
     drop-shadow(0 8px 10px rgba(0, 0, 0, 0.38));
 }
 
@@ -1917,7 +1917,7 @@ a.test-link,
   margin: 0;
   padding: 12px;
   color: #fff2cf;
-  border: 1px solid rgba(217, 154, 37, 0.52);
+  border: 1px solid rgba(132, 96, 54, 0.34);
   border-left: 5px solid var(--gold);
   background: linear-gradient(180deg, rgba(38, 24, 13, 0.92), rgba(8, 7, 6, 0.92));
 }
@@ -1932,7 +1932,7 @@ a.test-link,
 .voice-panel {
   order: 7;
   grid-template-columns: minmax(0, 1fr) auto;
-  border-color: rgba(217, 154, 37, 0.62);
+  border-color: rgba(132, 96, 54, 0.40);
   background:
     linear-gradient(180deg, rgba(56, 38, 19, 0.82), rgba(8, 7, 6, 0.88));
 }
@@ -1964,7 +1964,7 @@ a.test-link,
 
 .saloon-vote-panel,
 .reveal-panel {
-  border-color: rgba(217, 154, 37, 0.62);
+  border-color: rgba(132, 96, 54, 0.40);
   background:
     linear-gradient(180deg, rgba(38, 24, 13, 0.94), rgba(8, 7, 6, 0.94));
 }
@@ -1980,7 +1980,7 @@ a.test-link,
 .saloon-vote-choice {
   min-height: 60px;
   color: #fff0cf;
-  border-color: rgba(217, 154, 37, 0.45);
+  border-color: rgba(132, 96, 54, 0.30);
   background: linear-gradient(180deg, rgba(70, 47, 23, 0.72), rgba(10, 8, 6, 0.88));
 }
 
@@ -2314,3 +2314,4 @@ a.test-link,
     flex-direction: column;
   }
 }
+

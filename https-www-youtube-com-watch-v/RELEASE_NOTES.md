@@ -1,5 +1,12 @@
 # Release notes
 
+## v6.16
+
+- Symboles de roles assombris pour un rendu moins flashy.
+- Nouveau revolver hors-la-loi plus proche d'une arme western.
+- Etoile sheriff et chapeau citoyen passes dans un style plus noir / sobre.
+- Bordures des blocs moins dorees et moins brillantes.
+
 ## v6.15
 
 - Le bouton Reset devient Annuler pour mieux decrire son action.
