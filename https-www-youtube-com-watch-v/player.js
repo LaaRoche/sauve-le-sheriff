@@ -827,8 +827,7 @@ function render(nextState) {
   displayName.textContent = player.name;
   playerSaloon.textContent = "";
   playerStatus.textContent = player.alive ? "Connecte" : "Hors partie";
-  const sheriffPowerText = player.role === "Sheriff" && player.sheriffPower === false ? " - pouvoir utilise" : "";
-  playerRole.textContent = player.role ? `${player.role}${sheriffPowerText}` : "Role non attribue";
+  playerRole.textContent = player.role || "Role non attribue";
   roleArt.src = roleImage(player.role);
   roleCard.classList.toggle("is-citizen", player.role === "Citoyen");
   roleCard.classList.toggle("is-outlaw", player.role === "Hors-la-loi");

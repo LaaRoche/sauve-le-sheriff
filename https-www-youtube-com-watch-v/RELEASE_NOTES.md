@@ -1,5 +1,11 @@
 # Release notes
 
+## v6.20
+
+- Remplacement du fond boutique/bois par la nouvelle photo de rue western.
+- Logo davantage mis en evidence avec une taille plus grande et une ombre plus marquee.
+- Correction de la carte sheriff apres utilisation du pouvoir : le role reste affiche en texte court.
+
 ## v6.19
 
 - Correction du positionnement des boutons dans le bloc vocal sur tous les ecrans.
