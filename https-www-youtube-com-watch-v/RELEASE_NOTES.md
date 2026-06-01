@@ -1,5 +1,15 @@
 # Release notes
 
+## v6.18
+
+- Les bots ne bloquent plus le lancement ni le demarrage d'un duel a cause du micro.
+- Les bots ne sont plus pris comme cibles vocales WebRTC.
+- Lobby organisateur enrichi avec checklist : connecte, micro, pret, type joueur/bot et organisateur.
+- Statuts vocaux clarifies : vocal connecte, micro coupe, sourdine active, connexion instable.
+- Le bouton Reconnexion vocale apparait automatiquement en cas de probleme vocal.
+- Vue spectateur eliminee renforcee : vivants, saloons, duel, elimines et roles reveles.
+- Les spectateurs restent sans interaction de jeu.
+
 ## v6.17
 
 - Ecran organisateur clarifie avec sections Infos partie, Timers, Roles et Joueurs.

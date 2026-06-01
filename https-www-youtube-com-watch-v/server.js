@@ -159,7 +159,7 @@ function resolveDiscussionVotes() {
 }
 
 function missingVoicePlayers() {
-  return state.players.filter((player) => player.alive && !player.voiceReady);
+  return state.players.filter((player) => player.alive && !player.fake && !player.voiceReady);
 }
 
 function livingPlayers() {
@@ -285,7 +285,7 @@ function publicGameList(req) {
       visibility: game.visibility,
       hostName: game.players.find((player) => player.id === game.hostId)?.name || "Organisateur",
       playerCount: game.players.filter((player) => player.alive).length,
-      readyCount: game.players.filter((player) => player.alive && player.voiceReady).length,
+      readyCount: game.players.filter((player) => player.alive && (player.fake || player.voiceReady)).length,
       joinUrl: game.visibility === "public" ? `${origin}/join.html?code=${game.code}` : ""
     }));
 }
@@ -327,7 +327,9 @@ function addPlayer(name) {
     sheriffPower: true,
     voiceRoom: "",
     voiceReady: false,
-    voiceMuted: false
+    voiceMuted: false,
+    voiceDeafened: false,
+    fake: false
   };
   state.players.push(player);
   if (!state.hostId) state.hostId = player.id;
@@ -419,7 +421,9 @@ function maybeStartDuelFromVoice() {
   const left = state.players.find((player) => player.id === duel.leftId);
   const right = state.players.find((player) => player.id === duel.rightId);
   if (!left?.alive || !right?.alive) return false;
-  if (left.voiceRoom === "Duel" && right.voiceRoom === "Duel" && left.voiceReady && right.voiceReady) {
+  const leftReady = left.fake || (left.voiceRoom === "Duel" && left.voiceReady);
+  const rightReady = right.fake || (right.voiceRoom === "Duel" && right.voiceReady);
+  if (leftReady && rightReady) {
     startDuelTimer();
     return true;
   }
@@ -646,7 +650,9 @@ const server = http.createServer(async (req, res) => {
       sheriffPower: true,
       voiceRoom: "",
       voiceReady: false,
-      voiceMuted: false
+      voiceMuted: false,
+      voiceDeafened: false,
+      fake: false
     };
     state.players.push(player);
     if (!state.hostId) state.hostId = player.id;
@@ -810,6 +816,7 @@ const server = http.createServer(async (req, res) => {
       player.voiceRoom = String(body.room || "");
       player.voiceReady = Boolean(body.ready);
       player.voiceMuted = Boolean(body.muted);
+      player.voiceDeafened = Boolean(body.deafened);
       maybeStartDuelFromVoice();
       emit();
     }

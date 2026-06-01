@@ -74,6 +74,7 @@ let lastVoiceRoom = "";
 let lastVoiceReady = null;
 let lastVoiceMuted = null;
 let lastVoiceDeafened = null;
+let voiceConnectionIssue = false;
 let hostTimersTouched = false;
 let hostOutlawTouched = false;
 const peers = new Map();
@@ -293,7 +294,7 @@ function connectEvents() {
   events.addEventListener("state", (event) => render(JSON.parse(event.data)));
   events.addEventListener("signal", (event) => {
     handleSignal(event).catch(() => {
-      voiceStatus.textContent = "Connexion instable. Utilise Reconnexion vocale.";
+      markVoiceIssue();
     });
   });
 }
@@ -432,13 +433,24 @@ function renderHostPlayerList() {
   }
   hostPlayerList.innerHTML = state.players
     .map((player, index) => {
-      const suffix = state.hostId === player.id ? " - organisateur" : "";
-      const testSuffix = player.fake ? " - test" : "";
-      const micReady = player.voiceReady;
-      const status = player.voiceReady ? (player.voiceMuted ? "Micro coupe" : "Micro actif") : "Micro manquant";
+      const isHost = state.hostId === player.id;
+      const micReady = player.fake || player.voiceReady;
+      const typeLabel = player.fake ? "Bot test" : "Vrai joueur";
+      const hostLabel = isHost ? "Organisateur" : "Joueur";
+      const readyLabel = micReady ? "Pret" : "Pas pret";
+      const micLabel = player.fake ? "Pret test" : player.voiceDeafened ? "Sourdine" : player.voiceMuted ? "Micro coupe" : player.voiceReady ? "Micro actif" : "Micro manquant";
       const canKick = state.hostId !== player.id && !gameHasStarted();
       return `<div class="host-player-item">
-        <div><span>${index + 1}. ${escapeHtml(player.name)}${suffix}${testSuffix}</span><small class="${micReady ? "ready" : "not-ready"}">${status}</small></div>
+        <div class="host-player-main">
+          <span>${index + 1}. ${escapeHtml(player.name)}</span>
+          <div class="host-player-checks">
+            <small class="ready">Connecte</small>
+            <small class="${micReady ? "ready" : "not-ready"}">${micLabel}</small>
+            <small class="${micReady ? "ready" : "not-ready"}">${readyLabel}</small>
+            <small>${typeLabel}</small>
+            <small class="${isHost ? "ready" : ""}">${hostLabel}</small>
+          </div>
+        </div>
         ${canKick ? `<button class="danger kick-player" data-kick-id="${player.id}" type="button">Kick</button>` : ""}
       </div>`;
     })
@@ -504,9 +516,18 @@ function spectatorRole(player) {
   return player.alive ? player.role : `${player.role} - elimine`;
 }
 
+function spectatorStatus(player) {
+  if (!player.role) return "Hors partie";
+  return player.alive ? "Vivant" : "Elimine";
+}
+
 function spectatorGroup(title, players) {
   const rows = players.length
-    ? players.map((item) => `<div class="spectator-row"><span>${escapeHtml(item.name)}</span><strong>${escapeHtml(spectatorRole(item))}</strong></div>`).join("")
+    ? players.map((item) => `<div class="spectator-row">
+        <span>${escapeHtml(item.name)}</span>
+        <strong>${escapeHtml(spectatorRole(item))}</strong>
+        <em>${escapeHtml(spectatorStatus(item))}</em>
+      </div>`).join("")
     : "<p>Aucun joueur</p>";
   return `<section><h3>${escapeHtml(title)}</h3>${rows}</section>`;
 }
@@ -522,7 +543,9 @@ function renderSpectatorView(duel) {
   const saloonA = state.players.filter((item) => item.alive && item.role && item.saloon === "A" && !duelIds.includes(item.id));
   const saloonB = state.players.filter((item) => item.alive && item.role && item.saloon === "B" && !duelIds.includes(item.id));
   const eliminated = state.players.filter((item) => !item.alive && item.role);
+  const alive = state.players.filter((item) => item.alive && item.role);
   spectatorGrid.innerHTML = [
+    spectatorGroup("Vivants", alive),
     spectatorGroup("Saloon A", saloonA),
     spectatorGroup("Saloon B", saloonB),
     spectatorGroup("Duel", duelists),
@@ -539,7 +562,7 @@ function voiceTargetIds() {
   if (!voiceEnabled || !player || !state) return [];
   const myRoom = voiceRoomFor(player, state.duel);
   return state.players
-    .filter((other) => other.id !== playerId && other.voiceRoom === myRoom && other.voiceReady)
+    .filter((other) => !other.fake && other.id !== playerId && other.voiceRoom === myRoom && other.voiceReady)
     .map((other) => other.id);
 }
 
@@ -587,13 +610,20 @@ function createPeer(id) {
   });
 
   connection.addEventListener("connectionstatechange", () => {
-    if (["failed", "closed", "disconnected"].includes(connection.connectionState)) {
+    if (["failed", "disconnected"].includes(connection.connectionState)) {
+      markVoiceIssue();
       closePeer(id);
     }
   });
 
   peers.set(id, connection);
   return connection;
+}
+
+function markVoiceIssue() {
+  voiceConnectionIssue = true;
+  updateVoiceControls();
+  voiceStatus.textContent = "Connexion instable. Utilise Reconnexion vocale.";
 }
 
 async function startOffer(id) {
@@ -685,17 +715,22 @@ async function syncVoicePeers() {
   }
 
   updateVoiceControls();
+  if (voiceConnectionIssue) {
+    voiceStatus.textContent = "Connexion instable. Utilise Reconnexion vocale.";
+    return;
+  }
   if (deafened) {
-    voiceStatus.textContent = "Sourdine : micro coupe et ecoute coupee.";
+    voiceStatus.textContent = "Sourdine active : tu n'entends plus et ton micro est coupe.";
   } else if (micMuted) {
     voiceStatus.textContent = targetIds.length ? `Micro coupe : tu entends ${targetIds.length} joueur(s).` : "Micro coupe : aucun joueur dans ton vocal.";
   } else {
-    voiceStatus.textContent = targetIds.length ? `Connecte : ${targetIds.length} joueur(s) dans ton vocal.` : "Connecte : aucun joueur dans ton vocal.";
+    voiceStatus.textContent = targetIds.length ? `Vocal connecte : ${targetIds.length} joueur(s) dans ton vocal.` : "Vocal connecte : aucun joueur dans ton vocal.";
   }
 }
 
 async function enableVoiceChat() {
   localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+  voiceConnectionIssue = false;
   voiceEnabled = true;
   micMuted = false;
   deafened = false;
@@ -726,7 +761,7 @@ function updateVoiceControls() {
   enableVoice.classList.toggle("voice-muted", micMuted || deafened);
   muteMicButton.classList.remove("hidden");
   deafenVoiceButton.classList.remove("hidden");
-  reconnectVoiceButton.classList.remove("hidden");
+  reconnectVoiceButton.classList.toggle("hidden", !voiceConnectionIssue);
   muteMicButton.textContent = micMuted && !deafened ? "Reactiver" : "Couper micro";
   deafenVoiceButton.textContent = deafened ? "Revenir" : "Tout couper";
   muteMicButton.classList.toggle("voice-on", !micMuted && !deafened);
@@ -808,11 +843,13 @@ function render(nextState) {
   if (isHost) {
     hostGameCode.textContent = state.code || gameCode || "-----";
     const livingCount = state.players.filter((item) => item.alive).length;
-    hostPlayerCount.textContent = `${livingCount} joueur(s) connecte(s)`;
+    const botCount = state.players.filter((item) => item.alive && item.fake).length;
+    const realCount = Math.max(0, livingCount - botCount);
+    hostPlayerCount.textContent = `${livingCount} joueur(s) connecte(s) - ${realCount} vrai(s), ${botCount} bot(s)`;
     hostMessage.textContent = state.hostMessage || (livingCount < 3 ? "Tu peux tester a partir de 3 joueurs. L'experience complete est meilleure a 5 joueurs ou plus." : "Configure la partie puis lance quand tout le monde est pret.");
     renderHostPlayerList();
     syncHostSettings();
-    const missingMic = state.players.filter((item) => item.alive && !item.voiceReady);
+    const missingMic = state.players.filter((item) => item.alive && !item.fake && !item.voiceReady);
     hostForceStart.classList.toggle("hidden", !missingMic.length);
     if (!state.hostMessage && missingMic.length) {
       hostMessage.textContent = `Micro manquant : ${missingMic.map((item) => item.name).join(", ")}.`;

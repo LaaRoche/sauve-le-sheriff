@@ -1113,17 +1113,36 @@ h3 {
   align-items: center;
   gap: 10px;
   padding: 10px 12px;
-  border: 1px solid rgba(217, 154, 39, 0.32);
+  border: 1px solid rgba(132, 96, 54, 0.34);
   border-radius: 7px;
   color: #fff0cf;
   font-weight: 900;
   background: rgba(8, 7, 6, 0.32);
 }
 
+.host-player-main {
+  display: grid;
+  gap: 8px;
+}
+
+.host-player-checks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
 .host-player-item small {
-  display: block;
-  margin-top: 4px;
+  display: inline-grid;
+  min-height: 24px;
+  align-items: center;
+  margin-top: 0;
+  padding: 0 8px;
+  border: 1px solid rgba(132, 96, 54, 0.32);
+  border-radius: 999px;
   color: #c8b39b;
+  background: rgba(8, 7, 6, 0.28);
+  font-size: 0.76rem;
+  line-height: 1;
 }
 
 .host-player-item small.ready {
@@ -1230,7 +1249,7 @@ h3 {
 
 .spectator-row {
   display: grid;
-  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr) auto;
   gap: 10px;
   align-items: center;
   padding: 8px;
@@ -1248,6 +1267,14 @@ h3 {
   color: var(--gold-light);
   font-size: 0.92rem;
   text-align: right;
+}
+
+.spectator-row em {
+  color: #c8b39b;
+  font-size: 0.78rem;
+  font-style: normal;
+  font-weight: 900;
+  text-transform: uppercase;
 }
 
 .audio-settings {
