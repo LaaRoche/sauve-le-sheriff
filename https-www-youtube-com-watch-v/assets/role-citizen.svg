@@ -1,24 +1,19 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 180" role="img" aria-label="Citoyen">
   <defs>
-    <linearGradient id="felt" x1="0" x2="0" y1="0" y2="1">
-      <stop offset="0" stop-color="#4b3522"/>
-      <stop offset=".52" stop-color="#21170f"/>
-      <stop offset="1" stop-color="#0d0906"/>
-    </linearGradient>
-    <linearGradient id="band" x1="0" x2="1" y1="0" y2="0">
-      <stop offset="0" stop-color="#b38a52"/>
-      <stop offset=".5" stop-color="#ead29d"/>
-      <stop offset="1" stop-color="#8a6337"/>
+    <linearGradient id="hat" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="#302419"/>
+      <stop offset=".55" stop-color="#120d09"/>
+      <stop offset="1" stop-color="#050403"/>
     </linearGradient>
     <filter id="shadow" x="-20%" y="-20%" width="140%" height="150%">
-      <feDropShadow dx="0" dy="10" stdDeviation="7" flood-color="#160d07" flood-opacity=".55"/>
+      <feDropShadow dx="0" dy="10" stdDeviation="7" flood-color="#090503" flood-opacity=".58"/>
     </filter>
   </defs>
   <g filter="url(#shadow)">
-    <path d="M88 102c13-13 69-13 84 0 24 5 43 15 43 29 0 16-39 24-85 24s-85-8-85-24c0-14 18-24 43-29z" fill="#120d09"/>
-    <path d="M86 102c7-53 17-76 44-76s37 23 44 76c-25 12-62 12-88 0z" fill="url(#felt)"/>
-    <path d="M95 96c21 9 49 9 70 0l3 15c-24 10-54 10-76 0z" fill="url(#band)" opacity=".85"/>
-    <path d="M92 99c23 12 54 12 77 0" fill="none" stroke="#0b0805" stroke-width="8" stroke-linecap="round" opacity=".55"/>
-    <path d="M91 42c8-10 21-15 39-15 18 0 31 5 39 15-15-6-63-6-78 0z" fill="#6a4a2e" opacity=".45"/>
+    <path d="M87 102c13-13 72-13 86 0 24 5 42 15 42 29 0 16-39 24-85 24s-85-8-85-24c0-14 18-24 42-29z" fill="#070504"/>
+    <path d="M86 102c7-53 17-76 44-76s37 23 44 76c-25 12-63 12-88 0z" fill="url(#hat)"/>
+    <path d="M94 96c22 9 50 9 72 0l3 14c-25 10-56 10-78 0z" fill="#2b2118"/>
+    <path d="M91 99c24 12 55 12 78 0" fill="none" stroke="#050403" stroke-width="8" stroke-linecap="round" opacity=".65"/>
+    <path d="M91 42c8-10 21-15 39-15s31 5 39 15c-16-5-62-5-78 0z" fill="#4a3828" opacity=".38"/>
   </g>
 </svg>

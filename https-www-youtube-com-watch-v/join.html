@@ -11,7 +11,7 @@
       <section class="panel phone-panel" aria-label="Sauve l'Empire joueur">
         <div class="phone-topbar">
           <div>
-            <p class="eyebrow">v6.16</p>
+            <p class="eyebrow">v6.17</p>
             <img class="app-logo phone-logo" src="assets/logo-sauve-empire.png" alt="Sauve l'Empire">
           </div>
           <div class="top-actions">
@@ -62,14 +62,14 @@
 
           <div class="player-view hidden" id="player-view">
           <div class="host-tools hidden" id="host-tools">
-            <div class="host-tools-header">
-              <span>Organisateur</span>
+            <div class="host-config-card host-info-card">
+              <span>Infos partie</span>
               <strong>Configuration</strong>
+              <p class="game-code-display">Code partie : <strong id="host-game-code">-----</strong></p>
+              <p id="host-player-count">0 joueur</p>
             </div>
-            <p class="game-code-display">Code partie : <strong id="host-game-code">-----</strong></p>
-            <p id="host-player-count">0 joueur</p>
             <div class="host-config-grid">
-              <div class="host-config-card">
+              <div class="host-config-card host-timers-card">
                 <span>Timers</span>
                 <label>
                   Duel
@@ -90,17 +90,18 @@
                   Hors-la-loi
                   <input id="host-outlaw-count" type="number" min="1" max="8" value="1">
                 </label>
-                <p>Conseil auto : 1 jusqu'a 5 joueurs, 2 a partir de 6, 3 a partir de 9.</p>
+                <p id="host-outlaw-recommendation">Conseille : 1 hors-la-loi.</p>
               </div>
             </div>
-            <div>
+            <div class="host-config-card host-players-card">
               <span>Joueurs connectes</span>
               <div class="host-player-list" id="host-player-list"></div>
+              <button id="host-add-fake-players" type="button">Creer 5 faux joueurs</button>
             </div>
             <p id="host-message">Le premier joueur connecte configure et lance la partie.</p>
             <div class="host-actions">
               <button class="primary" id="host-start-game" type="button">Lancer</button>
-              <button id="host-force-start" type="button">Forcer</button>
+              <button id="host-force-start" type="button">Lancer sans tous les micros</button>
               <button class="danger" id="host-new-game" type="button">Annuler</button>
             </div>
           </div>
@@ -150,6 +151,7 @@
               <button class="primary" id="enable-voice" type="button">Activer le micro</button>
               <button class="hidden" id="mute-mic" type="button">Couper micro</button>
               <button class="danger hidden" id="deafen-voice" type="button">Tout couper</button>
+              <button class="hidden" id="reconnect-voice" type="button">Reconnexion vocale</button>
             </div>
           </div>
 

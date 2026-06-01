@@ -334,6 +334,30 @@ function addPlayer(name) {
   return player;
 }
 
+function addFakePlayers(count = 5) {
+  if (gameHasStarted()) {
+    state.hostMessage = "Impossible pendant une partie en cours.";
+    return [];
+  }
+  const created = [];
+  for (let index = 1; index <= count; index += 1) {
+    let name = `Bot ${index}`;
+    let suffix = index;
+    while (state.players.some((player) => player.name.toLowerCase() === name.toLowerCase())) {
+      suffix += 1;
+      name = `Bot ${suffix}`;
+    }
+    const player = addPlayer(name);
+    player.voiceRoom = "Preparation";
+    player.voiceReady = true;
+    player.voiceMuted = false;
+    player.fake = true;
+    created.push(player);
+  }
+  state.hostMessage = `${created.length} faux joueurs ajoutes pour tester.`;
+  return created;
+}
+
 function readBody(req) {
   return new Promise((resolve) => {
     let data = "";
@@ -655,6 +679,15 @@ const server = http.createServer(async (req, res) => {
     if (state.duel.leftId === body.id || state.duel.rightId === body.id) {
       state.duel = freshDuel();
     }
+    emit();
+    sendJson(res, publicState(req));
+    return;
+  }
+
+  if (req.method === "POST" && url.pathname === "/api/fake-players") {
+    const body = await readBody(req);
+    useGame(body.code);
+    addFakePlayers(5);
     emit();
     sendJson(res, publicState(req));
     return;

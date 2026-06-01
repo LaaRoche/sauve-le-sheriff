@@ -1,5 +1,15 @@
 # Release notes
 
+## v6.17
+
+- Ecran organisateur clarifie avec sections Infos partie, Timers, Roles et Joueurs.
+- Recommendation de hors-la-loi affichee selon le nombre de joueurs connectes.
+- Bouton "Lancer sans tous les micros" plus explicite.
+- Mode test rapide avec creation de 5 faux joueurs.
+- Statuts vocaux plus clairs et bouton de reconnexion vocale.
+- Responsive PC ajuste : en discussion, role a gauche, vote au centre, timer a droite.
+- Boutons et bordures passes dans un style moins dore et moins sature.
+
 ## v6.16
 
 - Symboles de roles assombris pour un rendu moins flashy.

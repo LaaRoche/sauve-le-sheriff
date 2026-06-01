@@ -38,6 +38,7 @@ const sheriffPhoneShot = document.querySelector("#sheriff-phone-shot");
 const enableVoice = document.querySelector("#enable-voice");
 const muteMicButton = document.querySelector("#mute-mic");
 const deafenVoiceButton = document.querySelector("#deafen-voice");
+const reconnectVoiceButton = document.querySelector("#reconnect-voice");
 const voiceRoom = document.querySelector("#voice-room");
 const voiceStatus = document.querySelector("#voice-status");
 const remoteAudio = document.querySelector("#remote-audio");
@@ -55,9 +56,11 @@ const hostDuelDuration = document.querySelector("#host-duel-duration");
 const hostResultDuration = document.querySelector("#host-result-duration");
 const hostDiscussionDuration = document.querySelector("#host-discussion-duration");
 const hostPlayerList = document.querySelector("#host-player-list");
+const hostOutlawRecommendation = document.querySelector("#host-outlaw-recommendation");
 const hostStartGame = document.querySelector("#host-start-game");
 const hostForceStart = document.querySelector("#host-force-start");
 const hostNewGame = document.querySelector("#host-new-game");
+const hostAddFakePlayers = document.querySelector("#host-add-fake-players");
 const hostEndTools = document.querySelector("#host-end-tools");
 const hostEndNewGame = document.querySelector("#host-end-new-game");
 const endRoles = document.querySelector("#end-roles");
@@ -290,7 +293,7 @@ function connectEvents() {
   events.addEventListener("state", (event) => render(JSON.parse(event.data)));
   events.addEventListener("signal", (event) => {
     handleSignal(event).catch(() => {
-      voiceStatus.textContent = "Connexion vocale interrompue.";
+      voiceStatus.textContent = "Connexion instable. Utilise Reconnexion vocale.";
     });
   });
 }
@@ -430,11 +433,12 @@ function renderHostPlayerList() {
   hostPlayerList.innerHTML = state.players
     .map((player, index) => {
       const suffix = state.hostId === player.id ? " - organisateur" : "";
+      const testSuffix = player.fake ? " - test" : "";
       const micReady = player.voiceReady;
       const status = player.voiceReady ? (player.voiceMuted ? "Micro coupe" : "Micro actif") : "Micro manquant";
       const canKick = state.hostId !== player.id && !gameHasStarted();
       return `<div class="host-player-item">
-        <div><span>${index + 1}. ${escapeHtml(player.name)}${suffix}</span><small class="${micReady ? "ready" : "not-ready"}">${status}</small></div>
+        <div><span>${index + 1}. ${escapeHtml(player.name)}${suffix}${testSuffix}</span><small class="${micReady ? "ready" : "not-ready"}">${status}</small></div>
         ${canKick ? `<button class="danger kick-player" data-kick-id="${player.id}" type="button">Kick</button>` : ""}
       </div>`;
     })
@@ -443,13 +447,18 @@ function renderHostPlayerList() {
 
 function syncHostSettings() {
   if (!state?.settings) return;
+  const livingCount = state.players.filter((player) => player.alive).length;
+  const recommendedOutlaws = recommendedOutlawCount(livingCount);
   if (!hostTimersTouched) {
     hostDuelDuration.value = state.settings.duelDuration;
     hostResultDuration.value = state.settings.resultDuration;
     hostDiscussionDuration.value = state.settings.discussionDuration;
   }
   if (!hostOutlawTouched) {
-    hostOutlawCount.value = String(recommendedOutlawCount(state.players.filter((player) => player.alive).length));
+    hostOutlawCount.value = String(recommendedOutlaws);
+  }
+  if (hostOutlawRecommendation) {
+    hostOutlawRecommendation.textContent = `Conseille : ${recommendedOutlaws} hors-la-loi pour ${livingCount} joueur(s).`;
   }
 }
 
@@ -677,11 +686,11 @@ async function syncVoicePeers() {
 
   updateVoiceControls();
   if (deafened) {
-    voiceStatus.textContent = "Sourdine totale : tu n'entends plus et ton micro est coupe.";
+    voiceStatus.textContent = "Sourdine : micro coupe et ecoute coupee.";
   } else if (micMuted) {
-    voiceStatus.textContent = targetIds.length ? `Micro coupe. Tu entends ${targetIds.length} joueur(s).` : "Micro coupe. Tu restes dans le vocal.";
+    voiceStatus.textContent = targetIds.length ? `Micro coupe : tu entends ${targetIds.length} joueur(s).` : "Micro coupe : aucun joueur dans ton vocal.";
   } else {
-    voiceStatus.textContent = targetIds.length ? `${targetIds.length} joueur(s) connecte(s) au meme vocal.` : "Tu es seul dans ce vocal pour l'instant.";
+    voiceStatus.textContent = targetIds.length ? `Connecte : ${targetIds.length} joueur(s) dans ton vocal.` : "Connecte : aucun joueur dans ton vocal.";
   }
 }
 
@@ -709,6 +718,7 @@ function updateVoiceControls() {
     enableVoice.classList.remove("voice-on", "voice-muted");
     muteMicButton.classList.add("hidden");
     deafenVoiceButton.classList.add("hidden");
+    reconnectVoiceButton.classList.add("hidden");
     return;
   }
   enableVoice.textContent = deafened ? "Tout coupe" : micMuted ? "Micro coupe" : "Micro actif";
@@ -716,11 +726,29 @@ function updateVoiceControls() {
   enableVoice.classList.toggle("voice-muted", micMuted || deafened);
   muteMicButton.classList.remove("hidden");
   deafenVoiceButton.classList.remove("hidden");
+  reconnectVoiceButton.classList.remove("hidden");
   muteMicButton.textContent = micMuted && !deafened ? "Reactiver" : "Couper micro";
   deafenVoiceButton.textContent = deafened ? "Revenir" : "Tout couper";
   muteMicButton.classList.toggle("voice-on", !micMuted && !deafened);
   muteMicButton.classList.toggle("voice-muted", micMuted && !deafened);
   deafenVoiceButton.classList.toggle("voice-muted", deafened);
+}
+
+async function reconnectVoiceChat() {
+  if (!voiceEnabled) return;
+  for (const id of [...peers.keys()]) closePeer(id);
+  localStream?.getTracks().forEach((track) => track.stop());
+  localStream = null;
+  voiceEnabled = false;
+  micMuted = false;
+  deafened = false;
+  lastVoiceRoom = "";
+  lastVoiceReady = null;
+  lastVoiceMuted = null;
+  lastVoiceDeafened = null;
+  updateVoiceControls();
+  voiceStatus.textContent = "Reconnexion vocale...";
+  await enableVoiceChat();
 }
 
 function toggleMicMute() {
@@ -1022,6 +1050,10 @@ hostNewGame.addEventListener("click", async () => {
   gameCode = "";
 });
 
+hostAddFakePlayers.addEventListener("click", async () => {
+  await postJson("/api/fake-players", {});
+});
+
 hostEndNewGame.addEventListener("click", async () => {
   const code = gameCode;
   await postJson("/api/new-game", { code });
@@ -1054,6 +1086,12 @@ muteMicButton.addEventListener("click", () => {
 
 deafenVoiceButton.addEventListener("click", () => {
   toggleDeafen();
+});
+
+reconnectVoiceButton.addEventListener("click", () => {
+  reconnectVoiceChat().catch(() => {
+    voiceStatus.textContent = "Connexion instable. Autorise le micro puis reessaie.";
+  });
 });
 
 if (gameCodeInput) gameCodeInput.value = gameCode;

@@ -1,34 +1,31 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="Hors-la-loi">
   <defs>
-    <linearGradient id="metal" x1="0" x2="1" y1="0" y2="1">
-      <stop offset="0" stop-color="#1b1712"/>
-      <stop offset=".28" stop-color="#6d6251"/>
-      <stop offset=".5" stop-color="#d0b783"/>
-      <stop offset=".74" stop-color="#514332"/>
-      <stop offset="1" stop-color="#0b0806"/>
+    <linearGradient id="steel" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#080706"/>
+      <stop offset=".34" stop-color="#36312a"/>
+      <stop offset=".58" stop-color="#716756"/>
+      <stop offset=".78" stop-color="#272019"/>
+      <stop offset="1" stop-color="#060403"/>
     </linearGradient>
-    <linearGradient id="darkMetal" x1="0" x2="1" y1="0" y2="1">
-      <stop offset="0" stop-color="#0b0907"/>
-      <stop offset=".42" stop-color="#4a4034"/>
-      <stop offset="1" stop-color="#130d08"/>
+    <linearGradient id="grip" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#3c2316"/>
+      <stop offset=".58" stop-color="#1d0f09"/>
+      <stop offset="1" stop-color="#080403"/>
     </linearGradient>
-    <linearGradient id="wood" x1="0" x2="1" y1="0" y2="1">
-      <stop offset="0" stop-color="#7d3f20"/>
-      <stop offset=".55" stop-color="#3a1d12"/>
-      <stop offset="1" stop-color="#120806"/>
-    </linearGradient>
-    <filter id="shadow" x="-20%" y="-30%" width="150%" height="160%">
-      <feDropShadow dx="0" dy="11" stdDeviation="7" flood-color="#120804" flood-opacity=".62"/>
+    <filter id="shadow" x="-20%" y="-30%" width="150%" height="170%">
+      <feDropShadow dx="0" dy="11" stdDeviation="7" flood-color="#090403" flood-opacity=".65"/>
     </filter>
   </defs>
-  <g filter="url(#shadow)" transform="translate(32 28) rotate(-10 128 62)">
-    <path d="M35 42h157c19 0 34 10 41 28l7 19h-43l-7-17H34z" fill="url(#metal)" stroke="#26160d" stroke-width="7" stroke-linejoin="round"/>
-    <path d="M202 37h51c10 0 18 8 18 18v9h-67z" fill="url(#darkMetal)" stroke="#26160d" stroke-width="7" stroke-linejoin="round"/>
-    <path d="M53 31h82c8 0 15 5 17 13H49c0-7 2-11 4-13z" fill="url(#metal)" stroke="#26160d" stroke-width="6" stroke-linejoin="round"/>
-    <path d="M87 73c8 2 15 8 18 17 5 17-5 35-22 40-11 3-23 0-31-8l16-18c4 3 9 4 13 3 5-2 9-8 7-14-1-3-4-6-8-7z" fill="none" stroke="#21140c" stroke-width="12" stroke-linecap="round"/>
-    <path d="M128 78h44l-24 71c-4 12-17 19-29 14l-14-5z" fill="url(#wood)" stroke="#26160d" stroke-width="7" stroke-linejoin="round"/>
-    <path d="M129 91h31" stroke="#a76d35" stroke-width="5" stroke-linecap="round" opacity=".7"/>
-    <path d="M118 55h38" stroke="#f0d49b" stroke-width="5" stroke-linecap="round" opacity=".48"/>
-    <circle cx="182" cy="70" r="8" fill="#19110b" opacity=".72"/>
+  <g filter="url(#shadow)" transform="translate(34 34) rotate(-8 128 60)">
+    <path d="M47 54h138c18 0 33 9 42 24l9 16h-38l-9-14H47z" fill="url(#steel)" stroke="#0c0704" stroke-width="7" stroke-linejoin="round"/>
+    <path d="M202 49h63c11 0 20 8 20 18v8h-83z" fill="url(#steel)" stroke="#0c0704" stroke-width="7" stroke-linejoin="round"/>
+    <path d="M56 42h77c10 0 18 5 21 14H52c0-7 2-11 4-14z" fill="url(#steel)" stroke="#0c0704" stroke-width="6" stroke-linejoin="round"/>
+    <circle cx="178" cy="74" r="21" fill="none" stroke="#0c0704" stroke-width="10"/>
+    <circle cx="178" cy="74" r="8" fill="#0a0705"/>
+    <path d="M92 80c9 2 16 8 19 18 5 18-6 37-24 42-13 4-26 0-35-9l18-20c4 4 10 5 15 4 7-2 11-9 9-16-1-5-6-8-11-9z" fill="none" stroke="#0c0704" stroke-width="12" stroke-linecap="round"/>
+    <path d="M127 83h45l-25 70c-5 13-18 20-31 15l-16-6z" fill="url(#grip)" stroke="#0c0704" stroke-width="7" stroke-linejoin="round"/>
+    <path d="M127 96h32M121 113h31" stroke="#5b3824" stroke-width="5" stroke-linecap="round" opacity=".75"/>
+    <path d="M60 64h78" stroke="#8d806c" stroke-width="4" stroke-linecap="round" opacity=".32"/>
+    <path d="M214 59h54" stroke="#8d806c" stroke-width="4" stroke-linecap="round" opacity=".28"/>
   </g>
 </svg>
