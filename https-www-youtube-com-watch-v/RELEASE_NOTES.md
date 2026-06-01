@@ -1,5 +1,11 @@
 # Release notes
 
+## v6.19
+
+- Correction du positionnement des boutons dans le bloc vocal sur tous les ecrans.
+- Le texte du vocal garde maintenant toute la largeur du bloc.
+- Les boutons vocaux passent en grille responsive pour eviter les chevauchements.
+
 ## v6.18
 
 - Les bots ne bloquent plus le lancement ni le demarrage d'un duel a cause du micro.

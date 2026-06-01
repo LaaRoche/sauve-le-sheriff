@@ -836,9 +836,9 @@ h3 {
 
 .voice-panel {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr);
   gap: 12px;
-  align-items: center;
+  align-items: stretch;
   padding: 12px;
   border: 1px solid rgba(132, 96, 54, 0.30);
   border-radius: 8px;
@@ -846,16 +846,17 @@ h3 {
 }
 
 .voice-actions {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
   gap: 8px;
+  width: 100%;
 }
 
 .voice-actions button {
-  min-width: 118px;
+  width: 100%;
+  min-width: 0;
   padding: 0 12px;
-  white-space: nowrap;
+  line-height: 1.15;
 }
 
 .saloon-vote-panel,
@@ -2202,7 +2203,6 @@ a.test-link,
 
   .voice-panel {
     grid-area: voice;
-    grid-template-columns: minmax(0, 1fr) auto;
     align-self: stretch;
     min-height: 96px;
   }
