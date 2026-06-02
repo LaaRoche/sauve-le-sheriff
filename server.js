@@ -11,6 +11,15 @@ const defaultSettings = {
   resultDuration: 15,
   discussionDuration: 150
 };
+const defaultIceServers = [{ urls: "stun:stun.l.google.com:19302" }];
+const staticIceServers = loadStaticIceServers();
+let iceServers = staticIceServers;
+let turnStatus = {
+  mode: "stun",
+  configured: false,
+  ready: false,
+  message: "STUN par defaut"
+};
 const duelReadyDuration = 8;
 const clients = new Set();
 let resultResetTimer = null;
@@ -19,10 +28,178 @@ let activeSettings = { ...defaultSettings };
 let state = createGameState("GLOBAL");
 const games = new Map([[state.code, state]]);
 
+function loadStaticIceServers() {
+  const json = globalThis.process?.env?.ICE_SERVERS_JSON;
+  if (json) {
+    try {
+      const parsed = JSON.parse(json);
+      if (Array.isArray(parsed) && parsed.length) return parsed;
+    } catch {
+      console.warn("ICE_SERVERS_JSON invalide, utilisation du STUN par defaut.");
+    }
+  }
+
+  const turnUrl = globalThis.process?.env?.TURN_URL;
+  const turnUsername = globalThis.process?.env?.TURN_USERNAME;
+  const turnCredential = globalThis.process?.env?.TURN_CREDENTIAL;
+  if (turnUrl && turnUsername && turnCredential) {
+    return [
+      ...defaultIceServers,
+      { urls: turnUrl, username: turnUsername, credential: turnCredential }
+    ];
+  }
+
+  return defaultIceServers;
+}
+
+function meteredAppName() {
+  const raw = String(globalThis.process?.env?.METERED_APP_NAME || "").trim();
+  return raw
+    .replace(/^https?:\/\//i, "")
+    .replace(/\.metered\.live.*$/i, "")
+    .replace(/\/.*$/, "");
+}
+
+function meteredUrl(pathname, params = {}) {
+  const appName = meteredAppName();
+  if (!appName) return "";
+  const url = new URL(`https://${appName}.metered.live${pathname}`);
+  for (const [key, value] of Object.entries(params)) {
+    if (value !== undefined && value !== null && value !== "") {
+      url.searchParams.set(key, String(value));
+    }
+  }
+  return url.toString();
+}
+
+function meteredRegion() {
+  return String(globalThis.process?.env?.METERED_TURN_REGION || "global").trim() || "global";
+}
+
+function meteredExpiry() {
+  const value = Number(globalThis.process?.env?.METERED_TURN_EXPIRY_SECONDS || 86400);
+  return Number.isFinite(value) && value > 300 ? Math.round(value) : 86400;
+}
+
+async function fetchJson(url, options = {}) {
+  const response = await fetch(url, {
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...(options.headers || {})
+    }
+  });
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status}`);
+  }
+  return response.json();
+}
+
+function normalizeIceServers(payload) {
+  const source = Array.isArray(payload) ? payload : payload?.iceServers;
+  if (!Array.isArray(source) || !source.length) return null;
+  return source
+    .map((server) => ({
+      urls: server.urls,
+      username: server.username,
+      credential: server.credential
+    }))
+    .filter((server) => server.urls);
+}
+
+async function createMeteredCredential() {
+  const secretKey = String(globalThis.process?.env?.METERED_SECRET_KEY || "").trim();
+  if (!secretKey) return null;
+  const url = meteredUrl("/api/v1/turn/credential", { secretKey });
+  if (!url) return null;
+  const credential = await fetchJson(url, {
+    method: "POST",
+    body: JSON.stringify({
+      expirationEnSecondes: meteredExpiry(),
+      expirationInSeconds: meteredExpiry(),
+      label: String(globalThis.process?.env?.METERED_TURN_LABEL || "empire-sheriff-render")
+    })
+  });
+  return credential;
+}
+
+async function fetchMeteredIceServers(apiKey) {
+  const endpoints = ["/api/v1/turn/credentials", "/api/v1/turn/credential"];
+  let lastError = null;
+  for (const endpoint of endpoints) {
+    try {
+      const payload = await fetchJson(meteredUrl(endpoint, {
+        apiKey,
+        region: meteredRegion()
+      }));
+      const meteredIceServers = normalizeIceServers(payload);
+      if (meteredIceServers) return meteredIceServers;
+    } catch (error) {
+      lastError = error;
+    }
+  }
+  throw lastError || new Error("Aucun serveur ICE recu");
+}
+
+async function refreshMeteredIceServers() {
+  const appName = meteredAppName();
+  const explicitApiKey = String(globalThis.process?.env?.METERED_TURN_API_KEY || "").trim();
+  const secretKey = String(globalThis.process?.env?.METERED_SECRET_KEY || "").trim();
+  if (!appName || (!explicitApiKey && !secretKey)) {
+    return;
+  }
+
+  turnStatus = {
+    mode: "metered",
+    configured: true,
+    ready: false,
+    message: "Configuration Metered en cours"
+  };
+
+  try {
+    const createdCredential = explicitApiKey ? null : await createMeteredCredential();
+    const directIceServers = normalizeIceServers(createdCredential);
+    if (directIceServers) {
+      iceServers = directIceServers;
+      turnStatus = {
+        mode: "metered",
+        configured: true,
+        ready: true,
+        message: "TURN Metered actif"
+      };
+      return;
+    }
+    const apiKey = explicitApiKey || createdCredential?.apiKey || createdCredential?.key || createdCredential?.id || "";
+    if (!apiKey) throw new Error("Identifiant TURN Metered introuvable");
+    iceServers = await fetchMeteredIceServers(apiKey);
+    turnStatus = {
+      mode: "metered",
+      configured: true,
+      ready: true,
+      message: "TURN Metered actif"
+    };
+  } catch (error) {
+    iceServers = staticIceServers;
+    turnStatus = {
+      mode: "metered",
+      configured: true,
+      ready: false,
+      message: "TURN Metered indisponible, STUN par defaut"
+    };
+    console.warn(`TURN Metered indisponible: ${error.message}`);
+  }
+}
+
+function scheduleMeteredRefresh() {
+  refreshMeteredIceServers();
+  setInterval(refreshMeteredIceServers, Math.min(meteredExpiry() * 1000 * 0.8, 6 * 60 * 60 * 1000));
+}
+
 function createGameState(code) {
   const settings = { ...defaultSettings };
   return {
     code,
+    visibility: "private",
     players: [],
     hostId: "",
     hostMessage: "",
@@ -53,6 +230,11 @@ function getGame(codeInput) {
   const code = gameCode(codeInput) || "GLOBAL";
   if (!games.has(code)) games.set(code, createGameState(code));
   return games.get(code);
+}
+
+function findGame(codeInput) {
+  const code = gameCode(codeInput);
+  return code ? games.get(code) : null;
 }
 
 function useGame(codeInput) {
@@ -153,7 +335,7 @@ function resolveDiscussionVotes() {
 }
 
 function missingVoicePlayers() {
-  return state.players.filter((player) => player.alive && (!player.voiceReady || player.voiceMuted));
+  return state.players.filter((player) => player.alive && !player.fake && !player.voiceReady);
 }
 
 function livingPlayers() {
@@ -248,6 +430,7 @@ function publicState(req) {
   if (requestOrigin(req)) lastPublicOrigin = requestOrigin(req);
   return {
     code: state.code,
+    visibility: state.visibility,
     joinUrl: `${origin}/join.html`,
     players: state.players,
     hostId: state.hostId,
@@ -256,8 +439,35 @@ function publicState(req) {
     settings: state.settings,
     phase: state.phase,
     duel: state.duel,
-    saloonVotes: state.saloonVotes
+    saloonVotes: state.saloonVotes,
+    voice: {
+      iceServers,
+      turnStatus
+    }
   };
+}
+
+function publicGameList(req) {
+  const origin = requestOrigin(req) || lastPublicOrigin || `http://${localAddress()}:${port}`;
+  if (requestOrigin(req)) lastPublicOrigin = requestOrigin(req);
+  return [...games.values()]
+    .filter((game) => {
+      const previous = state;
+      state = game;
+      activeSettings = game.settings;
+      const open = game.code !== "GLOBAL" && game.players.length > 0 && !gameHasStarted();
+      state = previous;
+      activeSettings = previous.settings;
+      return open;
+    })
+    .map((game) => ({
+      code: game.visibility === "public" ? game.code : "",
+      visibility: game.visibility,
+      hostName: game.players.find((player) => player.id === game.hostId)?.name || "Organisateur",
+      playerCount: game.players.filter((player) => player.alive).length,
+      readyCount: game.players.filter((player) => player.alive && (player.fake || player.voiceReady)).length,
+      joinUrl: game.visibility === "public" ? `${origin}/join.html?code=${game.code}` : ""
+    }));
 }
 
 function getWinner() {
@@ -297,11 +507,37 @@ function addPlayer(name) {
     sheriffPower: true,
     voiceRoom: "",
     voiceReady: false,
-    voiceMuted: false
+    voiceMuted: false,
+    voiceDeafened: false,
+    fake: false
   };
   state.players.push(player);
   if (!state.hostId) state.hostId = player.id;
   return player;
+}
+
+function addFakePlayers(count = 5) {
+  if (gameHasStarted()) {
+    state.hostMessage = "Impossible pendant une partie en cours.";
+    return [];
+  }
+  const created = [];
+  for (let index = 1; index <= count; index += 1) {
+    let name = `Bot ${index}`;
+    let suffix = index;
+    while (state.players.some((player) => player.name.toLowerCase() === name.toLowerCase())) {
+      suffix += 1;
+      name = `Bot ${suffix}`;
+    }
+    const player = addPlayer(name);
+    player.voiceRoom = "Preparation";
+    player.voiceReady = true;
+    player.voiceMuted = false;
+    player.fake = true;
+    created.push(player);
+  }
+  state.hostMessage = `${created.length} faux joueurs ajoutes pour tester.`;
+  return created;
 }
 
 function readBody(req) {
@@ -365,7 +601,9 @@ function maybeStartDuelFromVoice() {
   const left = state.players.find((player) => player.id === duel.leftId);
   const right = state.players.find((player) => player.id === duel.rightId);
   if (!left?.alive || !right?.alive) return false;
-  if (left.voiceRoom === "Duel" && right.voiceRoom === "Duel" && left.voiceReady && right.voiceReady && !left.voiceMuted && !right.voiceMuted) {
+  const leftReady = left.fake || (left.voiceRoom === "Duel" && left.voiceReady);
+  const rightReady = right.fake || (right.voiceRoom === "Duel" && right.voiceReady);
+  if (leftReady && rightReady) {
     startDuelTimer();
     return true;
   }
@@ -473,6 +711,24 @@ function setupGame(outlawCountInput, options = {}) {
   return true;
 }
 
+function replayWithSamePlayers() {
+  state.players.forEach((player, index) => {
+    player.alive = true;
+    player.role = "";
+    player.sheriffPower = true;
+    player.saloon = index % 2 === 0 ? "A" : "B";
+    player.voiceRoom = player.fake ? "Preparation" : "";
+    player.voiceReady = Boolean(player.fake);
+    player.voiceMuted = false;
+    player.voiceDeafened = false;
+  });
+  if (!state.hostId && state.players.length) state.hostId = state.players[0].id;
+  state.hostMessage = "Nouvelle manche prete avec les memes joueurs.";
+  state.phase = freshPhase();
+  state.duel = freshDuel();
+  state.saloonVotes = freshSaloonVotes();
+}
+
 function clampDuration(value, min, max, fallback) {
   const number = Number(value);
   if (!Number.isFinite(number)) return fallback;
@@ -509,7 +765,11 @@ function serveFile(req, res) {
       ".html": "text/html; charset=utf-8",
       ".css": "text/css; charset=utf-8",
       ".js": "text/javascript; charset=utf-8",
-      ".svg": "image/svg+xml; charset=utf-8"
+      ".svg": "image/svg+xml; charset=utf-8",
+      ".png": "image/png",
+      ".jpg": "image/jpeg",
+      ".jpeg": "image/jpeg",
+      ".webp": "image/webp"
     };
     res.writeHead(200, {
       "Content-Type": types[path.extname(file)] || "application/octet-stream",
@@ -542,9 +802,15 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  if (url.pathname === "/api/games") {
+    sendJson(res, { games: publicGameList(req) });
+    return;
+  }
+
   if (req.method === "POST" && url.pathname === "/api/create-game") {
     const body = await readBody(req);
     const game = useGame(makeGameCode());
+    game.visibility = body.visibility === "public" ? "public" : "private";
     const name = String(body.name || "").trim().slice(0, 24) || "Joueur";
     const player = addPlayer(name);
     emit();
@@ -554,6 +820,11 @@ const server = http.createServer(async (req, res) => {
 
   if (req.method === "POST" && url.pathname === "/api/join") {
     const body = await readBody(req);
+    const requested = findGame(body.code);
+    if (!requested) {
+      sendJson(res, { error: "Partie introuvable." });
+      return;
+    }
     useGame(body.code);
     const name = String(body.name || "").trim().slice(0, 24) || "Joueur";
     const existing = state.players.find((player) => player.name.toLowerCase() === name.toLowerCase());
@@ -564,16 +835,22 @@ const server = http.createServer(async (req, res) => {
     }
 
     const started = gameHasStarted();
+    if (started) {
+      sendJson(res, { error: "Partie deja demarree. Attends la prochaine manche." });
+      return;
+    }
     const player = {
       id: makeId(),
       name,
       saloon: state.players.filter((item) => item.alive && item.saloon === "A").length <= state.players.filter((item) => item.alive && item.saloon === "B").length ? "A" : "B",
-      alive: !started,
+      alive: true,
       role: "",
       sheriffPower: true,
       voiceRoom: "",
       voiceReady: false,
-      voiceMuted: false
+      voiceMuted: false,
+      voiceDeafened: false,
+      fake: false
     };
     state.players.push(player);
     if (!state.hostId) state.hostId = player.id;
@@ -611,6 +888,15 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  if (req.method === "POST" && url.pathname === "/api/fake-players") {
+    const body = await readBody(req);
+    useGame(body.code);
+    addFakePlayers(5);
+    emit();
+    sendJson(res, publicState(req));
+    return;
+  }
+
   if (req.method === "POST" && url.pathname === "/api/new-game") {
     const body = await readBody(req);
     useGame(body.code);
@@ -620,6 +906,15 @@ const server = http.createServer(async (req, res) => {
     state.phase = freshPhase();
     state.duel = freshDuel();
     state.saloonVotes = freshSaloonVotes();
+    emit();
+    sendJson(res, publicState(req));
+    return;
+  }
+
+  if (req.method === "POST" && url.pathname === "/api/replay-game") {
+    const body = await readBody(req);
+    useGame(body.code);
+    replayWithSamePlayers();
     emit();
     sendJson(res, publicState(req));
     return;
@@ -728,6 +1023,7 @@ const server = http.createServer(async (req, res) => {
       player.voiceRoom = String(body.room || "");
       player.voiceReady = Boolean(body.ready);
       player.voiceMuted = Boolean(body.muted);
+      player.voiceDeafened = Boolean(body.deafened);
       maybeStartDuelFromVoice();
       emit();
     }
@@ -875,6 +1171,8 @@ setInterval(() => {
   state = previous;
   activeSettings = previous.settings;
 }, 500);
+
+scheduleMeteredRefresh();
 
 server.listen(port, "0.0.0.0", () => {
   console.log(`Host: http://127.0.0.1:${port}/`);

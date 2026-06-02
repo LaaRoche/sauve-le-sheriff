@@ -11,7 +11,7 @@
       <section class="panel phone-panel" aria-label="Sauve l'Empire joueur">
         <div class="phone-topbar">
           <div>
-            <p class="eyebrow">v5.7</p>
+            <p class="eyebrow">v6.24</p>
             <img class="app-logo phone-logo" src="assets/logo-sauve-empire.png" alt="Sauve l'Empire">
           </div>
           <div class="top-actions">
@@ -22,66 +22,101 @@
         </div>
 
         <form class="join-form" id="join-form">
-          <label>
-            Ton nom
-            <input id="player-name" autocomplete="off" maxlength="24" required>
-          </label>
-          <label>
-            Code de partie
-            <input id="game-code" autocomplete="off" maxlength="6" placeholder="Ex : A7K2P">
-          </label>
-          <div class="launch-actions">
-            <button class="primary" id="create-game" type="button">Creer une partie</button>
+          <section class="join-card">
+            <span>Profil joueur</span>
+            <label>
+              Ton pseudo
+              <input id="player-name" autocomplete="off" maxlength="24" required>
+            </label>
+            <p>Utilise le meme pseudo pour retrouver ta partie apres un refresh.</p>
+          </section>
+
+          <section class="join-card">
+            <span>Creer une partie</span>
+            <div class="launch-actions">
+              <button class="primary" id="create-public-game" type="button">Partie publique</button>
+              <button id="create-game" type="button">Partie privee</button>
+            </div>
+            <p>Publique : visible par tous. Privee : entree par code.</p>
+          </section>
+
+          <section class="join-card">
+            <span>Rejoindre par code</span>
+            <label>
+              Code de partie
+              <input id="game-code" autocomplete="off" maxlength="6" placeholder="Ex : A7K2P">
+            </label>
             <button type="submit">Rejoindre</button>
-          </div>
+          </section>
+
+          <section class="public-games" aria-label="Parties en preparation">
+            <div>
+              <span>Parties en preparation</span>
+              <button class="ghost-button" id="refresh-games" type="button">Actualiser</button>
+            </div>
+            <div class="public-game-list" id="public-game-list">
+              <p>Aucune partie en preparation.</p>
+            </div>
+          </section>
         </form>
 
           <div class="player-view hidden" id="player-view">
           <div class="host-tools hidden" id="host-tools">
-            <div class="host-tools-header">
-              <span>Organisateur</span>
+            <div class="host-config-card host-info-card">
+              <span>Infos partie</span>
               <strong>Configuration</strong>
+              <p class="game-code-display">Code partie : <strong id="host-game-code">-----</strong></p>
+              <p id="host-player-count">0 joueur</p>
             </div>
-            <p class="game-code-display">Code partie : <strong id="host-game-code">-----</strong></p>
-            <p id="host-player-count">0 joueur</p>
-            <div class="host-timer-grid">
-              <label>
-                Duree duel
-                <input id="host-duel-duration" type="number" min="5" max="300" value="30">
-              </label>
-              <label>
-                Duree resultat
-                <input id="host-result-duration" type="number" min="3" max="120" value="15">
-              </label>
-              <label>
-                Duree discussion
-                <input id="host-discussion-duration" type="number" min="10" max="900" value="150">
-              </label>
-              <label>
-                Hors-la-loi
-                <input id="host-outlaw-count" type="number" min="1" max="8" value="1">
-              </label>
+            <div class="host-config-grid">
+              <div class="host-config-card host-timers-card">
+                <span>Timers</span>
+                <label>
+                  Duel
+                  <input id="host-duel-duration" type="number" min="5" max="300" value="30">
+                </label>
+                <label>
+                  Resultat
+                  <input id="host-result-duration" type="number" min="3" max="120" value="15">
+                </label>
+                <label>
+                  Discussion
+                  <input id="host-discussion-duration" type="number" min="10" max="900" value="150">
+                </label>
+              </div>
+              <div class="host-config-card host-role-card">
+                <span>Roles</span>
+                <label>
+                  Hors-la-loi
+                  <input id="host-outlaw-count" type="number" min="1" max="8" value="1">
+                </label>
+                <p id="host-outlaw-recommendation">Conseille : 1 hors-la-loi.</p>
+              </div>
             </div>
-            <div>
+            <div class="host-config-card host-players-card">
               <span>Joueurs connectes</span>
               <div class="host-player-list" id="host-player-list"></div>
+              <button id="host-add-fake-players" type="button">Creer 5 faux joueurs</button>
             </div>
             <p id="host-message">Le premier joueur connecte configure et lance la partie.</p>
             <div class="host-actions">
-              <button class="primary" id="host-start-game" type="button">Preparer et lancer</button>
-              <button id="host-force-start" type="button">Lancer quand meme</button>
-              <button class="danger" id="host-new-game" type="button">Nouvelle partie</button>
+              <button class="primary" id="host-start-game" type="button">Lancer</button>
+              <button id="host-force-start" type="button">Lancer sans tous les micros</button>
+              <button class="danger" id="host-new-game" type="button">Annuler</button>
             </div>
           </div>
 
           <div class="player-hero">
             <div class="identity">
-              <img class="role-art identity-role-art" id="role-art" src="assets/role-hidden.svg" alt="">
-              <div class="identity-content">
-              <span id="player-status">Connecte</span>
-              <strong id="player-display-name"></strong>
-              <small id="player-saloon"></small>
-              <em id="player-role">Role non attribue</em>
+              <div class="identity-player">
+                <span id="player-status">Connecte</span>
+                <strong id="player-display-name"></strong>
+                <small id="player-saloon"></small>
+              </div>
+              <div class="role-card">
+                <span>Ton role</span>
+                <img class="role-art identity-role-art" id="role-art" src="assets/role-hidden.svg" alt="">
+                <em id="player-role">Role non attribue</em>
               </div>
             </div>
           </div>
@@ -99,13 +134,31 @@
 
           <p class="outcome" id="player-message">En attente du maitre de partie.</p>
 
+          <div class="game-roster-panel hidden" id="game-roster-panel">
+            <span id="game-roster-kicker">Joueurs</span>
+            <strong id="game-roster-title">Joueurs connectes</strong>
+            <div class="game-roster-grid" id="game-roster-grid"></div>
+          </div>
+
+          <div class="spectator-panel hidden" id="spectator-panel">
+            <span>Vue spectateur</span>
+            <strong>La partie continue</strong>
+            <p>Observe les saloons, le duel et les roles depuis le vocal Elimines.</p>
+            <div class="spectator-grid" id="spectator-grid"></div>
+          </div>
+
           <div class="voice-panel">
             <div>
               <span>Vocal</span>
               <strong id="voice-room">Non connecte</strong>
               <p id="voice-status">Active ton micro pour rejoindre le vocal de ta phase.</p>
             </div>
-            <button class="primary" id="enable-voice" type="button">Activer le micro</button>
+            <div class="voice-actions">
+              <button class="primary" id="enable-voice" type="button">🎙️ Activer micro</button>
+              <button class="hidden" id="mute-mic" type="button">🔇 Couper micro</button>
+              <button class="danger hidden" id="deafen-voice" type="button">🚫 Sourdine totale</button>
+              <button class="hidden" id="reconnect-voice" type="button">↻ Reconnecter vocal</button>
+            </div>
           </div>
 
           <div class="saloon-vote-panel hidden" id="saloon-vote-panel">
@@ -115,10 +168,20 @@
             <p>En cas d'egalite, l'Empire tranche au hasard.</p>
           </div>
 
+          <div class="reveal-panel hidden" id="reveal-panel">
+            <span id="reveal-kicker">Resultat du duel</span>
+            <strong id="reveal-title">Le duel est termine</strong>
+            <div class="reveal-card hidden" id="reveal-card">
+              <img id="reveal-art" src="assets/role-hidden.svg" alt="">
+              <em id="reveal-role"></em>
+            </div>
+            <p id="reveal-detail">Rejoins ton vocal.</p>
+          </div>
+
           <button class="danger hidden" id="sheriff-phone-shot" type="button">Tir du sheriff</button>
 
           <div class="host-end-tools hidden" id="host-end-tools">
-            <button class="danger" id="host-end-new-game" type="button">Nouvelle partie</button>
+            <button class="primary" id="host-end-new-game" type="button">Rejouer avec les memes joueurs</button>
           </div>
 
           <div class="end-roles hidden" id="end-roles">
@@ -146,17 +209,15 @@
         </div>
         <ol class="rules-list">
           <li>Ton role est secret. Ne le montre pas.</li>
-          <li>Va dans le vocal indique par ton saloon ou par l'ecran joueur.</li>
-          <li>Pendant la discussion, vote avec ton saloon pour choisir qui part au duel.</li>
-          <li>En cas d'egalite, l'Empire tranche au hasard.</li>
-          <li>Si tu vas au duel, clique sur tirer ou ne pas tirer avant la fin du timer.</li>
-          <li>Le sheriff peut utiliser son pouvoir avant la fin du timer : sa cible meurt et le duel s'arrete.</li>
-          <li>Si le sheriff tue un citoyen, il perd son pouvoir. S'il tue un hors-la-loi, il le garde.</li>
-          <li>Si personne ne tire, chaque duelliste voit la carte adverse pendant le resultat, puis ils echangent de saloon.</li>
-          <li>L'Empire gagne quand tous les hors-la-loi sont morts.</li>
-          <li>Les hors-la-loi gagnent seulement s'ils sont strictement plus nombreux que le camp Empire vivant.</li>
-          <li>A 1 contre 1 avec un hors-la-loi, la partie passe en duel final.</li>
-          <li>Si tu meurs, garde le silence jusqu'a la fin de la partie.</li>
+          <li>Sheriff et citoyens jouent ensemble : ils doivent trouver les hors-la-loi.</li>
+          <li>Les hors-la-loi doivent mentir, survivre et devenir plus nombreux.</li>
+          <li>Pendant la discussion, ton saloon vote pour choisir qui va au duel.</li>
+          <li>Au duel, choisis secretement : tirer ou ne pas tirer.</li>
+          <li>Le sheriff peut tirer avant la fin du duel avec son pouvoir special.</li>
+          <li>Si personne ne tire, les deux duellistes voient le role de l'autre.</li>
+          <li>L'Empire gagne quand tous les hors-la-loi sont elimines.</li>
+          <li>Les hors-la-loi gagnent s'ils sont plus nombreux que l'Empire.</li>
+          <li>Si tu es elimine, tu regardes la partie sans aider les vivants.</li>
         </ol>
       </section>
     </div>
@@ -174,10 +235,6 @@
           <label>
             Chat vocal
             <input id="voice-volume" type="range" min="0" max="100" value="100">
-          </label>
-          <label>
-            Ambiance saloon
-            <input id="music-volume" type="range" min="0" max="100" value="25">
           </label>
           <label>
             Effets sonores

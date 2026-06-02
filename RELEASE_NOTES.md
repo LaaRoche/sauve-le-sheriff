@@ -1,5 +1,195 @@
 # Release notes
 
+## v6.24
+
+- Correction anti-spoil : un joueur vivant ne voit plus les autres saloons dans le panneau joueurs.
+- Le panneau joueur affiche uniquement son propre saloon ou le vocal Duel s'il est duelliste.
+- Les elimines gardent la vue spectateur complete.
+
+## v6.23
+
+- Integration TURN Metered dynamique cote serveur avec variables Render dediees.
+- Ajout d'un panneau joueur listant le lobby avant partie.
+- Ajout d'un panneau placement affichant Saloon A, Saloon B et Duel sans reveler les roles.
+- Boutons vocaux clarifies avec libelles et symboles plus explicites.
+- Ajout du bouton Rejouer avec les memes joueurs en fin de partie.
+
+## v6.22
+
+- Ajout d'une configuration TURN/STUN cote serveur pour fiabiliser le vocal a distance.
+- Le client vocal utilise maintenant la configuration ICE envoyee par le serveur.
+- Detection plus claire des connexions vocales instables pour proposer une reconnexion.
+
+## v6.21
+
+- Vue spectateur reorganisee : suppression du bloc Vivants.
+- Saloon A et Saloon B sont affiches cote a cote en haut.
+- Le bloc Duel passe sous les deux saloons.
+- Ajout d'un bloc Phase actuelle avec timer en bas a droite.
+
+## v6.20
+
+- Remplacement du fond boutique/bois par la nouvelle photo de rue western.
+- Logo davantage mis en evidence avec une taille plus grande et une ombre plus marquee.
+- Correction de la carte sheriff apres utilisation du pouvoir : le role reste affiche en texte court.
+
+## v6.19
+
+- Correction du positionnement des boutons dans le bloc vocal sur tous les ecrans.
+- Le texte du vocal garde maintenant toute la largeur du bloc.
+- Les boutons vocaux passent en grille responsive pour eviter les chevauchements.
+
+## v6.18
+
+- Les bots ne bloquent plus le lancement ni le demarrage d'un duel a cause du micro.
+- Les bots ne sont plus pris comme cibles vocales WebRTC.
+- Lobby organisateur enrichi avec checklist : connecte, micro, pret, type joueur/bot et organisateur.
+- Statuts vocaux clarifies : vocal connecte, micro coupe, sourdine active, connexion instable.
+- Le bouton Reconnexion vocale apparait automatiquement en cas de probleme vocal.
+- Vue spectateur eliminee renforcee : vivants, saloons, duel, elimines et roles reveles.
+- Les spectateurs restent sans interaction de jeu.
+
+## v6.17
+
+- Ecran organisateur clarifie avec sections Infos partie, Timers, Roles et Joueurs.
+- Recommendation de hors-la-loi affichee selon le nombre de joueurs connectes.
+- Bouton "Lancer sans tous les micros" plus explicite.
+- Mode test rapide avec creation de 5 faux joueurs.
+- Statuts vocaux plus clairs et bouton de reconnexion vocale.
+- Responsive PC ajuste : en discussion, role a gauche, vote au centre, timer a droite.
+- Boutons et bordures passes dans un style moins dore et moins sature.
+
+## v6.16
+
+- Symboles de roles assombris pour un rendu moins flashy.
+- Nouveau revolver hors-la-loi plus proche d'une arme western.
+- Etoile sheriff et chapeau citoyen passes dans un style plus noir / sobre.
+- Bordures des blocs moins dorees et moins brillantes.
+
+## v6.15
+
+- Le bouton Reset devient Annuler pour mieux decrire son action.
+- Configuration organisateur restructuree : timers regroupes et roles separes.
+- Le nombre conseille de hors-la-loi s'ajuste automatiquement au nombre de joueurs.
+- Regle automatique : 1 hors-la-loi jusqu'a 5 joueurs, 2 a partir de 6, 3 a partir de 9.
+- Le nombre de hors-la-loi reste modifiable manuellement.
+
+## v6.14
+
+- Cartes de role plus premium avec effet papier western, bordures renforcees et meilleure lisibilite.
+- Optimisation PC : grille plus large, zones role / timer / action mieux equilibrees.
+- Vue spectateur PC plus large pour mieux suivre les saloons et le duel.
+- Regles simplifiees pour etre comprises plus rapidement.
+
+## v6.13
+
+- Refonte du lobby joueur avec sections Profil, Creation, Rejoindre par code et parties en preparation.
+- Reconnexion plus solide via le pseudo et le code de partie sauvegardes localement.
+- Les nouveaux joueurs ne peuvent plus rejoindre une partie deja demarree.
+- Les joueurs deja presents peuvent revenir dans leur partie avec le meme pseudo.
+- Le lobby indique aussi le nombre de micros actifs par partie.
+- La vue spectateur elimine affiche mieux la phase en cours et l'etat de la partie.
+
+## v6.12
+
+- Le bloc vocal joueur occupe maintenant toute la largeur disponible comme celui de l'organisateur.
+- Les libelles des boutons organisateur sont raccourcis pour mieux tenir dans l'interface.
+- Les boutons vocaux joueur sont clarifies : Couper micro / Tout couper / Revenir.
+
+## v6.11
+
+- Les parties privees en preparation apparaissent maintenant dans le lobby.
+- Les parties privees restent protegees : le code n'est pas affiche dans la liste.
+- Un clic sur une partie privee invite le joueur a saisir le code pour la rejoindre.
+- La liste du lobby affiche maintenant toutes les parties en preparation, publiques et privees.
+
+## v6.10
+
+- Separation des controles vocaux joueur.
+- Ajout d'un bouton pour couper uniquement son micro tout en continuant d'entendre le vocal.
+- Ajout d'un bouton sourdine totale qui coupe le micro et l'ecoute.
+- Le joueur mute reste dans son vocal et peut toujours entendre les autres.
+
+## v6.9
+
+- Ajout des parties publiques visibles directement sur la page joueur.
+- Ajout de la creation de partie publique ou privee depuis le lobby joueur.
+- Ajout de la jonction par code pour les parties privees, avec message si le code est introuvable.
+- Correction du chargement des images sur le serveur deploye.
+
+## v6.8
+
+- Le bloc Phase actuelle est uniformise pour les joueurs vivants : Discussion Saloon ou Duel en cours.
+- La revelation de duel s'affiche dans un panneau a droite, sans remplacer la carte role du joueur.
+- Les choix Tirer / Ne pas tirer restent modifiables jusqu'a la fin du duel.
+- Le tir du sheriff reste instantane.
+- Les boutons Tirer, Ne pas tirer et Tir du sheriff passent en style western avec icones integrees.
+- Le theme visuel est assombri en noir/marron avec textures bois, fond western et touches saloon sur les ecrans existants.
+
+## v6.7
+
+- Les actions de duel sont regroupees au centre de la zone droite sur PC.
+- Tir du sheriff reste au-dessus de Tirer / Ne pas tirer.
+
+## v6.6
+
+- Les joueurs hors duel voient maintenant "Duel en cours" quand leur representant est parti.
+- Le bloc de vote affiche le saloon du joueur puis "Choisir qui va au duel".
+- Le sous-texte redondant est retire du bloc Phase actuelle pendant la discussion.
+- Sur PC, les actions Tirer / Ne pas tirer et Tir du sheriff passent dans la zone de droite.
+
+## v6.5
+
+- Reprise de la disposition desktop joueur pour eviter le layout mobile agrandi.
+- Suppression du bloc message redondant en bas a gauche sur PC.
+- Sur PC, les panneaux sont organises en zones : phase, role, timer, actions, vocal et contenu secondaire.
+
+## v6.4
+
+- Ajout d'une vraie disposition PC navigateur pour l'ecran joueur.
+- Sur grand ecran, role, timer, vote/actions, message et vocal sont visibles en colonnes.
+- Reduction du besoin de scroller avec la molette sur PC.
+- La disposition mobile verticale reste conservee pour les petits ecrans.
+
+## v6.3
+
+- Les boutons Tirer / Ne pas tirer remontent juste sous la carte role pendant le duel.
+- Le bouton Tir du sheriff est place avec les actions de duel.
+- Le timer, le message et le vocal restent sous les actions.
+
+## v6.2
+
+- En discussion et pendant le vote, la carte role reste toujours visible.
+- Le bloc vote est ajoute sous le message de discussion au lieu de remplacer la carte role.
+- Le flow discussion suit : titre, role, timer, consigne, vote, vocal.
+
+## v6.1
+
+- Reprise plus stricte de l'ecran joueur de reference.
+- Le role est affiche dans une vraie carte centrale "Ton role".
+- Le role reste visible pendant la discussion et les autres phases.
+- Suppression de l'onde micro decorative dans le bloc vocal.
+
+## v6.0
+
+- Refonte du flow visuel des ecrans joueurs pour coller a la planche de reference.
+- La phase devient le titre principal de chaque ecran joueur.
+- Les ecrans discussion, vote, duel, resultat et spectateur ont un ordre visuel dedie.
+- Theme western sombre/or renforce sur les cartes, timers, boutons et panneaux.
+
+## v5.9
+
+- Unification visuelle vers un theme western sombre/or sur les ecrans de jeu.
+- Ajout d'une vue spectateur pour les joueurs elimines.
+- Les joueurs elimines voient les saloons, le duel, les elimines et les roles reveles.
+- Les joueurs vivants gardent leur affichage normal et ne voient pas cette vue.
+
+## v5.8
+
+- Suppression de l'ambiance sonore de saloon.
+- Conservation uniquement des effets sonores utiles : cloche et revolver.
+- Le menu audio garde le volume du chat vocal et des effets sonores.
+
 ## v5.7
 
 - Les duellistes restent dans le vocal Duel pendant toute la phase de revelation/resultat.

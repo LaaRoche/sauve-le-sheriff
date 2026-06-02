@@ -2,7 +2,7 @@
 
 Application web multijoueur pour animer une partie de Sauve l'Empire.
 
-Version actuelle : v5.7
+Version actuelle : v6.24
 
 ## Lancer en local
 
@@ -29,3 +29,45 @@ npm start
 L'hebergeur doit fournir la variable `PORT`. L'app l'utilise automatiquement.
 
 Une fois deployee, partage l'URL publique de la page maitre. Le lien joueur affiche dans l'app utilisera automatiquement cette meme URL publique.
+
+## Vocal a distance
+
+Le vocal utilise WebRTC. Pour que tous les joueurs s'entendent meme avec des box, VPN ou pare-feu compliques, configure un serveur TURN sur l'hebergeur.
+
+Configuration recommandee avec Metered sur Render :
+
+```text
+METERED_APP_NAME=ton-nom-d-application-metered
+METERED_SECRET_KEY=ta-cle-secrete-metered
+```
+
+Options utiles :
+
+```text
+METERED_TURN_REGION=global
+METERED_TURN_EXPIRY_SECONDS=86400
+METERED_TURN_LABEL=empire-sheriff-render
+```
+
+Alternative avec un identifiant TURN deja cree :
+
+```text
+METERED_APP_NAME=ton-nom-d-application-metered
+METERED_TURN_API_KEY=ta-cle-api-turn
+```
+
+Alternative statique :
+
+```text
+TURN_URL=turn:ton-serveur-turn:3478
+TURN_USERNAME=ton-utilisateur
+TURN_CREDENTIAL=ton-mot-de-passe
+```
+
+Configuration complete manuelle :
+
+```text
+ICE_SERVERS_JSON=[{"urls":"stun:stun.l.google.com:19302"},{"urls":"turn:ton-serveur-turn:3478","username":"ton-utilisateur","credential":"ton-mot-de-passe"}]
+```
+
+Sans TURN, l'app garde le STUN public par defaut, mais certains joueurs peuvent ne pas s'entendre selon leur reseau.
