@@ -2,7 +2,7 @@
 
 Application web multijoueur pour animer une partie de Sauve l'Empire.
 
-Version actuelle : v6.22
+Version actuelle : v6.24
 
 ## Lancer en local
 
@@ -34,7 +34,29 @@ Une fois deployee, partage l'URL publique de la page maitre. Le lien joueur affi
 
 Le vocal utilise WebRTC. Pour que tous les joueurs s'entendent meme avec des box, VPN ou pare-feu compliques, configure un serveur TURN sur l'hebergeur.
 
-Variables possibles sur Render :
+Configuration recommandee avec Metered sur Render :
+
+```text
+METERED_APP_NAME=ton-nom-d-application-metered
+METERED_SECRET_KEY=ta-cle-secrete-metered
+```
+
+Options utiles :
+
+```text
+METERED_TURN_REGION=global
+METERED_TURN_EXPIRY_SECONDS=86400
+METERED_TURN_LABEL=empire-sheriff-render
+```
+
+Alternative avec un identifiant TURN deja cree :
+
+```text
+METERED_APP_NAME=ton-nom-d-application-metered
+METERED_TURN_API_KEY=ta-cle-api-turn
+```
+
+Alternative statique :
 
 ```text
 TURN_URL=turn:ton-serveur-turn:3478
@@ -42,7 +64,7 @@ TURN_USERNAME=ton-utilisateur
 TURN_CREDENTIAL=ton-mot-de-passe
 ```
 
-Ou une configuration complete :
+Configuration complete manuelle :
 
 ```text
 ICE_SERVERS_JSON=[{"urls":"stun:stun.l.google.com:19302"},{"urls":"turn:ton-serveur-turn:3478","username":"ton-utilisateur","credential":"ton-mot-de-passe"}]

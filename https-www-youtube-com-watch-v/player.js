@@ -22,6 +22,10 @@ const playerAction = document.querySelector("#player-action");
 const timeLeft = document.querySelector("#time-left");
 const clockRing = document.querySelector("#clock-ring");
 const message = document.querySelector("#player-message");
+const gameRosterPanel = document.querySelector("#game-roster-panel");
+const gameRosterKicker = document.querySelector("#game-roster-kicker");
+const gameRosterTitle = document.querySelector("#game-roster-title");
+const gameRosterGrid = document.querySelector("#game-roster-grid");
 const saloonVotePanel = document.querySelector("#saloon-vote-panel");
 const saloonVoteList = document.querySelector("#saloon-vote-list");
 const revealPanel = document.querySelector("#reveal-panel");
@@ -458,6 +462,72 @@ function renderHostPlayerList() {
     .join("");
 }
 
+function rosterStatus(player) {
+  if (player.fake) return "Bot";
+  if (player.voiceDeafened) return "Sourdine";
+  if (player.voiceMuted) return "Micro coupe";
+  if (player.voiceReady) return "Micro actif";
+  return "Micro manquant";
+}
+
+function rosterRow(player, options = {}) {
+  const tags = [];
+  if (state?.hostId === player.id) tags.push("Organisateur");
+  if (player.id === playerId) tags.push("Toi");
+  if (options.showStatus) tags.push(rosterStatus(player));
+  if (options.label) tags.push(options.label);
+  return `<div class="game-roster-row">
+    <span>${escapeHtml(player.name)}</span>
+    <small>${tags.map(escapeHtml).join(" · ") || "Joueur"}</small>
+  </div>`;
+}
+
+function rosterGroup(title, players, options = {}) {
+  const rows = players.length
+    ? players.map((player) => rosterRow(player, options)).join("")
+    : "<p>Aucun joueur</p>";
+  return `<section>
+    <h3>${escapeHtml(title)}</h3>
+    ${rows}
+  </section>`;
+}
+
+function renderGameRoster(player, duel) {
+  if (!gameRosterPanel || !state || !player) return;
+
+  if (!player.alive && player.role) {
+    gameRosterPanel.classList.add("hidden");
+    return;
+  }
+
+  const started = gameHasStarted();
+  const duelIds = [duel.leftId, duel.rightId].filter(Boolean);
+  gameRosterKicker.textContent = started ? "Ton groupe" : "Lobby";
+  gameRosterTitle.textContent = started ? "Joueurs avec toi" : "Joueurs dans la partie";
+
+  if (!started) {
+    gameRosterGrid.innerHTML = [
+      rosterGroup("Joueurs connectes", state.players, { showStatus: true })
+    ].join("");
+    gameRosterPanel.classList.remove("hidden");
+    return;
+  }
+
+  const playerRoom = voiceRoomFor(player, duel);
+  if (playerRoom === "Duel") {
+    const duelists = state.players.filter((item) => duelIds.includes(item.id) && item.alive);
+    gameRosterGrid.innerHTML = rosterGroup("Duel", duelists);
+  } else if (playerRoom.startsWith("Saloon ")) {
+    const saloonPlayers = state.players.filter((item) => item.alive && item.role && item.saloon === player.saloon && !duelIds.includes(item.id));
+    gameRosterGrid.innerHTML = rosterGroup(`Saloon ${player.saloon}`, saloonPlayers);
+  } else if (state.winner) {
+    gameRosterGrid.innerHTML = rosterGroup("Fin de partie", state.players.filter((item) => item.role));
+  } else {
+    gameRosterGrid.innerHTML = rosterGroup(playerRoom || "Ton vocal", state.players.filter((item) => item.id === player.id));
+  }
+  gameRosterPanel.classList.remove("hidden");
+}
+
 function syncHostSettings() {
   if (!state?.settings) return;
   const livingCount = state.players.filter((player) => player.alive).length;
@@ -769,21 +839,22 @@ function updateVoiceTrackState() {
 
 function updateVoiceControls() {
   if (!voiceEnabled) {
-    enableVoice.textContent = "Activer le micro";
+    enableVoice.textContent = "🎙️ Activer micro";
     enableVoice.classList.remove("voice-on", "voice-muted");
     muteMicButton.classList.add("hidden");
     deafenVoiceButton.classList.add("hidden");
     reconnectVoiceButton.classList.add("hidden");
     return;
   }
-  enableVoice.textContent = deafened ? "Tout coupe" : micMuted ? "Micro coupe" : "Micro actif";
+  enableVoice.textContent = deafened ? "🚫 Sourdine totale" : micMuted ? "🔇 Micro coupe" : "🎙️ Micro actif";
   enableVoice.classList.toggle("voice-on", !micMuted && !deafened);
   enableVoice.classList.toggle("voice-muted", micMuted || deafened);
   muteMicButton.classList.remove("hidden");
   deafenVoiceButton.classList.remove("hidden");
   reconnectVoiceButton.classList.toggle("hidden", !voiceConnectionIssue);
-  muteMicButton.textContent = micMuted && !deafened ? "Reactiver" : "Couper micro";
-  deafenVoiceButton.textContent = deafened ? "Revenir" : "Tout couper";
+  muteMicButton.textContent = micMuted && !deafened ? "🎙️ Rallumer micro" : "🔇 Couper micro";
+  deafenVoiceButton.textContent = deafened ? "👂 Revenir au vocal" : "🚫 Sourdine totale";
+  reconnectVoiceButton.textContent = "↻ Reconnecter vocal";
   muteMicButton.classList.toggle("voice-on", !micMuted && !deafened);
   muteMicButton.classList.toggle("voice-muted", micMuted && !deafened);
   deafenVoiceButton.classList.toggle("voice-muted", deafened);
@@ -838,6 +909,7 @@ function render(nextState) {
     joinForm.classList.remove("hidden");
     playerView.classList.add("hidden");
     leaveGameButton.classList.add("hidden");
+    gameRosterPanel.classList.add("hidden");
     setViewMode("join");
     return;
   }
@@ -884,6 +956,11 @@ function render(nextState) {
   const isSelectedForDuel = saloonDuelist === player.id;
   voiceRoom.textContent = voiceRoomFor(player, duel) || "Non connecte";
   syncVoicePeers();
+  if (isHost && !hasStarted) {
+    gameRosterPanel.classList.add("hidden");
+  } else {
+    renderGameRoster(player, duel);
+  }
   const shownTime = duel.running ? duel.remaining : phase.remaining || duel.remaining;
   timeLeft.textContent = String(shownTime);
   timeLeft.classList.toggle("compact-time", shownTime >= 100);
@@ -901,6 +978,7 @@ function render(nextState) {
     choiceButtons.classList.add("hidden");
     sheriffPhoneShot.classList.add("hidden");
     saloonVotePanel.classList.add("hidden");
+    gameRosterPanel.classList.add("hidden");
     hideRevealPanel();
     spectatorPanel.classList.add("hidden");
     endRoles.classList.remove("hidden");
@@ -926,8 +1004,9 @@ function render(nextState) {
     } else {
       message.textContent = "Tu es mort. Garde le silence jusqu'a la fin de la partie.";
       setScreen("Elimine", "Tu ne participes plus.", "Reste dans le vocal Elimines et garde le silence.");
-      renderSpectatorView(duel);
-      spectatorPanel.classList.remove("hidden");
+    renderSpectatorView(duel);
+    spectatorPanel.classList.remove("hidden");
+    gameRosterPanel.classList.add("hidden");
     }
     choiceButtons.classList.add("hidden");
     sheriffPhoneShot.classList.add("hidden");
@@ -1114,12 +1193,8 @@ hostAddFakePlayers.addEventListener("click", async () => {
 });
 
 hostEndNewGame.addEventListener("click", async () => {
-  const code = gameCode;
-  await postJson("/api/new-game", { code });
-  if (gameCode) localStorage.removeItem(`sheriffPlayerId:${gameCode}`);
-  localStorage.removeItem("sheriffGameCode");
-  playerId = "";
-  gameCode = "";
+  const nextState = await postJson("/api/replay-game", { code: gameCode });
+  render(nextState);
 });
 
 [hostDuelDuration, hostResultDuration, hostDiscussionDuration].forEach((input) => {
