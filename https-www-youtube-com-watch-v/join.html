@@ -11,7 +11,7 @@
       <section class="panel phone-panel" aria-label="Sauve l'Empire joueur">
         <div class="phone-topbar">
           <div>
-            <p class="eyebrow">v6.23</p>
+            <p class="eyebrow">v6.22</p>
             <img class="app-logo phone-logo" src="assets/logo-sauve-empire.png" alt="Sauve l'Empire">
           </div>
           <div class="top-actions">
@@ -134,12 +134,6 @@
 
           <p class="outcome" id="player-message">En attente du maitre de partie.</p>
 
-          <div class="game-roster-panel hidden" id="game-roster-panel">
-            <span id="game-roster-kicker">Joueurs</span>
-            <strong id="game-roster-title">Joueurs connectes</strong>
-            <div class="game-roster-grid" id="game-roster-grid"></div>
-          </div>
-
           <div class="spectator-panel hidden" id="spectator-panel">
             <span>Vue spectateur</span>
             <strong>La partie continue</strong>
@@ -154,10 +148,10 @@
               <p id="voice-status">Active ton micro pour rejoindre le vocal de ta phase.</p>
             </div>
             <div class="voice-actions">
-              <button class="primary" id="enable-voice" type="button">🎙️ Activer micro</button>
-              <button class="hidden" id="mute-mic" type="button">🔇 Couper micro</button>
-              <button class="danger hidden" id="deafen-voice" type="button">🚫 Sourdine totale</button>
-              <button class="hidden" id="reconnect-voice" type="button">↻ Reconnecter vocal</button>
+              <button class="primary" id="enable-voice" type="button">Activer le micro</button>
+              <button class="hidden" id="mute-mic" type="button">Couper micro</button>
+              <button class="danger hidden" id="deafen-voice" type="button">Tout couper</button>
+              <button class="hidden" id="reconnect-voice" type="button">Reconnexion vocale</button>
             </div>
           </div>
 
@@ -181,7 +175,7 @@
           <button class="danger hidden" id="sheriff-phone-shot" type="button">Tir du sheriff</button>
 
           <div class="host-end-tools hidden" id="host-end-tools">
-            <button class="primary" id="host-end-new-game" type="button">Rejouer avec les memes joueurs</button>
+            <button class="danger" id="host-end-new-game" type="button">Nouvelle partie</button>
           </div>
 
           <div class="end-roles hidden" id="end-roles">

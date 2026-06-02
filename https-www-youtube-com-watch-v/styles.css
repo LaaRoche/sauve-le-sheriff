@@ -863,7 +863,6 @@ h3 {
 }
 
 .saloon-vote-panel,
-.game-roster-panel,
 .reveal-panel {
   display: grid;
   gap: 10px;
@@ -874,7 +873,6 @@ h3 {
 }
 
 .saloon-vote-panel > span,
-.game-roster-panel > span,
 .reveal-panel > span {
   color: #b99a69;
   font-size: 0.82rem;
@@ -883,61 +881,16 @@ h3 {
 }
 
 .saloon-vote-panel > strong,
-.game-roster-panel > strong,
 .reveal-panel > strong {
   color: #fff0cf;
   font-size: 1.35rem;
 }
 
 .saloon-vote-panel p,
-.game-roster-panel p,
 .reveal-panel p {
   margin: 0;
   color: #c8b39b;
   font-weight: 800;
-}
-
-.game-roster-grid {
-  display: grid;
-  gap: 10px;
-}
-
-.game-roster-grid section {
-  display: grid;
-  gap: 8px;
-  padding: 10px;
-  border: 1px solid rgba(132, 96, 54, 0.28);
-  border-radius: 7px;
-  background: linear-gradient(180deg, rgba(43, 27, 14, 0.62), rgba(8, 7, 6, 0.68));
-}
-
-.game-roster-grid h3 {
-  margin: 0;
-  color: #f2c46b;
-  font-size: 0.95rem;
-}
-
-.game-roster-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  min-height: 38px;
-  padding: 8px 10px;
-  border-radius: 6px;
-  color: #fff0cf;
-  background: rgba(8, 7, 6, 0.42);
-}
-
-.game-roster-row span {
-  overflow-wrap: anywhere;
-  font-weight: 900;
-}
-
-.game-roster-row small {
-  flex: 0 0 auto;
-  color: #d2b98f;
-  font-weight: 900;
 }
 
 .reveal-card {
@@ -2052,7 +2005,6 @@ a.test-link,
 }
 
 .saloon-vote-panel,
-.game-roster-panel,
 .reveal-panel,
 .spectator-panel,
 .end-roles {
@@ -2093,7 +2045,6 @@ a.test-link,
 }
 
 .saloon-vote-panel,
-.game-roster-panel,
 .reveal-panel {
   border-color: rgba(132, 96, 54, 0.40);
   background:
@@ -2101,7 +2052,6 @@ a.test-link,
 }
 
 .saloon-vote-panel > strong,
-.game-roster-panel > strong,
 .reveal-panel > strong {
   color: #ffe3a1;
   font-size: clamp(1.65rem, 7vw, 2.2rem);
@@ -2314,7 +2264,6 @@ a.test-link,
   }
 
 .saloon-vote-panel,
-.game-roster-panel,
 .reveal-panel,
 .spectator-panel,
 .end-roles {
@@ -2323,13 +2272,7 @@ a.test-link,
     min-height: 100%;
   }
 
-  .game-roster-panel {
-    grid-area: actions;
-    min-height: 96px;
-  }
-
   .saloon-vote-list,
-  .game-roster-grid,
   .spectator-grid,
   #end-role-list {
     align-content: start;
