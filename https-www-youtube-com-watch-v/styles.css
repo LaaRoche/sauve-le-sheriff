@@ -1281,6 +1281,43 @@ h3 {
   text-transform: uppercase;
 }
 
+.spectator-current {
+  align-content: center;
+}
+
+.spectator-current-content {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  min-height: 120px;
+  padding: 14px;
+  border-radius: 8px;
+  background:
+    radial-gradient(circle at 50% 35%, rgba(213, 179, 111, 0.18), transparent 52%),
+    rgba(8, 7, 6, 0.36);
+  text-align: center;
+}
+
+.spectator-current-content strong {
+  color: #fff0cf;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(1.35rem, 3vw, 2rem);
+}
+
+.spectator-current-content span {
+  color: #ffc247;
+  font-size: clamp(3rem, 7vw, 5rem);
+  font-weight: 900;
+  line-height: 0.95;
+  text-shadow: 0 0 18px rgba(255, 178, 43, 0.3);
+}
+
+.spectator-current-content small {
+  color: #f2d59b;
+  font-weight: 900;
+  text-transform: lowercase;
+}
+
 .audio-settings {
   display: grid;
   gap: 18px;
@@ -2040,16 +2077,21 @@ a.test-link,
 
 .spectator-grid {
   grid-template-columns: 1fr 1fr;
+  grid-template-areas:
+    "saloon-a saloon-b"
+    "duel duel"
+    "eliminated current";
 }
 
 .spectator-grid section {
   background: linear-gradient(180deg, rgba(58, 38, 18, 0.76), rgba(7, 6, 5, 0.86));
 }
 
-.spectator-grid section:nth-child(3),
-.spectator-grid section:nth-child(4) {
-  grid-column: 1 / -1;
-}
+.spectator-saloon-a { grid-area: saloon-a; }
+.spectator-saloon-b { grid-area: saloon-b; }
+.spectator-duel { grid-area: duel; }
+.spectator-eliminated { grid-area: eliminated; }
+.spectator-current { grid-area: current; }
 
 .player-view[data-mode="vote"] .saloon-vote-panel {
   order: 5;
@@ -2357,6 +2399,16 @@ a.test-link,
 
   .saloon {
     min-height: 118px;
+  }
+
+  .spectator-grid {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "saloon-a"
+      "saloon-b"
+      "duel"
+      "eliminated"
+      "current";
   }
 
   .clock-ring {

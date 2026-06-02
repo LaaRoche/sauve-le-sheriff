@@ -1,5 +1,18 @@
 # Release notes
 
+## v6.22
+
+- Ajout d'une configuration TURN/STUN cote serveur pour fiabiliser le vocal a distance.
+- Le client vocal utilise maintenant la configuration ICE envoyee par le serveur.
+- Detection plus claire des connexions vocales instables pour proposer une reconnexion.
+
+## v6.21
+
+- Vue spectateur reorganisee : suppression du bloc Vivants.
+- Saloon A et Saloon B sont affiches cote a cote en haut.
+- Le bloc Duel passe sous les deux saloons.
+- Ajout d'un bloc Phase actuelle avec timer en bas a droite.
+
 ## v6.20
 
 - Remplacement du fond boutique/bois par la nouvelle photo de rue western.

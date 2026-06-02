@@ -11,6 +11,8 @@ const defaultSettings = {
   resultDuration: 15,
   discussionDuration: 150
 };
+const defaultIceServers = [{ urls: "stun:stun.l.google.com:19302" }];
+const iceServers = loadIceServers();
 const duelReadyDuration = 8;
 const clients = new Set();
 let resultResetTimer = null;
@@ -18,6 +20,30 @@ let lastPublicOrigin = "";
 let activeSettings = { ...defaultSettings };
 let state = createGameState("GLOBAL");
 const games = new Map([[state.code, state]]);
+
+function loadIceServers() {
+  const json = globalThis.process?.env?.ICE_SERVERS_JSON;
+  if (json) {
+    try {
+      const parsed = JSON.parse(json);
+      if (Array.isArray(parsed) && parsed.length) return parsed;
+    } catch {
+      console.warn("ICE_SERVERS_JSON invalide, utilisation du STUN par defaut.");
+    }
+  }
+
+  const turnUrl = globalThis.process?.env?.TURN_URL;
+  const turnUsername = globalThis.process?.env?.TURN_USERNAME;
+  const turnCredential = globalThis.process?.env?.TURN_CREDENTIAL;
+  if (turnUrl && turnUsername && turnCredential) {
+    return [
+      ...defaultIceServers,
+      { urls: turnUrl, username: turnUsername, credential: turnCredential }
+    ];
+  }
+
+  return defaultIceServers;
+}
 
 function createGameState(code) {
   const settings = { ...defaultSettings };
@@ -263,7 +289,10 @@ function publicState(req) {
     settings: state.settings,
     phase: state.phase,
     duel: state.duel,
-    saloonVotes: state.saloonVotes
+    saloonVotes: state.saloonVotes,
+    voice: {
+      iceServers
+    }
   };
 }
 

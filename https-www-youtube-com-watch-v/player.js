@@ -77,6 +77,7 @@ let lastVoiceDeafened = null;
 let voiceConnectionIssue = false;
 let hostTimersTouched = false;
 let hostOutlawTouched = false;
+let voiceIceServers = [{ urls: "stun:stun.l.google.com:19302" }];
 const peers = new Map();
 const pendingCandidates = new Map();
 let events = null;
@@ -521,7 +522,7 @@ function spectatorStatus(player) {
   return player.alive ? "Vivant" : "Elimine";
 }
 
-function spectatorGroup(title, players) {
+function spectatorGroup(title, players, className = "") {
   const rows = players.length
     ? players.map((item) => `<div class="spectator-row">
         <span>${escapeHtml(item.name)}</span>
@@ -529,7 +530,21 @@ function spectatorGroup(title, players) {
         <em>${escapeHtml(spectatorStatus(item))}</em>
       </div>`).join("")
     : "<p>Aucun joueur</p>";
-  return `<section><h3>${escapeHtml(title)}</h3>${rows}</section>`;
+  return `<section class="${className}"><h3>${escapeHtml(title)}</h3>${rows}</section>`;
+}
+
+function spectatorPhaseCard(duel) {
+  const phase = state?.phase || {};
+  const remaining = duel.running ? duel.remaining : phase.running ? phase.remaining : phase.remaining || 0;
+  const label = duel.running ? "Duel en cours" : phase.label || "En attente";
+  return `<section class="spectator-current">
+    <h3>Phase actuelle</h3>
+    <div class="spectator-current-content">
+      <strong>${escapeHtml(label)}</strong>
+      <span>${escapeHtml(String(remaining))}</span>
+      <small>secondes</small>
+    </div>
+  </section>`;
 }
 
 function renderSpectatorView(duel) {
@@ -543,13 +558,12 @@ function renderSpectatorView(duel) {
   const saloonA = state.players.filter((item) => item.alive && item.role && item.saloon === "A" && !duelIds.includes(item.id));
   const saloonB = state.players.filter((item) => item.alive && item.role && item.saloon === "B" && !duelIds.includes(item.id));
   const eliminated = state.players.filter((item) => !item.alive && item.role);
-  const alive = state.players.filter((item) => item.alive && item.role);
   spectatorGrid.innerHTML = [
-    spectatorGroup("Vivants", alive),
-    spectatorGroup("Saloon A", saloonA),
-    spectatorGroup("Saloon B", saloonB),
-    spectatorGroup("Duel", duelists),
-    spectatorGroup("Elimines", eliminated)
+    spectatorGroup("Saloon A", saloonA, "spectator-saloon-a"),
+    spectatorGroup("Saloon B", saloonB, "spectator-saloon-b"),
+    spectatorGroup("Duel", duelists, "spectator-duel"),
+    spectatorGroup("Elimines", eliminated, "spectator-eliminated"),
+    spectatorPhaseCard(duel)
   ].join("");
 }
 
@@ -596,7 +610,7 @@ function createPeer(id) {
   if (peers.has(id)) return peers.get(id);
 
   const connection = new RTCPeerConnection({
-    iceServers: [{ urls: "stun:stun.l.google.com:19302" }]
+    iceServers: voiceIceServers
   });
 
   localStream?.getTracks().forEach((track) => connection.addTrack(track, localStream));
@@ -613,6 +627,12 @@ function createPeer(id) {
     if (["failed", "disconnected"].includes(connection.connectionState)) {
       markVoiceIssue();
       closePeer(id);
+    }
+  });
+
+  connection.addEventListener("iceconnectionstatechange", () => {
+    if (["failed", "disconnected"].includes(connection.iceConnectionState)) {
+      markVoiceIssue();
     }
   });
 
@@ -809,6 +829,9 @@ function toggleDeafen() {
 function render(nextState) {
   const previousState = state;
   state = nextState;
+  if (Array.isArray(state?.voice?.iceServers) && state.voice.iceServers.length) {
+    voiceIceServers = state.voice.iceServers;
+  }
   const player = myPlayer();
 
   if (!player) {

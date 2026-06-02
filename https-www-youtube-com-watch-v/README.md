@@ -2,7 +2,7 @@
 
 Application web multijoueur pour animer une partie de Sauve l'Empire.
 
-Version actuelle : v6.20
+Version actuelle : v6.22
 
 ## Lancer en local
 
@@ -29,3 +29,23 @@ npm start
 L'hebergeur doit fournir la variable `PORT`. L'app l'utilise automatiquement.
 
 Une fois deployee, partage l'URL publique de la page maitre. Le lien joueur affiche dans l'app utilisera automatiquement cette meme URL publique.
+
+## Vocal a distance
+
+Le vocal utilise WebRTC. Pour que tous les joueurs s'entendent meme avec des box, VPN ou pare-feu compliques, configure un serveur TURN sur l'hebergeur.
+
+Variables possibles sur Render :
+
+```text
+TURN_URL=turn:ton-serveur-turn:3478
+TURN_USERNAME=ton-utilisateur
+TURN_CREDENTIAL=ton-mot-de-passe
+```
+
+Ou une configuration complete :
+
+```text
+ICE_SERVERS_JSON=[{"urls":"stun:stun.l.google.com:19302"},{"urls":"turn:ton-serveur-turn:3478","username":"ton-utilisateur","credential":"ton-mot-de-passe"}]
+```
+
+Sans TURN, l'app garde le STUN public par defaut, mais certains joueurs peuvent ne pas s'entendre selon leur reseau.
