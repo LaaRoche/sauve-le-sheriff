@@ -12,7 +12,14 @@ const defaultSettings = {
   discussionDuration: 150
 };
 const defaultIceServers = [{ urls: "stun:stun.l.google.com:19302" }];
-const iceServers = loadIceServers();
+const staticIceServers = loadStaticIceServers();
+let iceServers = staticIceServers;
+let turnStatus = {
+  mode: "stun",
+  configured: false,
+  ready: false,
+  message: "STUN par defaut"
+};
 const duelReadyDuration = 8;
 const clients = new Set();
 let resultResetTimer = null;
@@ -21,7 +28,7 @@ let activeSettings = { ...defaultSettings };
 let state = createGameState("GLOBAL");
 const games = new Map([[state.code, state]]);
 
-function loadIceServers() {
+function loadStaticIceServers() {
   const json = globalThis.process?.env?.ICE_SERVERS_JSON;
   if (json) {
     try {
@@ -43,6 +50,149 @@ function loadIceServers() {
   }
 
   return defaultIceServers;
+}
+
+function meteredAppName() {
+  const raw = String(globalThis.process?.env?.METERED_APP_NAME || "").trim();
+  return raw
+    .replace(/^https?:\/\//i, "")
+    .replace(/\.metered\.live.*$/i, "")
+    .replace(/\/.*$/, "");
+}
+
+function meteredUrl(pathname, params = {}) {
+  const appName = meteredAppName();
+  if (!appName) return "";
+  const url = new URL(`https://${appName}.metered.live${pathname}`);
+  for (const [key, value] of Object.entries(params)) {
+    if (value !== undefined && value !== null && value !== "") {
+      url.searchParams.set(key, String(value));
+    }
+  }
+  return url.toString();
+}
+
+function meteredRegion() {
+  return String(globalThis.process?.env?.METERED_TURN_REGION || "global").trim() || "global";
+}
+
+function meteredExpiry() {
+  const value = Number(globalThis.process?.env?.METERED_TURN_EXPIRY_SECONDS || 86400);
+  return Number.isFinite(value) && value > 300 ? Math.round(value) : 86400;
+}
+
+async function fetchJson(url, options = {}) {
+  const response = await fetch(url, {
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...(options.headers || {})
+    }
+  });
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status}`);
+  }
+  return response.json();
+}
+
+function normalizeIceServers(payload) {
+  const source = Array.isArray(payload) ? payload : payload?.iceServers;
+  if (!Array.isArray(source) || !source.length) return null;
+  return source
+    .map((server) => ({
+      urls: server.urls,
+      username: server.username,
+      credential: server.credential
+    }))
+    .filter((server) => server.urls);
+}
+
+async function createMeteredCredential() {
+  const secretKey = String(globalThis.process?.env?.METERED_SECRET_KEY || "").trim();
+  if (!secretKey) return null;
+  const url = meteredUrl("/api/v1/turn/credential", { secretKey });
+  if (!url) return null;
+  const credential = await fetchJson(url, {
+    method: "POST",
+    body: JSON.stringify({
+      expirationEnSecondes: meteredExpiry(),
+      expirationInSeconds: meteredExpiry(),
+      label: String(globalThis.process?.env?.METERED_TURN_LABEL || "empire-sheriff-render")
+    })
+  });
+  return credential;
+}
+
+async function fetchMeteredIceServers(apiKey) {
+  const endpoints = ["/api/v1/turn/credentials", "/api/v1/turn/credential"];
+  let lastError = null;
+  for (const endpoint of endpoints) {
+    try {
+      const payload = await fetchJson(meteredUrl(endpoint, {
+        apiKey,
+        region: meteredRegion()
+      }));
+      const meteredIceServers = normalizeIceServers(payload);
+      if (meteredIceServers) return meteredIceServers;
+    } catch (error) {
+      lastError = error;
+    }
+  }
+  throw lastError || new Error("Aucun serveur ICE recu");
+}
+
+async function refreshMeteredIceServers() {
+  const appName = meteredAppName();
+  const explicitApiKey = String(globalThis.process?.env?.METERED_TURN_API_KEY || "").trim();
+  const secretKey = String(globalThis.process?.env?.METERED_SECRET_KEY || "").trim();
+  if (!appName || (!explicitApiKey && !secretKey)) {
+    return;
+  }
+
+  turnStatus = {
+    mode: "metered",
+    configured: true,
+    ready: false,
+    message: "Configuration Metered en cours"
+  };
+
+  try {
+    const createdCredential = explicitApiKey ? null : await createMeteredCredential();
+    const directIceServers = normalizeIceServers(createdCredential);
+    if (directIceServers) {
+      iceServers = directIceServers;
+      turnStatus = {
+        mode: "metered",
+        configured: true,
+        ready: true,
+        message: "TURN Metered actif"
+      };
+      return;
+    }
+    const apiKey = explicitApiKey || createdCredential?.apiKey || createdCredential?.key || createdCredential?.id || "";
+    if (!apiKey) throw new Error("Identifiant TURN Metered introuvable");
+    iceServers = await fetchMeteredIceServers(apiKey);
+    turnStatus = {
+      mode: "metered",
+      configured: true,
+      ready: true,
+      message: "TURN Metered actif"
+    };
+  } catch (error) {
+    iceServers = staticIceServers;
+    turnStatus = {
+      mode: "metered",
+      configured: true,
+      ready: false,
+      message: "TURN Metered indisponible, STUN par defaut"
+    };
+    console.warn(`TURN Metered indisponible: ${error.message}`);
+  }
+}
+
+function scheduleMeteredRefresh() {
+  refreshMeteredIceServers();
+  setInterval(refreshMeteredIceServers, Math.min(meteredExpiry() * 1000 * 0.8, 6 * 60 * 60 * 1000));
 }
 
 function createGameState(code) {
@@ -291,7 +441,8 @@ function publicState(req) {
     duel: state.duel,
     saloonVotes: state.saloonVotes,
     voice: {
-      iceServers
+      iceServers,
+      turnStatus
     }
   };
 }
@@ -560,6 +711,24 @@ function setupGame(outlawCountInput, options = {}) {
   return true;
 }
 
+function replayWithSamePlayers() {
+  state.players.forEach((player, index) => {
+    player.alive = true;
+    player.role = "";
+    player.sheriffPower = true;
+    player.saloon = index % 2 === 0 ? "A" : "B";
+    player.voiceRoom = player.fake ? "Preparation" : "";
+    player.voiceReady = Boolean(player.fake);
+    player.voiceMuted = false;
+    player.voiceDeafened = false;
+  });
+  if (!state.hostId && state.players.length) state.hostId = state.players[0].id;
+  state.hostMessage = "Nouvelle manche prete avec les memes joueurs.";
+  state.phase = freshPhase();
+  state.duel = freshDuel();
+  state.saloonVotes = freshSaloonVotes();
+}
+
 function clampDuration(value, min, max, fallback) {
   const number = Number(value);
   if (!Number.isFinite(number)) return fallback;
@@ -737,6 +906,15 @@ const server = http.createServer(async (req, res) => {
     state.phase = freshPhase();
     state.duel = freshDuel();
     state.saloonVotes = freshSaloonVotes();
+    emit();
+    sendJson(res, publicState(req));
+    return;
+  }
+
+  if (req.method === "POST" && url.pathname === "/api/replay-game") {
+    const body = await readBody(req);
+    useGame(body.code);
+    replayWithSamePlayers();
     emit();
     sendJson(res, publicState(req));
     return;
@@ -993,6 +1171,8 @@ setInterval(() => {
   state = previous;
   activeSettings = previous.settings;
 }, 500);
+
+scheduleMeteredRefresh();
 
 server.listen(port, "0.0.0.0", () => {
   console.log(`Host: http://127.0.0.1:${port}/`);

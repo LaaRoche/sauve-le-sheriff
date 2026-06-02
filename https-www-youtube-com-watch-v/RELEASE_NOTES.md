@@ -1,5 +1,13 @@
 # Release notes
 
+## v6.23
+
+- Integration TURN Metered dynamique cote serveur avec variables Render dediees.
+- Ajout d'un panneau joueur listant le lobby avant partie.
+- Ajout d'un panneau placement affichant Saloon A, Saloon B et Duel sans reveler les roles.
+- Boutons vocaux clarifies avec libelles et symboles plus explicites.
+- Ajout du bouton Rejouer avec les memes joueurs en fin de partie.
+
 ## v6.22
 
 - Ajout d'une configuration TURN/STUN cote serveur pour fiabiliser le vocal a distance.
