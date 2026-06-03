@@ -63,12 +63,16 @@ a.test-link {
 }
 
 button {
+  position: relative;
+  z-index: 2;
   border: 1px solid rgba(132, 96, 54, 0.32);
   padding: 0 16px;
   color: #1b130c;
   font-weight: 800;
   background: linear-gradient(180deg, #d2a75a, #8b5528);
   cursor: pointer;
+  touch-action: manipulation;
+  user-select: none;
   transition: transform 140ms ease, background 140ms ease, box-shadow 140ms ease;
 }
 
@@ -1598,6 +1602,8 @@ h3 {
 
 .hidden {
   display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
 }
 
 .rules-modal {
@@ -2476,6 +2482,57 @@ a.test-link,
   .row-controls {
     align-items: stretch;
     flex-direction: column;
+  }
+}
+
+button::before,
+button::after {
+  pointer-events: none;
+}
+
+.phone-clock,
+.player-task,
+.identity-role-art {
+  pointer-events: none;
+}
+
+.choice-buttons,
+#sheriff-phone-shot,
+.voice-actions,
+.host-actions,
+.saloon-vote-list,
+.public-games-list {
+  position: relative;
+  z-index: 8;
+  pointer-events: auto;
+}
+
+.saloon-vote-panel.hidden,
+.game-roster-panel.hidden,
+.reveal-panel.hidden,
+.spectator-panel.hidden,
+.end-roles.hidden,
+.choice-buttons.hidden,
+#sheriff-phone-shot.hidden {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+@media (min-width: 981px) {
+  .player-view:not(.is-host-setup) #sheriff-phone-shot {
+    align-self: start;
+    margin: 0 auto;
+  }
+
+  .player-view:not(.is-host-setup) .choice-buttons {
+    align-self: end;
+    margin: 0 auto;
+  }
+
+  .player-view:not(.is-host-setup) #sheriff-phone-shot:not(.hidden) ~ .choice-buttons {
+    align-self: end;
+    margin: 0 auto;
   }
 }
 

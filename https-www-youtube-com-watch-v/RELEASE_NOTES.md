@@ -1,5 +1,11 @@
 # Release notes
 
+## v6.26
+
+- Correction des zones cliquables : les panneaux masques ne peuvent plus intercepter les clics.
+- Separation plus nette des boutons du duel et du bouton Tir du sheriff sur PC.
+- Les boutons ont une priorite d'affichage plus haute et une zone de clic plus stable.
+
 ## v6.25
 
 - Correction du pouvoir du sheriff : le tir est applique immediatement, mais le timer du duel continue.
