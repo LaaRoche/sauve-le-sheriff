@@ -84,6 +84,8 @@ let hostOutlawTouched = false;
 let voiceIceServers = [{ urls: "stun:stun.l.google.com:19302" }];
 const peers = new Map();
 const pendingCandidates = new Map();
+const speakingIds = new Set();
+const speakingMonitors = new Map();
 let events = null;
 let previousPhaseName = "";
 let previousPhaseRunning = false;
@@ -164,6 +166,80 @@ function updateRemoteAudioVolume() {
     audio.volume = deafened ? 0 : audioSettings.voice / 100;
     audio.muted = deafened;
   });
+}
+
+function updateSpeakingIndicators() {
+  document.querySelectorAll("[data-player-row-id]").forEach((row) => {
+    row.classList.toggle("is-speaking", speakingIds.has(row.dataset.playerRowId));
+  });
+}
+
+function setSpeaking(id, isSpeaking) {
+  if (!id) return;
+  const changed = isSpeaking ? !speakingIds.has(id) : speakingIds.has(id);
+  if (!changed) return;
+  if (isSpeaking) speakingIds.add(id);
+  else speakingIds.delete(id);
+  updateSpeakingIndicators();
+}
+
+function stopSpeakingMonitor(id) {
+  const monitor = speakingMonitors.get(id);
+  if (monitor) {
+    monitor.stopped = true;
+    if (monitor.frame) cancelAnimationFrame(monitor.frame);
+  }
+  speakingMonitors.delete(id);
+  setSpeaking(id, false);
+}
+
+function stopAllSpeakingMonitors() {
+  for (const id of [...speakingMonitors.keys()]) stopSpeakingMonitor(id);
+  speakingIds.clear();
+  updateSpeakingIndicators();
+}
+
+function setupSpeakingMonitor(id, stream) {
+  if (!id || !stream?.getAudioTracks?.().length) return;
+  stopSpeakingMonitor(id);
+
+  try {
+    const context = ensureAudioContext();
+    const source = context.createMediaStreamSource(stream);
+    const analyser = context.createAnalyser();
+    analyser.fftSize = 512;
+    source.connect(analyser);
+    const data = new Uint8Array(analyser.fftSize);
+    const monitor = { stopped: false, frame: 0 };
+    let active = false;
+    let lastChange = 0;
+
+    const readVolume = () => {
+      if (monitor.stopped) return;
+      analyser.getByteTimeDomainData(data);
+      let sum = 0;
+      for (const value of data) {
+        const delta = value - 128;
+        sum += delta * delta;
+      }
+      const level = Math.sqrt(sum / data.length);
+      const threshold = active ? 5 : 8;
+      const speaking = level > threshold;
+      const now = performance.now();
+
+      if (speaking !== active && now - lastChange > 140) {
+        active = speaking;
+        lastChange = now;
+        setSpeaking(id, active);
+      }
+      monitor.frame = requestAnimationFrame(readVolume);
+    };
+
+    speakingMonitors.set(id, monitor);
+    readVolume();
+  } catch {
+    stopSpeakingMonitor(id);
+  }
 }
 
 function handleAudioCues(previous, nextState, player) {
@@ -264,6 +340,7 @@ async function leaveCurrentGame() {
   events?.close();
   events = null;
   for (const id of [...peers.keys()]) closePeer(id);
+  stopAllSpeakingMonitors();
   localStream?.getTracks().forEach((track) => track.stop());
   localStream = null;
   voiceEnabled = false;
@@ -476,8 +553,9 @@ function rosterRow(player, options = {}) {
   if (player.id === playerId) tags.push("Toi");
   if (options.showStatus) tags.push(rosterStatus(player));
   if (options.label) tags.push(options.label);
-  return `<div class="game-roster-row">
-    <span>${escapeHtml(player.name)}</span>
+  const speaking = speakingIds.has(player.id);
+  return `<div class="game-roster-row${speaking ? " is-speaking" : ""}" data-player-row-id="${player.id}">
+    <span><i class="speaking-dot" aria-hidden="true"></i>${escapeHtml(player.name)}</span>
     <small>${tags.map(escapeHtml).join(" · ") || "Joueur"}</small>
   </div>`;
 }
@@ -511,6 +589,7 @@ function renderGameRoster(player, duel) {
       rosterGroup("Joueurs connectes", state.players, { showStatus: true })
     ].join("");
     gameRosterPanel.classList.remove("hidden");
+    updateSpeakingIndicators();
     return;
   }
 
@@ -527,6 +606,7 @@ function renderGameRoster(player, duel) {
     gameRosterGrid.innerHTML = rosterGroup(playerRoom || "Ton vocal", state.players.filter((item) => item.id === player.id));
   }
   gameRosterPanel.classList.remove("hidden");
+  updateSpeakingIndicators();
 }
 
 function syncHostSettings() {
@@ -570,10 +650,10 @@ function renderSaloonVote(player) {
   saloonVotePanel.querySelector("strong").textContent = "Choisir qui va au duel";
   saloonVoteList.innerHTML = candidates.map((candidate) => {
     const selected = selectedId === candidate.id ? " selected" : "";
-    const label = selectedId === candidate.id ? "Vote choisi" : "Voter";
+    const label = selectedId === candidate.id ? "Annuler" : "Voter";
     const count = Object.values(votes).filter((targetId) => targetId === candidate.id).length;
     const percent = candidates.length ? Math.round((count / candidates.length) * 100) : 0;
-    return `<button class="saloon-vote-choice${selected}" data-vote-target="${candidate.id}" type="button">
+    return `<button class="saloon-vote-choice${selected}" data-vote-target="${candidate.id}"${selected ? " data-vote-cancel=\"true\"" : ""} type="button">
       <span>${escapeHtml(candidate.name)}</span>
       <small>${count}/${candidates.length}</small>
       <i style="width:${percent}%"></i>
@@ -674,6 +754,7 @@ function closePeer(id) {
   if (connection) connection.close();
   peers.delete(id);
   pendingCandidates.delete(id);
+  stopSpeakingMonitor(id);
   document.querySelector(`#${peerKey(id)}`)?.remove();
 }
 
@@ -691,7 +772,9 @@ function createPeer(id) {
   });
 
   connection.addEventListener("track", (event) => {
-    ensureAudioElement(id).srcObject = event.streams[0];
+    const stream = event.streams[0];
+    ensureAudioElement(id).srcObject = stream;
+    setupSpeakingMonitor(id, stream);
   });
 
   connection.addEventListener("connectionstatechange", () => {
@@ -826,6 +909,7 @@ async function enableVoiceChat() {
   micMuted = false;
   deafened = false;
   updateVoiceTrackState();
+  setupSpeakingMonitor(playerId, localStream);
   updateVoiceControls();
   await syncVoicePeers();
   await Promise.all(voiceTargetIds().map((id) => sendSignal(id, "ready", null)));
@@ -836,6 +920,7 @@ function updateVoiceTrackState() {
   localStream.getAudioTracks().forEach((track) => {
     track.enabled = !micMuted && !deafened;
   });
+  if (micMuted || deafened) setSpeaking(playerId, false);
 }
 
 function updateVoiceControls() {
@@ -864,6 +949,7 @@ function updateVoiceControls() {
 async function reconnectVoiceChat() {
   if (!voiceEnabled) return;
   for (const id of [...peers.keys()]) closePeer(id);
+  stopSpeakingMonitor(playerId);
   localStream?.getTracks().forEach((track) => track.stop());
   localStream = null;
   voiceEnabled = false;
@@ -1167,7 +1253,11 @@ sheriffPhoneShot.addEventListener("click", async () => {
 saloonVoteList.addEventListener("click", async (event) => {
   const button = event.target.closest("[data-vote-target]");
   if (!button) return;
-  await postJson("/api/saloon-vote", { playerId, targetId: button.dataset.voteTarget });
+  await postJson("/api/saloon-vote", {
+    playerId,
+    targetId: button.dataset.voteTarget,
+    cancel: button.dataset.voteCancel === "true"
+  });
 });
 
 hostPlayerList.addEventListener("click", async (event) => {

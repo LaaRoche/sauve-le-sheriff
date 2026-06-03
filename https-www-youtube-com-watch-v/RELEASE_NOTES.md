@@ -1,5 +1,17 @@
 # Release notes
 
+## v6.28
+
+- Ajout de l'annulation de vote pendant la discussion de saloon.
+- Ajout d'un indicateur visuel pour voir qui parle dans le vocal visible du joueur.
+- Amelioration responsive : grille 3 colonnes sur grand ecran, 2 colonnes sur PC moyen, 1 colonne sur petit ecran.
+
+## v6.27
+
+- Correction de fin de partie : apres la revelation, l'app ne relance plus un timer de discussion si un camp a gagne.
+- Nouvelle regle de victoire : les hors-la-loi gagnent s'ils sont autant ou plus nombreux que le camp Empire.
+- Suppression effective du duel final automatique a 1 contre 1.
+
 ## v6.26
 
 - Correction des zones cliquables : les panneaux masques ne peuvent plus intercepter les clics.

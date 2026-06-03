@@ -934,8 +934,49 @@ h3 {
 }
 
 .game-roster-row span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   overflow-wrap: anywhere;
   font-weight: 900;
+}
+
+.speaking-dot {
+  display: inline-grid;
+  place-items: center;
+  width: 14px;
+  height: 14px;
+  flex: 0 0 auto;
+  border: 1px solid rgba(242, 196, 107, 0.22);
+  border-radius: 999px;
+  background: rgba(8, 7, 6, 0.72);
+  box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.24);
+}
+
+.speaking-dot::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(185, 154, 105, 0.42);
+}
+
+.game-roster-row.is-speaking {
+  border: 1px solid rgba(245, 189, 75, 0.58);
+  background:
+    radial-gradient(circle at 0% 50%, rgba(245, 189, 75, 0.18), transparent 46%),
+    rgba(8, 7, 6, 0.52);
+}
+
+.game-roster-row.is-speaking .speaking-dot {
+  border-color: rgba(255, 221, 142, 0.82);
+  box-shadow:
+    0 0 0 3px rgba(245, 189, 75, 0.14),
+    0 0 18px rgba(245, 189, 75, 0.32);
+}
+
+.game-roster-row.is-speaking .speaking-dot::before {
+  background: #ffd77a;
 }
 
 .game-roster-row small {
@@ -2131,6 +2172,10 @@ a.test-link,
   border-color: rgba(242, 196, 107, 0.8);
 }
 
+.saloon-vote-choice.selected b {
+  color: #ffdca0;
+}
+
 .spectator-grid {
   grid-template-columns: 1fr 1fr;
   grid-template-areas:
@@ -2533,6 +2578,118 @@ button::after {
   .player-view:not(.is-host-setup) #sheriff-phone-shot:not(.hidden) ~ .choice-buttons {
     align-self: end;
     margin: 0 auto;
+  }
+}
+
+@media (min-width: 900px) {
+  .phone-panel {
+    max-height: none;
+    overflow: visible;
+  }
+}
+
+@media (min-width: 1181px) {
+  .player-view:not(.is-host-setup) {
+    grid-template-columns: minmax(300px, 370px) minmax(280px, 360px) minmax(390px, 1fr);
+  }
+
+  .player-view:not(.is-host-setup) .saloon-vote-panel,
+  .player-view:not(.is-host-setup) .reveal-panel,
+  .player-view:not(.is-host-setup) .spectator-panel,
+  .player-view:not(.is-host-setup) .end-roles {
+    min-width: 0;
+  }
+}
+
+@media (min-width: 900px) and (max-width: 1180px) {
+  .phone-shell {
+    width: min(100% - 24px, 1060px);
+  }
+
+  .player-view:not(.is-host-setup) {
+    grid-template-columns: minmax(280px, 0.9fr) minmax(320px, 1.1fr);
+    grid-template-rows: auto auto auto auto;
+    grid-template-areas:
+      "phase phase"
+      "role timer"
+      "actions voice"
+      "side side";
+    min-height: auto;
+  }
+
+  .player-view[data-mode="discussion"]:not(.is-host-setup),
+  .player-view[data-mode="vote"]:not(.is-host-setup) {
+    grid-template-columns: minmax(280px, 0.88fr) minmax(360px, 1.12fr);
+    grid-template-areas:
+      "phase phase"
+      "role side"
+      "timer side"
+      "voice side";
+  }
+
+  .player-view[data-mode="duel"]:not(.is-host-setup),
+  .player-view[data-mode="result"]:not(.is-host-setup) {
+    grid-template-areas:
+      "phase phase"
+      "role timer"
+      "voice side";
+  }
+
+  .player-view[data-mode="spectator"] {
+    grid-template-columns: minmax(270px, 0.52fr) minmax(420px, 1fr);
+    grid-template-areas:
+      "phase side"
+      "role side"
+      "voice side";
+  }
+
+  .phone-clock {
+    width: min(36vw, 285px);
+    min-width: 230px;
+  }
+
+  .voice-panel,
+  .game-roster-panel {
+    min-height: auto;
+  }
+
+  .choice-buttons,
+  #sheriff-phone-shot {
+    width: 100%;
+    margin: 0;
+  }
+
+  #sheriff-phone-shot:not(.hidden) ~ .choice-buttons {
+    margin: 0;
+  }
+}
+
+@media (max-width: 899px) {
+  .phone-shell {
+    width: min(100% - 18px, 640px);
+    padding: 10px 0 18px;
+  }
+
+  .phone-panel {
+    max-height: none;
+    overflow: visible;
+  }
+
+  .player-view:not(.is-host-setup) {
+    display: grid;
+    gap: 10px;
+  }
+
+  .player-task {
+    min-height: auto;
+  }
+
+  .role-card {
+    min-height: 240px;
+  }
+
+  .choice-buttons button {
+    min-height: 70px;
   }
 }
 

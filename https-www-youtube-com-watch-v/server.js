@@ -349,15 +349,6 @@ function livingCamps() {
   return { living, outlaws, empire };
 }
 
-function setupFinalDuelIfNeeded() {
-  const { living, outlaws, empire } = livingCamps();
-  if (living.length !== 2 || outlaws.length !== 1 || empire.length !== 1) return false;
-  if (state.duel.leftId || state.duel.rightId || state.duel.running || state.duel.revealed) return false;
-  state.duel = { ...freshDuel(), leftId: living[0].id, rightId: living[1].id };
-  startPhase("final", "Duel final : rejoignez le vocal Duel", duelReadyDuration);
-  return true;
-}
-
 function makeId() {
   return Math.random().toString(36).slice(2, 10);
 }
@@ -401,12 +392,23 @@ function computePhase() {
 
   const elapsed = Math.floor((Date.now() - phase.startedAt) / 1000);
   phase.remaining = Math.max(0, phase.duration - elapsed);
-    if (phase.remaining === 0) {
+  if (phase.remaining === 0) {
     phase.running = false;
-  if (phase.name === "result") {
+    if (phase.name === "result") {
       state.duel = freshDuel();
       state.saloonVotes = freshSaloonVotes();
-      startPhase("discussion", "Discussion dans les saloons", state.settings.discussionDuration);
+      if (getResolvedWinner()) {
+        state.phase = {
+          name: "ended",
+          label: "Partie terminee",
+          remaining: 0,
+          running: false,
+          startedAt: 0,
+          duration: 0
+        };
+      } else {
+        startPhase("discussion", "Discussion dans les saloons", state.settings.discussionDuration);
+      }
     } else if (phase.name === "discussion") {
       if (resolveDiscussionVotes()) {
         startPhase("duel-ready", "Duel pret : rejoignez le vocal Duel", duelReadyDuration);
@@ -425,7 +427,6 @@ function computePhase() {
 function publicState(req) {
   computeDuel();
   computePhase();
-  if (!getWinner()) setupFinalDuelIfNeeded();
   const origin = requestOrigin(req) || lastPublicOrigin || `http://${localAddress()}:${port}`;
   if (requestOrigin(req)) lastPublicOrigin = requestOrigin(req);
   return {
@@ -470,15 +471,19 @@ function publicGameList(req) {
     }));
 }
 
-function getWinner() {
-  if (state.duel.running || state.phase.name === "result") return "";
+function getResolvedWinner() {
   const { outlaws, empire } = livingCamps();
   const hasRoles = state.players.some((player) => player.role);
 
   if (!hasRoles) return "";
   if (outlaws.length === 0) return "L'Empire";
-  if (outlaws.length > empire.length) return "Les hors-la-loi";
+  if (outlaws.length >= empire.length) return "Les hors-la-loi";
   return "";
+}
+
+function getWinner() {
+  if (state.duel.running || state.phase.name === "result") return "";
+  return getResolvedWinner();
 }
 
 function gameHasStarted() {
@@ -1047,10 +1052,9 @@ const server = http.createServer(async (req, res) => {
     const body = await readBody(req);
     useGame(body.code);
     const player = state.players.find((item) => item.id === body.playerId);
-    const target = state.players.find((item) => item.id === body.targetId);
     state.hostMessage = "";
 
-    if (!player || !target || !player.alive || !target.alive || player.saloon !== target.saloon) {
+    if (!player || !player.alive) {
       sendJson(res, publicState(req));
       return;
     }
@@ -1061,6 +1065,19 @@ const server = http.createServer(async (req, res) => {
     }
 
     if (state.phase.name !== "discussion" || !state.phase.running) {
+      sendJson(res, publicState(req));
+      return;
+    }
+
+    if (body.cancel || !body.targetId) {
+      delete state.saloonVotes[player.saloon][player.id];
+      emit();
+      sendJson(res, publicState(req));
+      return;
+    }
+
+    const target = state.players.find((item) => item.id === body.targetId);
+    if (!target || !target.alive || player.saloon !== target.saloon) {
       sendJson(res, publicState(req));
       return;
     }
