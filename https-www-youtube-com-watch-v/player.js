@@ -176,7 +176,7 @@ function handleAudioCues(previous, nextState, player) {
   const duel = nextState.duel || {};
   const shotHappened = duel.sheriffShot || duel.leftChoice === "shoot" || duel.rightChoice === "shoot";
   const gunKey = `${duel.leftId}-${duel.rightId}-${duel.resultMessage}-${duel.revealed}`;
-  if (shotHappened && duel.revealed && (duel.leftId === player.id || duel.rightId === player.id) && gunKey !== lastGunKey) {
+  if (shotHappened && (duel.revealed || duel.sheriffShot) && (duel.leftId === player.id || duel.rightId === player.id) && gunKey !== lastGunKey) {
     lastGunKey = gunKey;
     playGunshot();
   }
@@ -495,7 +495,8 @@ function rosterGroup(title, players, options = {}) {
 function renderGameRoster(player, duel) {
   if (!gameRosterPanel || !state || !player) return;
 
-  if (!player.alive && player.role) {
+  const sheriffShotDuelist = isInDuel(duel) && duel.sheriffShot && (duel.running || state.phase?.name === "result");
+  if (!player.alive && player.role && !sheriffShotDuelist) {
     gameRosterPanel.classList.add("hidden");
     return;
   }
@@ -515,7 +516,7 @@ function renderGameRoster(player, duel) {
 
   const playerRoom = voiceRoomFor(player, duel);
   if (playerRoom === "Duel") {
-    const duelists = state.players.filter((item) => duelIds.includes(item.id) && item.alive);
+    const duelists = state.players.filter((item) => duelIds.includes(item.id) && item.role);
     gameRosterGrid.innerHTML = rosterGroup("Duel", duelists);
   } else if (playerRoom.startsWith("Saloon ")) {
     const saloonPlayers = state.players.filter((item) => item.alive && item.role && item.saloon === player.saloon && !duelIds.includes(item.id));
@@ -992,8 +993,9 @@ function render(nextState) {
   endRoles.classList.add("hidden");
   spectatorPanel.classList.add("hidden");
   hideRevealPanel();
+  const staysInDuelAfterSheriffShot = isInDuel(duel) && duel.sheriffShot && (duel.running || phase.name === "result");
 
-  if (!player.alive) {
+  if (!player.alive && !staysInDuelAfterSheriffShot) {
     playerStatus.textContent = "Tu es mort";
     playerSaloon.textContent = "";
     clockRing.classList.add("dead-ring");
@@ -1075,12 +1077,25 @@ function render(nextState) {
 
   saloonVotePanel.classList.add("hidden");
   const choice = myChoice(duel);
+  if (duel.sheriffShot && duel.resolved) {
+    playerStatus.textContent = player.alive ? "Connecte" : "Tu es mort";
+    setScreen("Duel en cours", "", duel.resultMessage || "Tir du sheriff.");
+    setRevealPanel({
+      kicker: "Tir du sheriff",
+      title: "Pouvoir du sheriff",
+      detail: [duel.resultMessage, duel.resultDetail].filter(Boolean).join(" ")
+    });
+    setViewMode("result");
+    choiceButtons.classList.add("hidden");
+    sheriffPhoneShot.classList.add("hidden");
+    return;
+  }
   setScreen("Duel en cours", "", duel.revealed ? "Les choix sont reveles." : choiceLabel(choice));
   choiceButtons.classList.toggle("hidden", duel.revealed);
   choiceButtons.querySelectorAll("[data-choice]").forEach((button) => {
     button.classList.toggle("selected-choice", button.dataset.choice === choice);
   });
-  sheriffPhoneShot.classList.toggle("hidden", player.role !== "Sheriff" || player.sheriffPower === false || duel.revealed);
+  sheriffPhoneShot.classList.toggle("hidden", player.role !== "Sheriff" || player.sheriffPower === false || duel.revealed || duel.sheriffShot || duel.resolved);
 }
 
 joinForm.addEventListener("submit", async (event) => {

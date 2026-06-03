@@ -1,5 +1,11 @@
 # Release notes
 
+## v6.25
+
+- Correction du pouvoir du sheriff : le tir est applique immediatement, mais le timer du duel continue.
+- Les deux duellistes restent dans le vocal Duel pendant le duel puis pendant la revelation.
+- La victoire n'est plus annoncee pendant le timer de duel ou de revelation.
+
 ## v6.24
 
 - Correction anti-spoil : un joueur vivant ne voit plus les autres saloons dans le panneau joueurs.

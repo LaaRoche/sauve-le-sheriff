@@ -471,6 +471,7 @@ function publicGameList(req) {
 }
 
 function getWinner() {
+  if (state.duel.running || state.phase.name === "result") return "";
   const { outlaws, empire } = livingCamps();
   const hasRoles = state.players.some((player) => player.role);
 
@@ -1125,11 +1126,8 @@ const server = http.createServer(async (req, res) => {
       if (state.duel.rightId === body.playerId) state.duel.rightChoice = "shoot";
       if (state.duel.leftId === targetId) state.duel.leftChoice = "hold";
       if (state.duel.rightId === targetId) state.duel.rightChoice = "hold";
-      state.duel.running = false;
-      state.duel.revealed = true;
       state.duel.sheriffShot = true;
       applyResolution();
-      scheduleAfterDuel();
       emit();
       sendJson(res, publicState(req));
       return;
