@@ -1,5 +1,11 @@
 # Release notes
 
+## v6.34
+
+- Suppression du pre-timer "Duel pret" de 8 secondes.
+- Apres le vote de saloon, le vrai timer de duel demarre directement.
+- La sequence devient claire : discussion -> duel -> revelation.
+
 ## v6.33
 
 - Timing audio des tirs clarifie : le tir du sheriff joue son son immediatement.

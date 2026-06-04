@@ -20,7 +20,6 @@ let turnStatus = {
   ready: false,
   message: "STUN par defaut"
 };
-const duelReadyDuration = 8;
 const clients = new Set();
 let resultResetTimer = null;
 let lastPublicOrigin = "";
@@ -411,11 +410,11 @@ function computePhase() {
       }
     } else if (phase.name === "discussion") {
       if (resolveDiscussionVotes()) {
-        startPhase("duel-ready", "Duel pret", duelReadyDuration);
+        maybeStartDuelFromSelection();
       } else {
         phase.label = "Discussion terminee : choisissez les duellistes";
       }
-    } else if (phase.name === "duel-ready" || phase.name === "final") {
+    } else if (phase.name === "final") {
       if (!maybeStartDuelFromSelection()) {
         phase.label = "Duel impossible";
       }
