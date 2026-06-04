@@ -1,5 +1,11 @@
 # Release notes
 
+## v6.33
+
+- Timing audio des tirs clarifie : le tir du sheriff joue son son immediatement.
+- Les tirs normaux jouent uniquement a la revelation, a la fin du timer de duel.
+- Si les deux duellistes tirent, deux coups normaux sont joues avec un leger decalage.
+
 ## v6.32
 
 - Suppression du controle vocal pour le demarrage des duels.

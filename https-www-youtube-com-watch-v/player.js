@@ -188,17 +188,6 @@ function playShotSound(type = "normal", delay = 0) {
   playSoundFile(src, delay, () => playFallbackGunshot(0));
 }
 
-function playDuelShots(duel) {
-  if (duel.sheriffShot) {
-    playShotSound("sheriff");
-    return;
-  }
-
-  const shots = [duel.leftChoice, duel.rightChoice].filter((choice) => choice === "shoot").length;
-  if (shots >= 1) playShotSound("normal", 0);
-  if (shots >= 2) playShotSound("normal", 220);
-}
-
 function updateRemoteAudioVolume() {
   document.querySelectorAll("#remote-audio audio").forEach((audio) => {
     audio.volume = deafened ? 0 : audioSettings.voice / 100;
@@ -287,14 +276,28 @@ function handleAudioCues(previous, nextState, player) {
   if (nextName === "discussion" && previousName !== "discussion") playBell();
   if (previousName === "discussion" && nextName !== "discussion") playBell();
 
+  const previousDuel = previous.duel || {};
   const duel = nextState.duel || {};
-  const shotHappened = duel.sheriffShot || duel.leftChoice === "shoot" || duel.rightChoice === "shoot";
+  const isDuelist = duel.leftId === player.id || duel.rightId === player.id;
+  if (!isDuelist) return;
+
   const gunKey = duel.sheriffShot
     ? `${duel.leftId}-${duel.rightId}-sheriff-shot`
     : `${duel.leftId}-${duel.rightId}-${duel.leftChoice}-${duel.rightChoice}-${duel.resultMessage}`;
-  if (shotHappened && (duel.revealed || duel.sheriffShot) && (duel.leftId === player.id || duel.rightId === player.id) && gunKey !== lastGunKey) {
+
+  const sheriffShotStarted = duel.sheriffShot && !previousDuel.sheriffShot;
+  if (sheriffShotStarted && gunKey !== lastGunKey) {
     lastGunKey = gunKey;
-    playDuelShots(duel);
+    playShotSound("sheriff");
+    return;
+  }
+
+  const normalRevealStarted = duel.revealed && !previousDuel.revealed && !duel.sheriffShot;
+  const normalShotCount = [duel.leftChoice, duel.rightChoice].filter((choice) => choice === "shoot").length;
+  if (normalRevealStarted && normalShotCount > 0 && gunKey !== lastGunKey) {
+    lastGunKey = gunKey;
+    if (normalShotCount >= 1) playShotSound("normal", 0);
+    if (normalShotCount >= 2) playShotSound("normal", 220);
   }
 }
 
