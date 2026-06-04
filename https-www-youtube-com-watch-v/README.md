@@ -2,7 +2,7 @@
 
 Application web multijoueur pour animer une partie de Sauve l'Empire.
 
-Version actuelle : v6.29
+Version actuelle : v6.30
 
 ## Lancer en local
 
@@ -71,3 +71,16 @@ ICE_SERVERS_JSON=[{"urls":"stun:stun.l.google.com:19302"},{"urls":"turn:ton-serv
 ```
 
 Sans TURN, l'app garde le STUN public par defaut, mais certains joueurs peuvent ne pas s'entendre selon leur reseau.
+
+## Effets sonores
+
+Pour remplacer les sons generes par l'app, ajoute ces fichiers dans `assets` :
+
+```text
+assets/sfx-gun-normal.mp3
+assets/sfx-gun-sheriff.mp3
+```
+
+`sfx-gun-normal.mp3` est utilise pour les tirs classiques. Si les deux duellistes tirent, le son est joue deux fois avec un court decalage.
+
+`sfx-gun-sheriff.mp3` est utilise pour le pouvoir du sheriff.

@@ -95,6 +95,10 @@ const audioSettings = {
   voice: Number(localStorage.getItem("sheriffVoiceVolume") || 100),
   effects: Number(localStorage.getItem("sheriffEffectsVolume") || 70)
 };
+const soundFiles = {
+  normalGun: "assets/sfx-gun-normal.mp3",
+  sheriffGun: "assets/sfx-gun-sheriff.mp3"
+};
 
 function setupRulesModal() {
   const modal = document.querySelector("#rules-modal");
@@ -155,10 +159,44 @@ function playBell() {
   setTimeout(() => playTone(520, 0.34, volume * 0.12, "triangle"), 120);
 }
 
-function playGunshot() {
+function playFallbackGunshot(delay = 0) {
   const volume = audioSettings.effects / 100;
-  playTone(90, 0.12, volume * 0.24, "sawtooth");
-  setTimeout(() => playTone(55, 0.18, volume * 0.16, "square"), 40);
+  setTimeout(() => {
+    playTone(90, 0.12, volume * 0.24, "sawtooth");
+    setTimeout(() => playTone(55, 0.18, volume * 0.16, "square"), 40);
+  }, delay);
+}
+
+function playSoundFile(src, delay, fallback) {
+  if (!audioSettings.effects) return;
+  setTimeout(() => {
+    const audio = new Audio(src);
+    let fallbackPlayed = false;
+    const playFallbackOnce = () => {
+      if (fallbackPlayed) return;
+      fallbackPlayed = true;
+      fallback();
+    };
+    audio.volume = Math.min(1, Math.max(0, audioSettings.effects / 100));
+    audio.addEventListener("error", playFallbackOnce, { once: true });
+    audio.play().catch(playFallbackOnce);
+  }, delay);
+}
+
+function playShotSound(type = "normal", delay = 0) {
+  const src = type === "sheriff" ? soundFiles.sheriffGun : soundFiles.normalGun;
+  playSoundFile(src, delay, () => playFallbackGunshot(0));
+}
+
+function playDuelShots(duel) {
+  if (duel.sheriffShot) {
+    playShotSound("sheriff");
+    return;
+  }
+
+  const shots = [duel.leftChoice, duel.rightChoice].filter((choice) => choice === "shoot").length;
+  if (shots >= 1) playShotSound("normal", 0);
+  if (shots >= 2) playShotSound("normal", 220);
 }
 
 function updateRemoteAudioVolume() {
@@ -251,10 +289,12 @@ function handleAudioCues(previous, nextState, player) {
 
   const duel = nextState.duel || {};
   const shotHappened = duel.sheriffShot || duel.leftChoice === "shoot" || duel.rightChoice === "shoot";
-  const gunKey = `${duel.leftId}-${duel.rightId}-${duel.resultMessage}-${duel.revealed}`;
+  const gunKey = duel.sheriffShot
+    ? `${duel.leftId}-${duel.rightId}-sheriff-shot`
+    : `${duel.leftId}-${duel.rightId}-${duel.leftChoice}-${duel.rightChoice}-${duel.resultMessage}`;
   if (shotHappened && (duel.revealed || duel.sheriffShot) && (duel.leftId === player.id || duel.rightId === player.id) && gunKey !== lastGunKey) {
     lastGunKey = gunKey;
-    playGunshot();
+    playDuelShots(duel);
   }
 }
 

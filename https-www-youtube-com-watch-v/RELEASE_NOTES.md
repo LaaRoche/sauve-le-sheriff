@@ -1,5 +1,11 @@
 # Release notes
 
+## v6.30
+
+- Ajout de la prise en charge de deux sons MP3 pour les tirs : tir normal et tir du sheriff.
+- Deux tirs simultanes jouent deux coups de feu avec un leger decalage.
+- Le tir du sheriff utilise un son dedie et ne rejoue pas a la revelation.
+
 ## v6.29
 
 - Correction de l'indicateur vocal : le bloc joueur ne change plus de taille quand l'etat "parle" s'active.
