@@ -1,5 +1,9 @@
 # Release notes
 
+## v6.29
+
+- Correction de l'indicateur vocal : le bloc joueur ne change plus de taille quand l'etat "parle" s'active.
+
 ## v6.28
 
 - Ajout de l'annulation de vote pendant la discussion de saloon.

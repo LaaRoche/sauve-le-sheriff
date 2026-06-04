@@ -928,6 +928,7 @@ h3 {
   gap: 10px;
   min-height: 38px;
   padding: 8px 10px;
+  border: 1px solid transparent;
   border-radius: 6px;
   color: #fff0cf;
   background: rgba(8, 7, 6, 0.42);
