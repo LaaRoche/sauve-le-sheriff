@@ -1296,6 +1296,8 @@ h3 {
 .spectator-panel {
   display: grid;
   gap: 12px;
+  width: 100%;
+  min-width: 0;
   padding: 14px;
   border: 1px solid rgba(132, 96, 54, 0.32);
   border-radius: 8px;
@@ -1327,11 +1329,13 @@ h3 {
 .spectator-grid {
   display: grid;
   gap: 10px;
+  min-width: 0;
 }
 
 .spectator-grid section {
   display: grid;
   gap: 7px;
+  min-width: 0;
   padding: 10px;
   border: 1px solid rgba(217, 154, 37, 0.3);
   border-radius: 7px;
@@ -1346,9 +1350,10 @@ h3 {
 
 .spectator-row {
   display: grid;
-  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr) auto;
+  grid-template-columns: minmax(150px, 1.2fr) minmax(120px, 0.85fr) max-content;
   gap: 10px;
   align-items: center;
+  min-width: 0;
   padding: 8px;
   border-radius: 6px;
   color: #fff0cf;
@@ -1356,11 +1361,18 @@ h3 {
 }
 
 .spectator-row span {
-  overflow-wrap: anywhere;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   font-weight: 900;
 }
 
 .spectator-row strong {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   color: var(--gold-light);
   font-size: 0.92rem;
   text-align: right;
@@ -2399,11 +2411,16 @@ a.test-link,
   }
 
   .player-view[data-mode="spectator"] {
-    grid-template-columns: minmax(300px, 370px) minmax(520px, 1fr);
+    width: 100%;
+    grid-template-columns: minmax(300px, 370px) minmax(720px, 1fr);
     grid-template-areas:
       "phase side"
       "role side"
       "voice side";
+  }
+
+  .player-view[data-mode="spectator"] .spectator-panel {
+    justify-self: stretch;
   }
 
   .player-view[data-mode="duel"] .saloon-vote-panel,
@@ -2637,7 +2654,8 @@ button::after {
   }
 
   .player-view[data-mode="spectator"] {
-    grid-template-columns: minmax(270px, 0.52fr) minmax(420px, 1fr);
+    width: 100%;
+    grid-template-columns: minmax(270px, 340px) minmax(520px, 1fr);
     grid-template-areas:
       "phase side"
       "role side"

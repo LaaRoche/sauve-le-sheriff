@@ -1,5 +1,16 @@
 # Release notes
 
+## v6.32
+
+- Suppression du controle vocal pour le demarrage des duels.
+- Le duel demarre apres la phase "Duel pret" meme si les micros ou le vocal ne sont pas prets.
+- Les mises a jour vocales ne peuvent plus perturber la chaine discussion -> duel -> resultat.
+
+## v6.31
+
+- Correction de la vue spectateur : le panneau occupe mieux l'ecran large.
+- Les listes spectateur ne compressent plus les noms en lettres verticales.
+
 ## v6.30
 
 - Ajout de la prise en charge de deux sons MP3 pour les tirs : tir normal et tir du sheriff.

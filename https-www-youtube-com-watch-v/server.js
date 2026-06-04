@@ -411,13 +411,13 @@ function computePhase() {
       }
     } else if (phase.name === "discussion") {
       if (resolveDiscussionVotes()) {
-        startPhase("duel-ready", "Duel pret : rejoignez le vocal Duel", duelReadyDuration);
+        startPhase("duel-ready", "Duel pret", duelReadyDuration);
       } else {
         phase.label = "Discussion terminee : choisissez les duellistes";
       }
     } else if (phase.name === "duel-ready" || phase.name === "final") {
-      if (!maybeStartDuelFromVoice()) {
-        phase.label = "En attente des micros des duellistes";
+      if (!maybeStartDuelFromSelection()) {
+        phase.label = "Duel impossible";
       }
     }
   }
@@ -601,19 +601,14 @@ function ensureBothSaloonsForDiscussion() {
   shuffle(source)[0].saloon = targetSaloon;
 }
 
-function maybeStartDuelFromVoice() {
+function maybeStartDuelFromSelection() {
   const duel = state.duel;
   if (!duel.leftId || !duel.rightId || duel.running || duel.revealed || duel.resolved) return false;
   const left = state.players.find((player) => player.id === duel.leftId);
   const right = state.players.find((player) => player.id === duel.rightId);
   if (!left?.alive || !right?.alive) return false;
-  const leftReady = left.fake || (left.voiceRoom === "Duel" && left.voiceReady);
-  const rightReady = right.fake || (right.voiceRoom === "Duel" && right.voiceReady);
-  if (leftReady && rightReady) {
-    startDuelTimer();
-    return true;
-  }
-  return false;
+  startDuelTimer();
+  return true;
 }
 
 function applyResolution() {
@@ -1030,7 +1025,6 @@ const server = http.createServer(async (req, res) => {
       player.voiceReady = Boolean(body.ready);
       player.voiceMuted = Boolean(body.muted);
       player.voiceDeafened = Boolean(body.deafened);
-      maybeStartDuelFromVoice();
       emit();
     }
     sendJson(res, publicState(req));
