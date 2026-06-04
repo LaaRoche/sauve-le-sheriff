@@ -51,6 +51,7 @@ const audioSettingsClose = document.querySelector("#audio-settings-close");
 const audioSettingsModal = document.querySelector("#audio-settings-modal");
 const voiceVolumeInput = document.querySelector("#voice-volume");
 const effectsVolumeInput = document.querySelector("#effects-volume");
+const voiceSensitivityInput = document.querySelector("#voice-sensitivity");
 const hostTools = document.querySelector("#host-tools");
 const hostGameCode = document.querySelector("#host-game-code");
 const hostPlayerCount = document.querySelector("#host-player-count");
@@ -93,7 +94,13 @@ let lastGunKey = "";
 let audioContext = null;
 const audioSettings = {
   voice: Number(localStorage.getItem("sheriffVoiceVolume") || 100),
-  effects: Number(localStorage.getItem("sheriffEffectsVolume") || 70)
+  effects: Number(localStorage.getItem("sheriffEffectsVolume") || 70),
+  sensitivity: localStorage.getItem("sheriffVoiceSensitivity") || "normal"
+};
+const sensitivityProfiles = {
+  low: { openRatio: 3.2, closeRatio: 1.9, minOpen: 10, minClose: 5.8, holdMs: 420 },
+  normal: { openRatio: 2.35, closeRatio: 1.55, minOpen: 7.2, minClose: 4.5, holdMs: 560 },
+  high: { openRatio: 1.65, closeRatio: 1.18, minOpen: 4.6, minClose: 3.1, holdMs: 720 }
 };
 const soundFiles = {
   normalGun: "assets/sfx-gun-normal.mp3",
@@ -116,6 +123,7 @@ function setupRulesModal() {
 function setupAudioSettings() {
   voiceVolumeInput.value = audioSettings.voice;
   effectsVolumeInput.value = audioSettings.effects;
+  if (voiceSensitivityInput) voiceSensitivityInput.value = audioSettings.sensitivity;
   audioSettingsOpen.addEventListener("click", () => audioSettingsModal.classList.remove("hidden"));
   audioSettingsClose.addEventListener("click", () => audioSettingsModal.classList.add("hidden"));
   audioSettingsModal.addEventListener("click", (event) => {
@@ -130,6 +138,14 @@ function setupAudioSettings() {
     audioSettings.effects = Number(effectsVolumeInput.value);
     localStorage.setItem("sheriffEffectsVolume", String(audioSettings.effects));
   });
+  voiceSensitivityInput?.addEventListener("change", () => {
+    audioSettings.sensitivity = voiceSensitivityInput.value;
+    localStorage.setItem("sheriffVoiceSensitivity", audioSettings.sensitivity);
+  });
+}
+
+function getSensitivityProfile() {
+  return sensitivityProfiles[audioSettings.sensitivity] || sensitivityProfiles.normal;
 }
 
 function ensureAudioContext() {
@@ -239,7 +255,11 @@ function setupSpeakingMonitor(id, stream) {
     const data = new Uint8Array(analyser.fftSize);
     const monitor = { stopped: false, frame: 0 };
     let active = false;
+    let noiseFloor = 0;
+    let sampleCount = 0;
     let lastChange = 0;
+    let lastSpeechAt = 0;
+    const calibrationStartedAt = performance.now();
 
     const readVolume = () => {
       if (monitor.stopped) return;
@@ -250,11 +270,29 @@ function setupSpeakingMonitor(id, stream) {
         sum += delta * delta;
       }
       const level = Math.sqrt(sum / data.length);
-      const threshold = active ? 5 : 8;
-      const speaking = level > threshold;
       const now = performance.now();
+      const profile = getSensitivityProfile();
+      const calibrationAge = now - calibrationStartedAt;
+      const shouldLearnNoise = !active || calibrationAge < 1300;
 
-      if (speaking !== active && now - lastChange > 140) {
+      if (shouldLearnNoise) {
+        sampleCount += 1;
+        const weight = sampleCount < 24 ? 1 / sampleCount : 0.035;
+        noiseFloor = noiseFloor ? noiseFloor * (1 - weight) + level * weight : level;
+      }
+
+      const openThreshold = Math.max(profile.minOpen, noiseFloor * profile.openRatio);
+      const closeThreshold = Math.max(profile.minClose, noiseFloor * profile.closeRatio);
+      const aboveOpen = level >= openThreshold;
+      const aboveClose = level >= closeThreshold;
+      if (aboveOpen) lastSpeechAt = now;
+
+      const canActivate = sampleCount > 10 || calibrationAge > 450;
+      const speaking = active
+        ? aboveClose || now - lastSpeechAt < profile.holdMs
+        : canActivate && aboveOpen;
+
+      if (speaking !== active && now - lastChange > 90) {
         active = speaking;
         lastChange = now;
         setSpeaking(id, active);

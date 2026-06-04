@@ -1,5 +1,11 @@
 # Release notes
 
+## v6.35
+
+- Detection vocale plus stable avec seuil automatique base sur le bruit du micro.
+- Ajout d'un anti-clignotement pour eviter que l'indicateur de parole saute entre deux mots.
+- Ajout d'un reglage de sensibilite micro dans les parametres audio du joueur.
+
 ## v6.34
 
 - Suppression du pre-timer "Duel pret" de 8 secondes.
