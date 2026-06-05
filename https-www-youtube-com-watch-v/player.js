@@ -350,6 +350,15 @@ async function postJson(url, body) {
   return response.json();
 }
 
+function sendClientLog(type, details = {}) {
+  if (!gameCode || !playerId) return;
+  fetch("/api/client-log", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ code: gameCode, playerId, type, details })
+  }).catch(() => {});
+}
+
 async function refreshPublicGames() {
   if (!publicGameList) return;
   const response = await fetch("/api/games");
@@ -860,14 +869,14 @@ function createPeer(id) {
 
   connection.addEventListener("connectionstatechange", () => {
     if (["failed", "disconnected"].includes(connection.connectionState)) {
-      markVoiceIssue();
+      markVoiceIssue(`connection:${connection.connectionState}`, id);
       closePeer(id);
     }
   });
 
   connection.addEventListener("iceconnectionstatechange", () => {
     if (["failed", "disconnected"].includes(connection.iceConnectionState)) {
-      markVoiceIssue();
+      markVoiceIssue(`ice:${connection.iceConnectionState}`, id);
     }
   });
 
@@ -875,7 +884,8 @@ function createPeer(id) {
   return connection;
 }
 
-function markVoiceIssue() {
+function markVoiceIssue(reason = "unknown", peerId = "") {
+  if (!voiceConnectionIssue) sendClientLog("voice-issue", { reason, peerId });
   voiceConnectionIssue = true;
   updateVoiceControls();
   voiceStatus.textContent = "Connexion instable. Utilise Reconnexion vocale.";
@@ -994,6 +1004,7 @@ async function enableVoiceChat() {
   updateVoiceControls();
   await syncVoicePeers();
   await Promise.all(voiceTargetIds().map((id) => sendSignal(id, "ready", null)));
+  sendClientLog("voice-enabled", { room: voiceRoom.textContent, targets: voiceTargetIds().length });
 }
 
 function updateVoiceTrackState() {
@@ -1029,6 +1040,7 @@ function updateVoiceControls() {
 
 async function reconnectVoiceChat() {
   if (!voiceEnabled) return;
+  sendClientLog("voice-reconnect-start", { room: voiceRoom.textContent });
   for (const id of [...peers.keys()]) closePeer(id);
   stopSpeakingMonitor(playerId);
   localStream?.getTracks().forEach((track) => track.stop());
@@ -1043,6 +1055,7 @@ async function reconnectVoiceChat() {
   updateVoiceControls();
   voiceStatus.textContent = "Reconnexion vocale...";
   await enableVoiceChat();
+  sendClientLog("voice-reconnect-done", { room: voiceRoom.textContent });
 }
 
 function toggleMicMute() {
@@ -1053,6 +1066,7 @@ function toggleMicMute() {
   updateRemoteAudioVolume();
   updateVoiceControls();
   syncVoicePeers();
+  sendClientLog("voice-mute-toggle", { muted: micMuted });
 }
 
 function toggleDeafen() {
@@ -1063,6 +1077,7 @@ function toggleDeafen() {
   updateRemoteAudioVolume();
   updateVoiceControls();
   syncVoicePeers();
+  sendClientLog("voice-deafen-toggle", { deafened });
 }
 
 function render(nextState) {
@@ -1324,16 +1339,22 @@ leaveGameButton.addEventListener("click", () => {
 choiceButtons.addEventListener("click", async (event) => {
   const button = event.target.closest("[data-choice]");
   if (!button) return;
+  sendClientLog("button-choice", { choice: button.dataset.choice });
   await postJson("/api/choice", { playerId, choice: button.dataset.choice });
 });
 
 sheriffPhoneShot.addEventListener("click", async () => {
+  sendClientLog("button-sheriff-shot");
   await postJson("/api/sheriff-shot", { playerId });
 });
 
 saloonVoteList.addEventListener("click", async (event) => {
   const button = event.target.closest("[data-vote-target]");
   if (!button) return;
+  sendClientLog("button-vote", {
+    targetId: button.dataset.voteTarget,
+    cancel: button.dataset.voteCancel === "true"
+  });
   await postJson("/api/saloon-vote", {
     playerId,
     targetId: button.dataset.voteTarget,
@@ -1395,7 +1416,9 @@ hostOutlawCount.addEventListener("input", () => {
 
 enableVoice.addEventListener("click", () => {
   if (voiceEnabled) return;
+  sendClientLog("voice-enable-click");
   enableVoiceChat().catch(() => {
+    sendClientLog("voice-enable-failed");
     voiceStatus.textContent = "Micro bloque par le navigateur. Autorise le micro puis recharge.";
   });
 });

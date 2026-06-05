@@ -1,5 +1,16 @@
 # Release notes
 
+## v6.38
+
+- Ajout du slogan du jeu a droite du logo sur les interfaces principales.
+- Ajustement responsive de l'en-tete pour garder le slogan lisible sur PC et mobile.
+
+## v6.37
+
+- Ajout d'un journal de diagnostic par partie pour suivre les transitions, votes, duels, tirs, resultats et vocal.
+- Ajout d'une URL de logs protegee par le code admin pour aider a diagnostiquer les blocages pendant un test.
+- Ajout de logs navigateur sur les actions importantes des joueurs : vote, choix de duel, tir sheriff, activation et reconnexion vocal.
+
 ## v6.36
 
 - Correction du mode spectateur sur PC : le panneau utilise maintenant toute la largeur disponible.

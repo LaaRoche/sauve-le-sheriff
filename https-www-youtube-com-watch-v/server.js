@@ -26,6 +26,7 @@ let lastPublicOrigin = "";
 let activeSettings = { ...defaultSettings };
 let state = createGameState("GLOBAL");
 const games = new Map([[state.code, state]]);
+const adminCode = "1994";
 
 function loadStaticIceServers() {
   const json = globalThis.process?.env?.ICE_SERVERS_JSON;
@@ -205,7 +206,8 @@ function createGameState(code) {
     settings,
     phase: freshPhase(),
     duel: freshDuel(settings),
-    saloonVotes: freshSaloonVotes()
+    saloonVotes: freshSaloonVotes(),
+    debugLogs: []
   };
 }
 
@@ -281,6 +283,7 @@ function startDuelTimer() {
   state.duel.running = true;
   state.duel.startedAt = Date.now() - (state.settings.duelDuration - state.duel.remaining) * 1000;
   state.duel.revealed = false;
+  logGame("duel:start", { duration: state.settings.duelDuration });
 }
 
 function saloonDuelist(saloon) {
@@ -330,6 +333,12 @@ function resolveDiscussionVotes() {
   state.duel.leftId = leftId;
   state.duel.rightId = rightId;
   state.hostMessage = leftId && rightId ? "" : "Un saloon n'a pas de duelliste disponible.";
+  logGame("vote:resolved", {
+    saloonA: debugPlayer(leftId),
+    saloonB: debugPlayer(rightId),
+    votesA: state.saloonVotes.A,
+    votesB: state.saloonVotes.B
+  });
   return Boolean(leftId && rightId);
 }
 
@@ -346,6 +355,52 @@ function livingCamps() {
   const outlaws = living.filter((player) => player.role === "Hors-la-loi");
   const empire = living.filter((player) => player.role === "Citoyen" || player.role === "Sheriff");
   return { living, outlaws, empire };
+}
+
+function debugPlayer(id) {
+  const player = state.players.find((item) => item.id === id);
+  if (!player) return "";
+  return `${player.name}${player.role ? `/${player.role}` : ""}${player.alive ? "" : "/mort"}`;
+}
+
+function debugSummary() {
+  const duel = state.duel || {};
+  return {
+    phase: state.phase?.name || "none",
+    phaseLabel: state.phase?.label || "",
+    phaseRemaining: state.phase?.remaining || 0,
+    duelRunning: Boolean(duel.running),
+    duelRemaining: duel.remaining || 0,
+    duelRevealed: Boolean(duel.revealed),
+    duelResolved: Boolean(duel.resolved),
+    left: debugPlayer(duel.leftId),
+    right: debugPlayer(duel.rightId),
+    leftChoice: duel.leftChoice || "",
+    rightChoice: duel.rightChoice || "",
+    sheriffShot: Boolean(duel.sheriffShot),
+    alive: livingPlayers().map((player) => `${player.name}:${player.saloon}:${player.role || "sans-role"}`)
+  };
+}
+
+function logGame(type, details = {}) {
+  if (!state.debugLogs) state.debugLogs = [];
+  const entry = {
+    at: new Date().toISOString(),
+    code: state.code,
+    type,
+    ...debugSummary(),
+    details
+  };
+  state.debugLogs.push(entry);
+  if (state.debugLogs.length > 400) state.debugLogs.splice(0, state.debugLogs.length - 400);
+  console.log(`[${entry.at}] [${state.code}] ${type} phase=${entry.phase}:${entry.phaseRemaining} duel=${entry.duelRunning ? "on" : "off"}:${entry.duelRemaining} left=${entry.left || "-"} right=${entry.right || "-"} ${JSON.stringify(details)}`);
+}
+
+function debugLogText(game) {
+  return (game.debugLogs || []).map((entry) => {
+    const details = Object.keys(entry.details || {}).length ? ` details=${JSON.stringify(entry.details)}` : "";
+    return `${entry.at} [${entry.code}] ${entry.type} phase=${entry.phase}:${entry.phaseRemaining} duel=${entry.duelRunning ? "on" : "off"}:${entry.duelRemaining} left=${entry.left || "-"} right=${entry.right || "-"} choices=${entry.leftChoice || "-"}|${entry.rightChoice || "-"} sheriff=${entry.sheriffShot}${details}`;
+  }).join("\n");
 }
 
 function makeId() {
@@ -375,6 +430,7 @@ function computeDuel() {
   const elapsed = Math.floor((Date.now() - duel.startedAt) / 1000);
   duel.remaining = Math.max(0, state.settings.duelDuration - elapsed);
   if (duel.remaining === 0) {
+    logGame("duel:timer-ended");
     duel.running = false;
     duel.revealed = true;
     if (!duel.leftChoice) duel.leftChoice = "hold";
@@ -394,6 +450,7 @@ function computePhase() {
   if (phase.remaining === 0) {
     phase.running = false;
     if (phase.name === "result") {
+      logGame("phase:result-ended");
       state.duel = freshDuel();
       state.saloonVotes = freshSaloonVotes();
       if (getResolvedWinner()) {
@@ -405,18 +462,23 @@ function computePhase() {
           startedAt: 0,
           duration: 0
         };
+        logGame("game:ended", { winner: getResolvedWinner() });
       } else {
         startPhase("discussion", "Discussion dans les saloons", state.settings.discussionDuration);
       }
     } else if (phase.name === "discussion") {
+      logGame("phase:discussion-ended");
       if (resolveDiscussionVotes()) {
         maybeStartDuelFromSelection();
       } else {
         phase.label = "Discussion terminee : choisissez les duellistes";
+        logGame("duel:missing-duelist");
       }
     } else if (phase.name === "final") {
+      logGame("phase:final-ended");
       if (!maybeStartDuelFromSelection()) {
         phase.label = "Duel impossible";
+        logGame("duel:impossible");
       }
     }
   }
@@ -605,7 +667,10 @@ function maybeStartDuelFromSelection() {
   if (!duel.leftId || !duel.rightId || duel.running || duel.revealed || duel.resolved) return false;
   const left = state.players.find((player) => player.id === duel.leftId);
   const right = state.players.find((player) => player.id === duel.rightId);
-  if (!left?.alive || !right?.alive) return false;
+  if (!left?.alive || !right?.alive) {
+    logGame("duel:start-blocked", { reason: "dead-or-missing-duelist" });
+    return false;
+  }
   startDuelTimer();
   return true;
 }
@@ -645,6 +710,10 @@ function applyResolution() {
     duel.resultDetail = `${left.name} et ${right.name} voient chacun la carte adverse, puis echangent de saloon.`;
   }
   duel.resolved = true;
+  logGame("duel:resolved", {
+    message: duel.resultMessage,
+    detail: duel.resultDetail
+  });
 }
 
 function startPhase(name, label, seconds) {
@@ -660,6 +729,7 @@ function startPhase(name, label, seconds) {
     startedAt: Date.now(),
     duration: seconds
   };
+  logGame("phase:start", { name, label, seconds });
 }
 
 function scheduleAfterDuel() {
@@ -680,11 +750,13 @@ function setupGame(outlawCountInput, options = {}) {
   const living = state.players.filter((player) => player.alive);
   if (living.length < 3) {
     state.hostMessage = "Ajoute au moins 3 joueurs pour demarrer une partie test.";
+    logGame("game:setup-blocked", { reason: "not-enough-players", players: living.length });
     return false;
   }
   const missingMic = missingVoicePlayers();
   if (missingMic.length && !options.force) {
     state.hostMessage = `Micro manquant : ${missingMic.map((player) => player.name).join(", ")}.`;
+    logGame("game:setup-blocked", { reason: "missing-mic", players: missingMic.map((player) => player.name) });
     return false;
   }
   if (living.length < 5) state.hostMessage = "Partie test possible. Pour une meilleure experience, joue a 5 joueurs ou plus.";
@@ -708,6 +780,7 @@ function setupGame(outlawCountInput, options = {}) {
   state.duel = freshDuel();
   state.saloonVotes = freshSaloonVotes();
   startPhase("discussion", "Discussion dans les saloons", state.settings.discussionDuration);
+  logGame("game:setup", { players: living.length, outlaws: outlawCount, force: Boolean(options.force) });
   return true;
 }
 
@@ -727,6 +800,7 @@ function replayWithSamePlayers() {
   state.phase = freshPhase();
   state.duel = freshDuel();
   state.saloonVotes = freshSaloonVotes();
+  logGame("game:replay");
 }
 
 function clampDuration(value, min, max, fallback) {
@@ -807,12 +881,34 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  if (url.pathname === "/api/debug-log") {
+    const game = findGame(url.searchParams.get("code"));
+    if (url.searchParams.get("admin") !== adminCode) {
+      res.writeHead(403, { "Content-Type": "text/plain; charset=utf-8" });
+      res.end("Acces diagnostic refuse.");
+      return;
+    }
+    if (!game) {
+      res.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" });
+      res.end("Partie introuvable.");
+      return;
+    }
+    if (url.searchParams.get("format") === "json") {
+      sendJson(res, { code: game.code, logs: game.debugLogs || [] });
+      return;
+    }
+    res.writeHead(200, { "Content-Type": "text/plain; charset=utf-8" });
+    res.end(debugLogText(game) || "Aucun log pour cette partie.");
+    return;
+  }
+
   if (req.method === "POST" && url.pathname === "/api/create-game") {
     const body = await readBody(req);
     const game = useGame(makeGameCode());
     game.visibility = body.visibility === "public" ? "public" : "private";
     const name = String(body.name || "").trim().slice(0, 24) || "Joueur";
     const player = addPlayer(name);
+    logGame("game:create", { visibility: game.visibility, player: player.name });
     emit();
     sendJson(res, { code: game.code, player, state: publicState(req) });
     return;
@@ -829,6 +925,7 @@ const server = http.createServer(async (req, res) => {
     const name = String(body.name || "").trim().slice(0, 24) || "Joueur";
     const existing = state.players.find((player) => player.name.toLowerCase() === name.toLowerCase());
     if (existing) {
+      logGame("player:reconnect", { player: existing.name });
       emit();
       sendJson(res, { player: existing, state: publicState(req) });
       return;
@@ -836,6 +933,7 @@ const server = http.createServer(async (req, res) => {
 
     const started = gameHasStarted();
     if (started) {
+      logGame("player:join-blocked", { player: name, reason: "already-started" });
       sendJson(res, { error: "Partie deja demarree. Attends la prochaine manche." });
       return;
     }
@@ -854,6 +952,7 @@ const server = http.createServer(async (req, res) => {
     };
     state.players.push(player);
     if (!state.hostId) state.hostId = player.id;
+    logGame("player:join", { player: player.name });
     emit();
     sendJson(res, { player, state: publicState(req) });
     return;
@@ -867,6 +966,7 @@ const server = http.createServer(async (req, res) => {
     if (player) {
       if (body.saloon === "A" || body.saloon === "B") player.saloon = body.saloon;
       if (typeof body.alive === "boolean") player.alive = body.alive;
+      logGame("player:update", { player: player.name, saloon: player.saloon, alive: player.alive });
     }
     emit();
     sendJson(res, publicState(req));
@@ -878,11 +978,13 @@ const server = http.createServer(async (req, res) => {
     useGame(body.code);
     state.hostMessage = "";
     const index = state.players.findIndex((item) => item.id === body.id);
+    const removed = index !== -1 ? state.players[index] : null;
     if (index !== -1) state.players.splice(index, 1);
     if (state.hostId === body.id) state.hostId = state.players[0]?.id || "";
     if (state.duel.leftId === body.id || state.duel.rightId === body.id) {
       state.duel = freshDuel();
     }
+    logGame("player:delete", { player: removed?.name || body.id || "" });
     emit();
     sendJson(res, publicState(req));
     return;
@@ -891,7 +993,8 @@ const server = http.createServer(async (req, res) => {
   if (req.method === "POST" && url.pathname === "/api/fake-players") {
     const body = await readBody(req);
     useGame(body.code);
-    addFakePlayers(5);
+    const created = addFakePlayers(5);
+    logGame("player:fake-added", { count: created.length });
     emit();
     sendJson(res, publicState(req));
     return;
@@ -906,6 +1009,7 @@ const server = http.createServer(async (req, res) => {
     state.phase = freshPhase();
     state.duel = freshDuel();
     state.saloonVotes = freshSaloonVotes();
+    logGame("game:new");
     emit();
     sendJson(res, publicState(req));
     return;
@@ -929,6 +1033,7 @@ const server = http.createServer(async (req, res) => {
       state.duel = freshDuel();
     }
     state.hostMessage = "Reglages enregistres.";
+    logGame("settings:update", state.settings);
     emit();
     sendJson(res, publicState(req));
     return;
@@ -937,7 +1042,8 @@ const server = http.createServer(async (req, res) => {
   if (req.method === "POST" && url.pathname === "/api/setup-game") {
     const body = await readBody(req);
     useGame(body.code);
-    setupGame(body.outlawCount, { force: Boolean(body.force) });
+    const started = setupGame(body.outlawCount, { force: Boolean(body.force) });
+    logGame("game:setup-request", { started, force: Boolean(body.force), outlawCount: body.outlawCount });
     emit();
     sendJson(res, publicState(req));
     return;
@@ -947,6 +1053,7 @@ const server = http.createServer(async (req, res) => {
     const body = await readBody(req);
     useGame(body.code);
     if (body.from && body.to && body.kind) {
+      if (body.kind !== "candidate") logGame("voice:signal", { from: debugPlayer(body.from) || body.from, to: debugPlayer(body.to) || body.to, kind: body.kind });
       emitSignal({
         from: String(body.from),
         to: String(body.to),
@@ -958,10 +1065,22 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  if (req.method === "POST" && url.pathname === "/api/client-log") {
+    const body = await readBody(req);
+    useGame(body.code);
+    logGame(`client:${String(body.type || "event").slice(0, 60)}`, {
+      player: debugPlayer(body.playerId) || String(body.playerId || ""),
+      details: body.details || {}
+    });
+    sendJson(res, { ok: true });
+    return;
+  }
+
   if (req.method === "POST" && url.pathname === "/api/assign-roles") {
     const body = await readBody(req);
     useGame(body.code);
-    setupGame(body.outlawCount, { force: Boolean(body.force) });
+    const started = setupGame(body.outlawCount, { force: Boolean(body.force) });
+    logGame("game:assign-roles", { started, force: Boolean(body.force), outlawCount: body.outlawCount });
     emit();
     sendJson(res, publicState(req));
     return;
@@ -974,6 +1093,7 @@ const server = http.createServer(async (req, res) => {
     shuffle(living).forEach((player, index) => {
       player.saloon = index % 2 === 0 ? "A" : "B";
     });
+    logGame("game:assign-saloons");
     emit();
     sendJson(res, publicState(req));
     return;
@@ -988,6 +1108,7 @@ const server = http.createServer(async (req, res) => {
 
     if (!left || !right) {
       state.hostMessage = "Choisissez deux joueurs pour preparer le duel.";
+      logGame("duel:manual-blocked", { reason: "missing-player" });
       emit();
       sendJson(res, publicState(req));
       return;
@@ -995,12 +1116,14 @@ const server = http.createServer(async (req, res) => {
 
     if (!left.alive || !right.alive) {
       state.hostMessage = "Action impossible.";
+      logGame("duel:manual-blocked", { reason: "dead-player", left: left.name, right: right.name });
       emit();
       sendJson(res, publicState(req));
       return;
     }
 
     state.duel = { ...freshDuel(), leftId: body.leftId || "", rightId: body.rightId || "" };
+    logGame("duel:manual-prepared", { left: left.name, right: right.name });
     emit();
     sendJson(res, publicState(req));
     return;
@@ -1009,6 +1132,7 @@ const server = http.createServer(async (req, res) => {
   if (req.method === "POST" && url.pathname === "/api/start-duel") {
     const body = await readBody(req);
     useGame(body.code);
+    logGame("duel:manual-start-request");
     startDuelTimer();
     emit();
     sendJson(res, publicState(req));
@@ -1024,6 +1148,13 @@ const server = http.createServer(async (req, res) => {
       player.voiceReady = Boolean(body.ready);
       player.voiceMuted = Boolean(body.muted);
       player.voiceDeafened = Boolean(body.deafened);
+      logGame("voice:room", {
+        player: player.name,
+        room: player.voiceRoom,
+        ready: player.voiceReady,
+        muted: player.voiceMuted,
+        deafened: player.voiceDeafened
+      });
       emit();
     }
     sendJson(res, publicState(req));
@@ -1036,6 +1167,7 @@ const server = http.createServer(async (req, res) => {
     state.duel = freshDuel();
     state.saloonVotes = freshSaloonVotes();
     startPhase("discussion", "Discussion dans les saloons", state.settings.discussionDuration);
+    logGame("phase:discussion-manual-start");
     emit();
     sendJson(res, publicState(req));
     return;
@@ -1048,22 +1180,26 @@ const server = http.createServer(async (req, res) => {
     state.hostMessage = "";
 
     if (!player || !player.alive) {
+      logGame("vote:ignored", { reason: "player-missing-or-dead", playerId: body.playerId || "" });
       sendJson(res, publicState(req));
       return;
     }
 
     if (state.phase.name === "final") {
+      logGame("vote:ignored", { reason: "final-phase", player: player.name });
       sendJson(res, publicState(req));
       return;
     }
 
     if (state.phase.name !== "discussion" || !state.phase.running) {
+      logGame("vote:ignored", { reason: "not-discussion", player: player.name, phase: state.phase.name });
       sendJson(res, publicState(req));
       return;
     }
 
     if (body.cancel || !body.targetId) {
       delete state.saloonVotes[player.saloon][player.id];
+      logGame("vote:cancel", { player: player.name, saloon: player.saloon });
       emit();
       sendJson(res, publicState(req));
       return;
@@ -1071,11 +1207,13 @@ const server = http.createServer(async (req, res) => {
 
     const target = state.players.find((item) => item.id === body.targetId);
     if (!target || !target.alive || player.saloon !== target.saloon) {
+      logGame("vote:ignored", { reason: "invalid-target", player: player.name, target: target?.name || body.targetId || "" });
       sendJson(res, publicState(req));
       return;
     }
 
     state.saloonVotes[player.saloon][player.id] = target.id;
+    logGame("vote:set", { player: player.name, target: target.name, saloon: player.saloon });
 
     emit();
     sendJson(res, publicState(req));
@@ -1086,7 +1224,10 @@ const server = http.createServer(async (req, res) => {
     const body = await readBody(req);
     useGame(body.code);
     const player = state.players.find((item) => item.id === body.playerId);
-    if (player) state.saloonVotes[player.saloon][player.id] = player.id;
+    if (player) {
+      state.saloonVotes[player.saloon][player.id] = player.id;
+      logGame("vote:volunteer", { player: player.name, saloon: player.saloon });
+    }
     emit();
     sendJson(res, publicState(req));
     return;
@@ -1097,11 +1238,13 @@ const server = http.createServer(async (req, res) => {
     useGame(body.code);
     state.hostMessage = "";
     if (state.duel.revealed || state.duel.resolved || state.duel.sheriffShot) {
+      logGame("choice:ignored", { reason: "duel-closed", playerId: body.playerId || "", choice: body.choice || "" });
       sendJson(res, publicState(req));
       return;
     }
     if (body.playerId === state.duel.leftId) state.duel.leftChoice = body.choice === "shoot" ? "shoot" : "hold";
     if (body.playerId === state.duel.rightId) state.duel.rightChoice = body.choice === "shoot" ? "shoot" : "hold";
+    logGame("choice:set", { player: debugPlayer(body.playerId) || body.playerId || "", choice: body.choice === "shoot" ? "shoot" : "hold" });
     emit();
     sendJson(res, publicState(req));
     return;
@@ -1113,6 +1256,7 @@ const server = http.createServer(async (req, res) => {
     state.duel.revealed = true;
     state.hostMessage = "";
     state.duel.running = false;
+    logGame("duel:manual-reveal");
     applyResolution();
     scheduleAfterDuel();
     emit();
@@ -1128,6 +1272,14 @@ const server = http.createServer(async (req, res) => {
       const player = state.players.find((item) => item.id === body.playerId);
       const inDuel = state.duel.leftId === body.playerId || state.duel.rightId === body.playerId;
       if (!player || player.role !== "Sheriff" || !player.sheriffPower || !inDuel || state.duel.revealed || state.duel.resolved) {
+        logGame("sheriff-shot:blocked", {
+          player: player?.name || body.playerId || "",
+          role: player?.role || "",
+          power: Boolean(player?.sheriffPower),
+          inDuel,
+          revealed: Boolean(state.duel.revealed),
+          resolved: Boolean(state.duel.resolved)
+        });
         sendJson(res, publicState(req));
         return;
       }
@@ -1137,12 +1289,14 @@ const server = http.createServer(async (req, res) => {
       if (state.duel.leftId === targetId) state.duel.leftChoice = "hold";
       if (state.duel.rightId === targetId) state.duel.rightChoice = "hold";
       state.duel.sheriffShot = true;
+      logGame("sheriff-shot:accepted", { sheriff: player.name, target: debugPlayer(targetId) || targetId });
       applyResolution();
       emit();
       sendJson(res, publicState(req));
       return;
     }
     state.hostMessage = "Action impossible.";
+    logGame("sheriff-shot:blocked", { reason: "missing-player-id" });
     emit();
     sendJson(res, publicState(req));
     return;
@@ -1155,6 +1309,7 @@ const server = http.createServer(async (req, res) => {
     state.hostMessage = "";
     state.phase = freshPhase();
     state.saloonVotes = freshSaloonVotes();
+    logGame("duel:reset");
     emit();
     sendJson(res, publicState(req));
     return;

@@ -221,6 +221,36 @@ h3 {
   justify-content: flex-end;
 }
 
+.brand-block {
+  min-width: 0;
+}
+
+.brand-row {
+  display: flex;
+  align-items: center;
+  gap: clamp(12px, 2vw, 22px);
+  margin: 8px 0 14px;
+}
+
+.brand-row .app-logo {
+  flex: 0 0 auto;
+  margin: 0;
+}
+
+.brand-slogan {
+  max-width: 520px;
+  margin: 0;
+  border-left: 1px solid rgba(213, 179, 111, 0.34);
+  padding: 10px 14px;
+  color: #ffe4a4;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(0.95rem, 1.45vw, 1.2rem);
+  font-weight: 900;
+  line-height: 1.35;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.78);
+  background: linear-gradient(90deg, rgba(16, 9, 4, 0.62), rgba(55, 31, 14, 0.2), transparent);
+}
+
 .eyebrow {
   margin: 0 0 6px;
   color: var(--cactus);
@@ -247,6 +277,11 @@ h3 {
 .phone-logo {
   width: min(154px, 42vw);
   margin-bottom: 0;
+}
+
+.phone-topbar .brand-slogan {
+  max-width: 240px;
+  font-size: 0.82rem;
 }
 
 .ghost-button {
@@ -2497,6 +2532,25 @@ a.test-link,
   .rules-header,
   .phone-topbar {
     display: grid;
+  }
+
+  .brand-row {
+    gap: 10px;
+    align-items: center;
+  }
+
+  .brand-slogan {
+    max-width: none;
+    padding: 7px 10px;
+    font-size: 0.78rem;
+  }
+
+  .app-logo {
+    width: min(150px, 36vw);
+  }
+
+  .phone-logo {
+    width: min(118px, 32vw);
   }
 
   .duel-stage,
