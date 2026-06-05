@@ -1350,7 +1350,7 @@ h3 {
 
 .spectator-row {
   display: grid;
-  grid-template-columns: minmax(150px, 1.2fr) minmax(120px, 0.85fr) max-content;
+  grid-template-columns: minmax(0, 1.35fr) minmax(90px, auto) max-content;
   gap: 10px;
   align-items: center;
   min-width: 0;
@@ -2611,11 +2611,34 @@ button::after {
     grid-template-columns: minmax(300px, 370px) minmax(280px, 360px) minmax(390px, 1fr);
   }
 
+  .player-view[data-mode="spectator"]:not(.is-host-setup) {
+    grid-template-columns: minmax(320px, 410px) minmax(760px, 1fr);
+    grid-template-rows: auto minmax(430px, auto) minmax(120px, auto);
+    grid-template-areas:
+      "phase side"
+      "role side"
+      "voice side";
+    min-height: min(820px, calc(100vh - 170px));
+  }
+
   .player-view:not(.is-host-setup) .saloon-vote-panel,
   .player-view:not(.is-host-setup) .reveal-panel,
   .player-view:not(.is-host-setup) .spectator-panel,
   .player-view:not(.is-host-setup) .end-roles {
     min-width: 0;
+  }
+
+  .player-view[data-mode="spectator"] .spectator-panel {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .player-view[data-mode="spectator"] .spectator-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas:
+      "saloon-a saloon-b"
+      "duel duel"
+      "eliminated current";
   }
 }
 
@@ -2660,6 +2683,16 @@ button::after {
       "phase side"
       "role side"
       "voice side";
+  }
+
+  .player-view[data-mode="spectator"] .spectator-grid {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "saloon-a"
+      "saloon-b"
+      "duel"
+      "eliminated"
+      "current";
   }
 
   .phone-clock {

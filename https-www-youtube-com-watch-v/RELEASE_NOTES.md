@@ -1,5 +1,11 @@
 # Release notes
 
+## v6.36
+
+- Correction du mode spectateur sur PC : le panneau utilise maintenant toute la largeur disponible.
+- Les blocs Saloon, Duel, Elimines et Phase actuelle ne se compressent plus en colonnes trop etroites.
+- Les lignes de joueurs en spectateur gardent des textes lisibles au lieu de casser verticalement.
+
 ## v6.35
 
 - Detection vocale plus stable avec seuil automatique base sur le bruit du micro.
