@@ -703,7 +703,6 @@ h3 {
   border-radius: 8px;
   background:
     linear-gradient(180deg, rgba(56, 38, 19, 0.58), rgba(8, 7, 6, 0.68));
-  backdrop-filter: blur(2px);
 }
 
 .join-card > span {
@@ -740,7 +739,6 @@ h3 {
   background:
     linear-gradient(180deg, rgba(20, 12, 7, 0.56), rgba(7, 5, 4, 0.72)),
     rgba(27, 16, 10, 0.64);
-  backdrop-filter: blur(2px);
 }
 
 .public-games > div:first-child {
@@ -1199,7 +1197,6 @@ h3 {
   border-radius: 8px;
   background:
     linear-gradient(180deg, rgba(62, 43, 23, 0.34), rgba(8, 7, 6, 0.30));
-  backdrop-filter: blur(2px);
 }
 
 .host-config-card > span {
@@ -1825,10 +1822,7 @@ a.test-link,
   overflow: hidden;
   padding: 14px;
   border-color: rgba(132, 96, 54, 0.42);
-  background:
-    linear-gradient(180deg, rgba(5, 4, 3, 0.82), rgba(19, 10, 5, 0.9)),
-    url("assets/western-street.jpg") center / cover no-repeat,
-    #080604;
+  background: #080604;
   box-shadow:
     inset 0 0 0 1px rgba(255, 206, 105, 0.18),
     inset 0 0 62px rgba(0, 0, 0, 0.78),
@@ -1856,7 +1850,7 @@ a.test-link,
   aspect-ratio: 1 / 1;
   pointer-events: none;
   background: url("assets/western-saloon.png") center bottom / contain no-repeat;
-  opacity: 0.14;
+  opacity: 0.05;
   filter: sepia(0.6) saturate(0.72) brightness(0.34) contrast(1.1);
 }
 
@@ -1873,8 +1867,8 @@ a.test-link,
   pointer-events: none;
   opacity: 1;
   background:
-    linear-gradient(180deg, rgba(3, 3, 3, 0.24), rgba(8, 4, 2, 0.74)),
-    url("assets/western-street.jpg") center / cover no-repeat,
+    linear-gradient(180deg, rgba(3, 3, 3, 0.08), rgba(8, 4, 2, 0.48)),
+    url("assets/western-street.jpg") center center / cover no-repeat,
     #090604;
 }
 
@@ -1896,11 +1890,11 @@ a.test-link,
   inset: -4%;
   pointer-events: none;
   background:
-    linear-gradient(180deg, rgba(0, 0, 0, 0.15), transparent 30%, rgba(0, 0, 0, 0.55)),
-    url("assets/western-town.jpg") center / cover no-repeat;
-  opacity: 0.52;
-  filter: sepia(0.42) saturate(0.86) brightness(0.56) contrast(1.18);
-  transform: scale(1.04);
+    radial-gradient(circle at 50% 18%, rgba(242, 181, 72, 0.16), transparent 28%),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.02), transparent 34%, rgba(0, 0, 0, 0.34));
+  opacity: 1;
+  filter: none;
+  transform: none;
 }
 
 .western-3d-stage::after {
@@ -1909,10 +1903,8 @@ a.test-link,
   inset: 0;
   pointer-events: none;
   background:
-    radial-gradient(circle at 50% 18%, rgba(242, 181, 72, 0.18), transparent 26%),
-    radial-gradient(circle at 78% 74%, rgba(144, 66, 28, 0.28), transparent 34%),
-    linear-gradient(90deg, rgba(0, 0, 0, 0.58), transparent 28%, transparent 72%, rgba(0, 0, 0, 0.58)),
-    linear-gradient(180deg, rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.58));
+    linear-gradient(90deg, rgba(0, 0, 0, 0.48), transparent 26%, transparent 74%, rgba(0, 0, 0, 0.48)),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.02), rgba(0, 0, 0, 0.46));
 }
 
 .western-3d-fallback::before {
@@ -1966,7 +1958,6 @@ a.test-link,
   background:
     radial-gradient(circle at 50% 15%, rgba(132, 96, 54, 0.12), transparent 46%),
     linear-gradient(180deg, rgba(35, 24, 15, 0.84), rgba(7, 6, 5, 0.84));
-  backdrop-filter: blur(2px);
 }
 
 .player-task span {
@@ -1999,7 +1990,6 @@ a.test-link,
   background:
     radial-gradient(circle at 50% 10%, rgba(242, 196, 107, 0.2), transparent 38%),
     linear-gradient(180deg, rgba(86, 55, 25, 0.48), rgba(8, 7, 6, 0.78));
-  backdrop-filter: blur(2px);
 }
 
 .player-view .identity {
@@ -2227,7 +2217,6 @@ a.test-link,
   border-color: rgba(132, 96, 54, 0.40);
   background:
     linear-gradient(180deg, rgba(56, 38, 19, 0.70), rgba(8, 7, 6, 0.78));
-  backdrop-filter: blur(2px);
 }
 
 .voice-panel strong {
@@ -2261,7 +2250,6 @@ a.test-link,
   border-color: rgba(132, 96, 54, 0.40);
   background:
     linear-gradient(180deg, rgba(38, 24, 13, 0.84), rgba(8, 7, 6, 0.86));
-  backdrop-filter: blur(2px);
 }
 
 .saloon-vote-panel > strong,

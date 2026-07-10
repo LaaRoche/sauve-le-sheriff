@@ -1,5 +1,10 @@
 # Release notes
 
+## v6.43
+- Fond western rendu plus net : suppression des images superposees qui donnaient un effet fantome/flou.
+- Retrait des flous CSS sur les panneaux principaux.
+- Conservation du decor western cinematique sans rendu 3D cubique.
+
 ## v6.42
 - Retrait du rendu 3D cubique visible sur la page joueur.
 - Remplacement par un decor western cinematique plus propre, base sur les images du jeu avec effet de profondeur, lumiere et vignettage.
