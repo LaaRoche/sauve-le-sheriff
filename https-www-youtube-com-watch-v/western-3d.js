@@ -25,8 +25,8 @@
   let floorMaterial = null;
   let target = {
     cameraX: 0,
-    cameraY: 8,
-    cameraZ: 20,
+    cameraY: 6.9,
+    cameraZ: 15,
     lightX: 0,
     lightY: 8,
     lightZ: 8,
@@ -97,11 +97,19 @@
     return mesh;
   }
 
+  function makeGroupCylinder(group, name, radiusTop, radiusBottom, height, position, material, segments = 24) {
+    const mesh = new THREE.Mesh(new THREE.CylinderGeometry(radiusTop, radiusBottom, height, segments), material);
+    mesh.name = name;
+    mesh.position.set(position[0], position[1], position[2]);
+    group.add(mesh);
+    return mesh;
+  }
+
   function buildScene() {
     scene = new THREE.Scene();
-    scene.fog = new THREE.FogExp2(0x100906, 0.032);
-    camera = new THREE.PerspectiveCamera(42, 1, 0.1, 140);
-    camera.position.set(0, 8, 20);
+    scene.fog = new THREE.FogExp2(0x100906, 0.017);
+    camera = new THREE.PerspectiveCamera(48, 1, 0.1, 140);
+    camera.position.set(0, 6.9, 15);
     camera.lookAt(0, 2.2, -12);
 
     renderer = new THREE.WebGLRenderer({
@@ -115,14 +123,14 @@
 
     clock = new THREE.Clock();
 
-    const ambient = new THREE.HemisphereLight(0xffdf9e, 0x160805, 1.8);
+    const ambient = new THREE.HemisphereLight(0xffdf9e, 0x160805, 2.85);
     scene.add(ambient);
 
-    const moon = new THREE.DirectionalLight(0x9fc6ff, 0.5);
+    const moon = new THREE.DirectionalLight(0x9fc6ff, 1.05);
     moon.position.set(-10, 18, 8);
     scene.add(moon);
 
-    pointLight = new THREE.PointLight(0xffad3d, 9, 56, 1.7);
+    pointLight = new THREE.PointLight(0xffad3d, 18, 82, 1.35);
     pointLight.position.set(0, 8, 8);
     scene.add(pointLight);
 
@@ -144,6 +152,7 @@
 
     buildSaloon();
     buildDuelProps();
+    buildForegroundProps();
     buildDust();
     updateTargets();
     resize();
@@ -151,32 +160,43 @@
 
   function buildSaloon() {
     saloonGroup = new THREE.Group();
-    saloonGroup.position.set(0, 0, -28);
+    saloonGroup.position.set(0, -0.25, -15.5);
+    saloonGroup.scale.set(1.42, 1.42, 1.42);
     scene.add(saloonGroup);
 
     const wall = new THREE.MeshStandardMaterial({ color: 0x4d2512, roughness: 0.82 });
     const dark = new THREE.MeshStandardMaterial({ color: 0x140905, roughness: 0.9 });
     const gold = new THREE.MeshStandardMaterial({ color: 0xb17628, roughness: 0.42, metalness: 0.18 });
 
-    makeGroupBox(saloonGroup, "saloon-wall", [28, 12, 1.2], [0, 6, 0], wall);
-    makeGroupBox(saloonGroup, "saloon-roof", [32, 2, 3.5], [0, 13.1, 0.2], dark);
+    makeGroupBox(saloonGroup, "saloon-wall", [30, 12.8, 1.2], [0, 6.1, 0], wall);
+    makeGroupBox(saloonGroup, "saloon-roof", [34, 2.2, 3.6], [0, 13.3, 0.2], dark);
     makeGroupBox(saloonGroup, "saloon-door-left", [3.8, 6.2, 0.35], [-2.3, 3.1, 0.72], dark);
     makeGroupBox(saloonGroup, "saloon-door-right", [3.8, 6.2, 0.35], [2.3, 3.1, 0.72], dark);
-    makeGroupBox(saloonGroup, "saloon-balcony", [31, 0.45, 3.8], [0, 7.8, 2.1], gold);
+    makeGroupBox(saloonGroup, "saloon-balcony", [33, 0.5, 4], [0, 7.8, 2.1], gold);
     for (let i = -13; i <= 13; i += 3.2) {
       makeGroupBox(saloonGroup, "saloon-post", [0.35, 4.4, 0.35], [i, 5.6, 2.4], gold);
     }
 
     const signTexture = makeCanvasTexture("SALOON");
     const signMaterial = new THREE.MeshBasicMaterial({ map: signTexture, transparent: true });
-    saloonSign = new THREE.Mesh(new THREE.PlaneGeometry(13, 4.7), signMaterial);
-    saloonSign.position.set(0, 15.1, 1);
+    saloonSign = new THREE.Mesh(new THREE.PlaneGeometry(16, 5.7), signMaterial);
+    saloonSign.position.set(0, 15.5, 1.12);
     saloonGroup.add(saloonSign);
+
+    const sideWall = new THREE.MeshStandardMaterial({ color: 0x35190c, roughness: 0.88 });
+    makeGroupBox(saloonGroup, "left-building", [8, 9.4, 1], [-18.8, 4.8, -1.2], sideWall);
+    makeGroupBox(saloonGroup, "right-building", [8, 9.4, 1], [18.8, 4.8, -1.2], sideWall);
+    makeGroupBox(saloonGroup, "left-building-roof", [9, 1.2, 2.2], [-18.8, 9.9, -1.05], dark);
+    makeGroupBox(saloonGroup, "right-building-roof", [9, 1.2, 2.2], [18.8, 9.9, -1.05], dark);
+    for (const x of [-20.5, -17.1, 17.1, 20.5]) {
+      makeGroupBox(saloonGroup, "side-window", [1.25, 1.9, 0.18], [x, 5.5, -0.48], gold);
+    }
   }
 
   function buildDuelProps() {
     duelGroup = new THREE.Group();
-    duelGroup.position.set(0, 0, -8);
+    duelGroup.position.set(0, 0, -4.8);
+    duelGroup.scale.set(1.12, 1.12, 1.12);
     scene.add(duelGroup);
 
     const red = new THREE.MeshStandardMaterial({ color: 0x7c241b, roughness: 0.58, metalness: 0.08 });
@@ -192,6 +212,35 @@
     makeGroupBox(duelGroup, "duel-pistol-right", [5.5, 0.45, 0.7], [7.5, 7.6, 0.3], red).rotation.z = 0.16;
     makeGroupBox(duelGroup, "duel-timer", [4.8, 4.8, 0.45], [0, 5.2, 0.2], brass);
     duelGroup.visible = false;
+  }
+
+  function buildForegroundProps() {
+    const props = new THREE.Group();
+    props.position.set(0, 0, -1.1);
+    scene.add(props);
+
+    const barrelWood = new THREE.MeshStandardMaterial({ color: 0x593019, roughness: 0.72, metalness: 0.04 });
+    const iron = new THREE.MeshStandardMaterial({ color: 0x17110c, roughness: 0.48, metalness: 0.28 });
+    const flame = new THREE.MeshBasicMaterial({ color: 0xffb23a, transparent: true, opacity: 0.78 });
+    const rail = new THREE.MeshStandardMaterial({ color: 0x6f3e1f, roughness: 0.82 });
+
+    for (const x of [-15.5, 15.5]) {
+      const barrel = makeGroupCylinder(props, "foreground-barrel", 1.0, 1.08, 2.2, [x, 0.95, -4], barrelWood, 28);
+      barrel.rotation.z = x < 0 ? -0.04 : 0.04;
+      makeGroupCylinder(props, "foreground-barrel-ring-a", 1.04, 1.04, 0.14, [x, 1.45, -4], iron, 28);
+      makeGroupCylinder(props, "foreground-barrel-ring-b", 1.04, 1.04, 0.14, [x, 0.45, -4], iron, 28);
+
+      const lantern = makeGroupBox(props, "foreground-lantern", [0.85, 1.25, 0.42], [x * 0.82, 4.9, -5.4], flame);
+      lantern.rotation.y = x < 0 ? -0.35 : 0.35;
+      const lanternLight = new THREE.PointLight(0xffa737, 6.2, 22, 1.55);
+      lanternLight.position.set(x * 0.82, 4.8, -5);
+      props.add(lanternLight);
+    }
+
+    for (let i = -2; i <= 2; i++) {
+      makeGroupBox(props, "foreground-rail-post", [0.28, 2.3, 0.28], [i * 7.2, 1.15, -6.5], rail);
+    }
+    makeGroupBox(props, "foreground-rail-top", [36, 0.3, 0.28], [0, 2.28, -6.5], rail);
   }
 
   function buildDust() {
@@ -221,37 +270,37 @@
     let gold = 0xd59b35;
     let fog = 0x110905;
     let cameraX = 0;
-    let cameraY = 8;
-    let cameraZ = 20;
+    let cameraY = 6.9;
+    let cameraZ = 15;
     let lightX = 0;
     let lightY = 8;
     let lightZ = 8;
 
     if (mode === "discussion" || mode === "vote") {
       cameraX = state.saloon === "B" ? 4 : -4;
-      cameraY = 7.4;
-      cameraZ = 17;
+      cameraY = 6.8;
+      cameraZ = 12.8;
       lightX = state.saloon === "B" ? 7 : -7;
       gold = 0xc88a3d;
       fog = 0x1b1008;
     } else if (mode === "duel" || mode === "duel-ready") {
-      cameraY = 7;
-      cameraZ = 13;
+      cameraY = 6.4;
+      cameraZ = 10.2;
       lightY = 6.5;
       lightZ = 3;
       gold = 0xeea21a;
       fog = 0x170604;
     } else if (mode === "result") {
-      cameraY = 8.4;
-      cameraZ = 15;
+      cameraY = 7.0;
+      cameraZ = 11.2;
       lightY = 8;
       lightZ = 2;
       gold = 0xffc55a;
       fog = 0x210a05;
     } else if (mode === "spectator" || mode === "game-over") {
       cameraX = 5;
-      cameraY = 10;
-      cameraZ = 24;
+      cameraY = 7.4;
+      cameraZ = 14.8;
       gold = 0x8f7b5b;
       fog = 0x080807;
     } else if (role === "Hors-la-loi") {
@@ -296,7 +345,7 @@
       pointLight.position.x += (target.lightX + Math.sin(time * 0.7) * 0.5 - pointLight.position.x) * 0.05;
       pointLight.position.y += (target.lightY + Math.sin(time * 1.1) * 0.18 - pointLight.position.y) * 0.05;
       pointLight.position.z += (target.lightZ - pointLight.position.z) * 0.05;
-      pointLight.intensity = 8.5 + Math.sin(time * 4.1) * 0.35;
+      pointLight.intensity = 17 + Math.sin(time * 4.1) * 1.2;
     }
     if (saloonSign) saloonSign.rotation.z = Math.sin(time * 0.55) * 0.01;
     if (duelGroup) duelGroup.rotation.y = Math.sin(time * 0.25) * 0.035;

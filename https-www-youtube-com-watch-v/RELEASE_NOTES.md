@@ -1,5 +1,15 @@
 # Release notes
 
+## v6.41
+- Rendu 3D western rendu beaucoup plus visible : saloon rapproche, enseigne agrandie, eclairage renforce.
+- Panneaux principaux legerement plus transparents pour laisser apparaitre le decor 3D sans perdre la lisibilite.
+
+## v6.40
+
+- Rendu 3D rendu beaucoup plus visible sur l'interface joueur.
+- Scene 3D rapprochee avec saloon, sol, lanternes, tonneaux et elements de duel plus lisibles.
+- Voile sombre reduit pour que le decor 3D reste visible derriere l'interface.
+
 ## v6.39
 
 - Ajout d'une scene 3D western legere sur l'interface joueur.
