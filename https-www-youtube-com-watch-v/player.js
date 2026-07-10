@@ -522,6 +522,7 @@ function setTask(phase, action) {
 
 function setViewMode(mode) {
   playerView.dataset.mode = mode || "default";
+  window.EmpireSheriff3D?.setMode(playerView.dataset.mode);
 }
 
 function setScreen(phase, action, note) {
@@ -1111,6 +1112,11 @@ function render(nextState) {
   roleCard.classList.toggle("is-outlaw", player.role === "Hors-la-loi");
   roleCard.classList.toggle("is-sheriff", player.role === "Sheriff");
   roleCard.classList.toggle("is-hidden-role", !player.role);
+  window.EmpireSheriff3D?.setPlayer({
+    role: player.role || "",
+    saloon: player.saloon || "",
+    alive: player.alive
+  });
   const isHost = state.hostId === player.id;
   const hasStarted = gameHasStarted();
   playerView.classList.toggle("is-host-setup", isHost && !hasStarted);

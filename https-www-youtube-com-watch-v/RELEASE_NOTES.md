@@ -1,5 +1,11 @@
 # Release notes
 
+## v6.39
+
+- Ajout d'une scene 3D western legere sur l'interface joueur.
+- La scene change d'ambiance selon la phase : preparation, discussion, duel, resultat et spectateur.
+- Ajout d'un repli visuel si le rendu 3D ne peut pas se charger.
+
 ## v6.38
 
 - Ajout du slogan du jeu a droite du logo sur les interfaces principales.
