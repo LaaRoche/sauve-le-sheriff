@@ -1826,7 +1826,7 @@ a.test-link,
   padding: 14px;
   border-color: rgba(132, 96, 54, 0.42);
   background:
-    linear-gradient(180deg, rgba(5, 4, 3, 0.88), rgba(19, 10, 5, 0.94)),
+    linear-gradient(180deg, rgba(5, 4, 3, 0.82), rgba(19, 10, 5, 0.9)),
     url("assets/western-street.jpg") center / cover no-repeat,
     #080604;
   box-shadow:
@@ -1841,23 +1841,23 @@ a.test-link,
   inset: 0;
   pointer-events: none;
   background:
-    linear-gradient(90deg, rgba(132, 96, 54, 0.10), transparent 18%, transparent 82%, rgba(132, 96, 54, 0.10)),
-    radial-gradient(circle at 50% 12%, rgba(242, 196, 107, 0.13), transparent 34%),
-    linear-gradient(180deg, rgba(0, 0, 0, 0.24), transparent 18%, rgba(0, 0, 0, 0.36));
-  opacity: 0.34;
+    linear-gradient(90deg, rgba(0, 0, 0, 0.55), transparent 24%, transparent 76%, rgba(0, 0, 0, 0.55)),
+    radial-gradient(circle at 50% 16%, rgba(239, 172, 64, 0.16), transparent 34%),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.18), transparent 22%, rgba(0, 0, 0, 0.44));
+  opacity: 0.9;
 }
 
 .phone-panel::after {
   content: "";
   position: absolute;
-  right: -8%;
-  bottom: -18%;
-  width: min(58%, 620px);
+  right: -4%;
+  bottom: -12%;
+  width: min(44%, 560px);
   aspect-ratio: 1 / 1;
   pointer-events: none;
   background: url("assets/western-saloon.png") center bottom / contain no-repeat;
-  opacity: 0.04;
-  filter: sepia(0.55) saturate(0.72) brightness(0.38) contrast(1.1);
+  opacity: 0.14;
+  filter: sepia(0.6) saturate(0.72) brightness(0.34) contrast(1.1);
 }
 
 .phone-panel > * {
@@ -1873,8 +1873,9 @@ a.test-link,
   pointer-events: none;
   opacity: 1;
   background:
-    radial-gradient(circle at 50% 18%, rgba(255, 178, 58, 0.48), transparent 34%),
-    linear-gradient(180deg, rgba(2, 2, 2, 0.72), rgba(36, 15, 5, 0.66) 58%, rgba(115, 48, 16, 0.70));
+    linear-gradient(180deg, rgba(3, 3, 3, 0.24), rgba(8, 4, 2, 0.74)),
+    url("assets/western-street.jpg") center / cover no-repeat,
+    #090604;
 }
 
 .phone-panel > .western-3d-stage {
@@ -1883,10 +1884,23 @@ a.test-link,
 }
 
 .western-3d-stage canvas {
-  display: block;
+  display: none;
   width: 100%;
   height: 100%;
   filter: saturate(1.28) contrast(1.2) brightness(1.24);
+}
+
+.western-3d-stage::before {
+  content: "";
+  position: absolute;
+  inset: -4%;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.15), transparent 30%, rgba(0, 0, 0, 0.55)),
+    url("assets/western-town.jpg") center / cover no-repeat;
+  opacity: 0.52;
+  filter: sepia(0.42) saturate(0.86) brightness(0.56) contrast(1.18);
+  transform: scale(1.04);
 }
 
 .western-3d-stage::after {
@@ -1895,9 +1909,10 @@ a.test-link,
   inset: 0;
   pointer-events: none;
   background:
-    linear-gradient(90deg, rgba(0, 0, 0, 0.26), transparent 22%, transparent 78%, rgba(0, 0, 0, 0.26)),
-    radial-gradient(circle at 50% 18%, transparent 0 38%, rgba(0, 0, 0, 0.14) 82%),
-    linear-gradient(180deg, rgba(0, 0, 0, 0.02), rgba(0, 0, 0, 0.28));
+    radial-gradient(circle at 50% 18%, rgba(242, 181, 72, 0.18), transparent 26%),
+    radial-gradient(circle at 78% 74%, rgba(144, 66, 28, 0.28), transparent 34%),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.58), transparent 28%, transparent 72%, rgba(0, 0, 0, 0.58)),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.58));
 }
 
 .western-3d-fallback::before {

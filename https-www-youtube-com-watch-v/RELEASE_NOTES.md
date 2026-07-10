@@ -1,5 +1,9 @@
 # Release notes
 
+## v6.42
+- Retrait du rendu 3D cubique visible sur la page joueur.
+- Remplacement par un decor western cinematique plus propre, base sur les images du jeu avec effet de profondeur, lumiere et vignettage.
+
 ## v6.41
 - Rendu 3D western rendu beaucoup plus visible : saloon rapproche, enseigne agrandie, eclairage renforce.
 - Panneaux principaux legerement plus transparents pour laisser apparaitre le decor 3D sans perdre la lisibilite.
