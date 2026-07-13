@@ -1,5 +1,8 @@
 # Release notes
 
+## v6.44
+- Ajout du logo du jeu comme icone d'onglet navigateur sur les pages maitre, joueur et test joueurs.
+
 ## v6.43
 - Fond western rendu plus net : suppression des images superposees qui donnaient un effet fantome/flou.
 - Retrait des flous CSS sur les panneaux principaux.
