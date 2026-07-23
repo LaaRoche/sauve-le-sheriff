@@ -429,9 +429,8 @@ async function reconnectStoredPlayer() {
   return true;
 }
 
-async function leaveCurrentGame() {
+function resetLocalGameSession(notice = "") {
   const oldCode = gameCode;
-  const oldPlayerId = playerId;
   events?.close();
   events = null;
   for (const id of [...peers.keys()]) closePeer(id);
@@ -449,10 +448,9 @@ async function leaveCurrentGame() {
   enableVoice.classList.remove("voice-on", "voice-muted");
   muteMicButton.classList.add("hidden");
   deafenVoiceButton.classList.add("hidden");
-  if (oldCode && oldPlayerId) {
-    await postJson("/api/delete-player", { code: oldCode, id: oldPlayerId });
-    localStorage.removeItem(`sheriffPlayerId:${oldCode}`);
-  }
+  reconnectVoiceButton.classList.add("hidden");
+  remoteAudio.innerHTML = "";
+  if (oldCode) localStorage.removeItem(`sheriffPlayerId:${oldCode}`);
   localStorage.removeItem("sheriffGameCode");
   gameCode = "";
   playerId = "";
@@ -462,13 +460,43 @@ async function leaveCurrentGame() {
   playerView.classList.add("hidden");
   leaveGameButton.classList.add("hidden");
   message.textContent = "En attente du maitre de partie.";
+  if (notice) showJoinError(notice);
+  setTimeout(refreshPublicGames, notice ? 2500 : 0);
+}
+
+async function leaveCurrentGame() {
+  const oldCode = gameCode;
+  const oldPlayerId = playerId;
+  const isHost = Boolean(state?.hostId && state.hostId === oldPlayerId);
+  if (oldCode && oldPlayerId) {
+    if (isHost) {
+      const result = await postJson("/api/close-game", {
+        code: oldCode,
+        playerId: oldPlayerId
+      });
+      if (result.error) throw new Error(result.error);
+    } else {
+      await postJson("/api/delete-player", { code: oldCode, id: oldPlayerId });
+    }
+  }
+  resetLocalGameSession(
+    isHost
+      ? "Partie fermee. Tous les joueurs sont revenus au lobby."
+      : "Tu as quitte la partie."
+  );
 }
 
 function connectEvents() {
   if (!gameCode) return;
   events?.close();
-  events = new EventSource(`/events?code=${encodeURIComponent(gameCode)}`);
+  events = new EventSource(
+    `/events?code=${encodeURIComponent(gameCode)}&playerId=${encodeURIComponent(playerId)}`
+  );
   events.addEventListener("state", (event) => render(JSON.parse(event.data)));
+  events.addEventListener("game-closed", (event) => {
+    const data = JSON.parse(event.data || "{}");
+    resetLocalGameSession(data.reason || "L'organisateur a ferme la partie.");
+  });
   events.addEventListener("signal", (event) => {
     handleSignal(event).catch(() => {
       markVoiceIssue();
@@ -1428,12 +1456,7 @@ publicGameList.addEventListener("click", async (event) => {
 
 leaveGameButton.addEventListener("click", () => {
   leaveCurrentGame().catch(() => {
-    localStorage.removeItem("sheriffGameCode");
-    gameCode = "";
-    playerId = "";
-    joinForm.classList.remove("hidden");
-    playerView.classList.add("hidden");
-    leaveGameButton.classList.add("hidden");
+    resetLocalGameSession("Impossible de joindre la partie. Retour au lobby.");
   });
 });
 
@@ -1490,12 +1513,7 @@ hostForceStart.addEventListener("click", async () => {
 });
 
 hostNewGame.addEventListener("click", async () => {
-  const code = gameCode;
-  await postJson("/api/new-game", { code });
-  if (gameCode) localStorage.removeItem(`sheriffPlayerId:${gameCode}`);
-  localStorage.removeItem("sheriffGameCode");
-  playerId = "";
-  gameCode = "";
+  await leaveCurrentGame();
 });
 
 hostAddFakePlayers.addEventListener("click", async () => {

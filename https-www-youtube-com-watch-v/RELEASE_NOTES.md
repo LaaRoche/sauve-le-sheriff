@@ -1,5 +1,11 @@
 # Release notes
 
+## v6.46
+- Quand l'organisateur annule ou change de partie, la partie est fermee pour tout le monde.
+- Si l'organisateur ferme son onglet ou quitte la connexion, la partie est fermee apres un court delai de reconnexion.
+- Tous les joueurs connectes reviennent automatiquement au lobby.
+- L'ancien code devient inutilisable et la partie disparait de la liste des parties en preparation.
+
 ## v6.45
 - Ajout du choix de partie Avec micro ou Sans micro dans la configuration organisateur.
 - En mode Sans micro, aucune autorisation micro n'est demandee et les controles vocaux sont masques.

@@ -22,6 +22,7 @@ let turnStatus = {
   message: "STUN par defaut"
 };
 const clients = new Set();
+const hostDisconnectTimers = new Map();
 let resultResetTimer = null;
 let lastPublicOrigin = "";
 let activeSettings = { ...defaultSettings };
@@ -200,6 +201,8 @@ function createGameState(code) {
   const settings = { ...defaultSettings };
   return {
     code,
+    closed: false,
+    closedReason: "",
     visibility: "private",
     players: [],
     hostId: "",
@@ -493,6 +496,8 @@ function publicState(req) {
   if (requestOrigin(req)) lastPublicOrigin = requestOrigin(req);
   return {
     code: state.code,
+    closed: Boolean(state.closed),
+    closedReason: state.closedReason || "",
     visibility: state.visibility,
     joinUrl: `${origin}/join.html`,
     players: state.players,
@@ -518,7 +523,7 @@ function publicGameList(req) {
       const previous = state;
       state = game;
       activeSettings = game.settings;
-      const open = game.code !== "GLOBAL" && game.players.length > 0 && !gameHasStarted();
+      const open = !game.closed && game.code !== "GLOBAL" && game.players.length > 0 && !gameHasStarted();
       state = previous;
       activeSettings = previous.settings;
       return open;
@@ -647,6 +652,69 @@ function emitSignal(signal) {
   for (const client of clients) {
     if (client.code === state.code) client.res.write(payload);
   }
+}
+
+function closeGame(game, reason = "L'organisateur a ferme la partie.") {
+  const disconnectTimer = hostDisconnectTimers.get(game.code);
+  if (disconnectTimer) clearTimeout(disconnectTimer);
+  hostDisconnectTimers.delete(game.code);
+  game.closed = true;
+  game.closedReason = reason;
+  const payload = `event: game-closed\ndata: ${JSON.stringify({
+    code: game.code,
+    reason
+  })}\n\n`;
+
+  for (const client of [...clients]) {
+    if (client.code !== game.code) continue;
+    client.res.end(payload);
+    clients.delete(client);
+  }
+
+  if (game.code === "GLOBAL") {
+    const replacement = createGameState("GLOBAL");
+    games.set("GLOBAL", replacement);
+    state = replacement;
+    activeSettings = replacement.settings;
+  } else {
+    game.players.splice(0, game.players.length);
+    game.hostId = "";
+    game.hostMessage = "";
+    game.phase = freshPhase();
+    game.duel = freshDuel(game.settings);
+    game.saloonVotes = freshSaloonVotes();
+    state = game;
+    activeSettings = game.settings;
+  }
+}
+
+function cancelHostDisconnect(game) {
+  const timer = hostDisconnectTimers.get(game.code);
+  if (timer) clearTimeout(timer);
+  hostDisconnectTimers.delete(game.code);
+}
+
+function scheduleHostDisconnect(game, hostId) {
+  cancelHostDisconnect(game);
+  const timer = setTimeout(() => {
+    hostDisconnectTimers.delete(game.code);
+    const hostStillConnected = [...clients].some((client) => (
+      client.code === game.code && client.playerId === hostId
+    ));
+    if (game.closed || game.hostId !== hostId || hostStillConnected) return;
+    const previous = state;
+    state = game;
+    activeSettings = game.settings;
+    logGame("game:host-disconnected", {
+      player: game.players.find((player) => player.id === hostId)?.name || "Organisateur"
+    });
+    closeGame(game, "L'organisateur a quitte la partie.");
+    if (previous !== game) {
+      state = previous;
+      activeSettings = previous.settings;
+    }
+  }, 8000);
+  hostDisconnectTimers.set(game.code, timer);
 }
 
 function moveToOtherSaloon(player) {
@@ -865,15 +933,36 @@ const server = http.createServer(async (req, res) => {
 
   if (url.pathname === "/events") {
     const game = useGame(url.searchParams.get("code"));
+    const connectedPlayerId = String(url.searchParams.get("playerId") || "");
     res.writeHead(200, {
       "Content-Type": "text/event-stream; charset=utf-8",
       "Cache-Control": "no-cache",
       Connection: "keep-alive"
     });
-    const client = { res, code: game.code };
+    if (game.closed) {
+      res.end(`event: game-closed\ndata: ${JSON.stringify({
+        code: game.code,
+        reason: game.closedReason || "Cette partie est fermee."
+      })}\n\n`);
+      return;
+    }
+    const client = { res, code: game.code, playerId: connectedPlayerId };
     clients.add(client);
+    if (connectedPlayerId && game.hostId === connectedPlayerId) {
+      cancelHostDisconnect(game);
+    }
     res.write(`event: state\ndata: ${JSON.stringify(publicState(req))}\n\n`);
-    req.on("close", () => clients.delete(client));
+    req.on("close", () => {
+      clients.delete(client);
+      if (
+        connectedPlayerId &&
+        !game.closed &&
+        game.hostId === connectedPlayerId &&
+        ![...clients].some((item) => item.code === game.code && item.playerId === connectedPlayerId)
+      ) {
+        scheduleHostDisconnect(game, connectedPlayerId);
+      }
+    });
     return;
   }
 
@@ -924,7 +1013,7 @@ const server = http.createServer(async (req, res) => {
   if (req.method === "POST" && url.pathname === "/api/join") {
     const body = await readBody(req);
     const requested = findGame(body.code);
-    if (!requested) {
+    if (!requested || requested.closed) {
       sendJson(res, { error: "Partie introuvable." });
       return;
     }
@@ -994,6 +1083,26 @@ const server = http.createServer(async (req, res) => {
     logGame("player:delete", { player: removed?.name || body.id || "" });
     emit();
     sendJson(res, publicState(req));
+    return;
+  }
+
+  if (req.method === "POST" && url.pathname === "/api/close-game") {
+    const body = await readBody(req);
+    const game = findGame(body.code);
+    if (!game) {
+      sendJson(res, { closed: true });
+      return;
+    }
+    useGame(body.code);
+    if (!body.playerId || state.hostId !== body.playerId) {
+      sendJson(res, { error: "Seul l'organisateur peut fermer la partie." });
+      return;
+    }
+    logGame("game:closed", {
+      player: state.players.find((player) => player.id === body.playerId)?.name || "Organisateur"
+    });
+    closeGame(state);
+    sendJson(res, { closed: true });
     return;
   }
 
