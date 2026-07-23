@@ -1,5 +1,12 @@
 # Release notes
 
+## v6.45
+- Ajout du choix de partie Avec micro ou Sans micro dans la configuration organisateur.
+- En mode Sans micro, aucune autorisation micro n'est demandee et les controles vocaux sont masques.
+- Les micros manquants ne bloquent plus le lancement d'une partie Sans micro.
+- Nouvelle disposition mobile du duel : role et chrono cote a cote, choix Tirer / Ne pas tirer visibles sans defilement.
+- Le pouvoir du sheriff reste accessible dans la meme zone compacte sur telephone.
+
 ## v6.44
 - Ajout du logo du jeu comme icone d'onglet navigateur sur les pages maitre, joueur et test joueurs.
 

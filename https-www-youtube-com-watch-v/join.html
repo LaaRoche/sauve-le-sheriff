@@ -4,8 +4,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Sauve l'Empire - Joueur</title>
-    <link rel="icon" type="image/png" href="/assets/logo-sauve-empire.png?v=6.44">
-    <link rel="apple-touch-icon" href="/assets/logo-sauve-empire.png?v=6.44">
+    <link rel="icon" type="image/png" href="/assets/logo-sauve-empire.png?v=6.45">
+    <link rel="apple-touch-icon" href="/assets/logo-sauve-empire.png?v=6.45">
     <link rel="stylesheet" href="styles.css">
   </head>
   <body>
@@ -16,7 +16,7 @@
         </div>
         <div class="phone-topbar">
           <div class="brand-block">
-            <p class="eyebrow">v6.44</p>
+            <p class="eyebrow">v6.45</p>
             <div class="brand-row">
               <img class="app-logo phone-logo" src="assets/logo-sauve-empire.png" alt="Sauve l'Empire">
               <p class="brand-slogan">Pas de promesse, pas de "je te jure" et pas de "sur la tête de ma mère".</p>
@@ -99,6 +99,14 @@
                   <input id="host-outlaw-count" type="number" min="1" max="8" value="1">
                 </label>
                 <p id="host-outlaw-recommendation">Conseille : 1 hors-la-loi.</p>
+                <div class="host-voice-setting">
+                  <span>Micro de la partie</span>
+                  <div class="host-voice-options" role="group" aria-label="Utilisation du micro">
+                    <button class="selected" id="host-voice-on" type="button" aria-pressed="true">Avec micro</button>
+                    <button id="host-voice-off" type="button" aria-pressed="false">Sans micro</button>
+                  </div>
+                  <p id="host-voice-help">Les joueurs utilisent le vocal integre.</p>
+                </div>
               </div>
             </div>
             <div class="host-config-card host-players-card">

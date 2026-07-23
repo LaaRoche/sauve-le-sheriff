@@ -2,7 +2,7 @@
 
 Application web multijoueur pour animer une partie de Sauve l'Empire.
 
-Version actuelle : v6.44
+Version actuelle : v6.45
 
 ## Lancer en local
 
@@ -33,6 +33,8 @@ Une fois deployee, partage l'URL publique de la page maitre. Le lien joueur affi
 ## Vocal a distance
 
 Le vocal utilise WebRTC. Pour que tous les joueurs s'entendent meme avec des box, VPN ou pare-feu compliques, configure un serveur TURN sur l'hebergeur.
+
+L'organisateur peut aussi choisir `Sans micro` avant le lancement. Dans ce mode, aucun acces micro n'est demande et aucun blocage vocal n'empeche la partie de demarrer.
 
 Configuration recommandee avec Metered sur Render :
 

@@ -62,6 +62,9 @@ const hostResultDuration = document.querySelector("#host-result-duration");
 const hostDiscussionDuration = document.querySelector("#host-discussion-duration");
 const hostPlayerList = document.querySelector("#host-player-list");
 const hostOutlawRecommendation = document.querySelector("#host-outlaw-recommendation");
+const hostVoiceOn = document.querySelector("#host-voice-on");
+const hostVoiceOff = document.querySelector("#host-voice-off");
+const hostVoiceHelp = document.querySelector("#host-voice-help");
 const hostStartGame = document.querySelector("#host-start-game");
 const hostForceStart = document.querySelector("#host-force-start");
 const hostNewGame = document.querySelector("#host-new-game");
@@ -82,6 +85,8 @@ let lastVoiceDeafened = null;
 let voiceConnectionIssue = false;
 let hostTimersTouched = false;
 let hostOutlawTouched = false;
+let hostVoiceTouched = false;
+let hostVoiceChatEnabled = true;
 let voiceIceServers = [{ urls: "stun:stun.l.google.com:19302" }];
 const peers = new Map();
 const pendingCandidates = new Map();
@@ -522,6 +527,7 @@ function setTask(phase, action) {
 
 function setViewMode(mode) {
   playerView.dataset.mode = mode || "default";
+  document.body.dataset.playerMode = playerView.dataset.mode;
   window.EmpireSheriff3D?.setMode(playerView.dataset.mode);
 }
 
@@ -542,7 +548,7 @@ function setScreen(phase, action, note) {
 function setRevealPanel({ kicker, title, detail, role, art }) {
   revealKicker.textContent = kicker || "Resultat du duel";
   revealTitle.textContent = title || "Le duel est termine";
-  revealDetail.textContent = detail || "Rejoins ton vocal.";
+  revealDetail.textContent = detail || (gameUsesVoice() ? "Rejoins ton vocal." : "Observe le resultat.");
   revealCard.classList.toggle("hidden", !role);
   if (role) {
     revealRole.textContent = role;
@@ -598,6 +604,38 @@ function gameHasStarted() {
   );
 }
 
+function gameUsesVoice() {
+  return state?.settings?.voiceChatEnabled !== false;
+}
+
+function setHostVoiceMode(enabled, touched = true) {
+  hostVoiceChatEnabled = Boolean(enabled);
+  if (touched) hostVoiceTouched = true;
+  hostVoiceOn?.classList.toggle("selected", hostVoiceChatEnabled);
+  hostVoiceOff?.classList.toggle("selected", !hostVoiceChatEnabled);
+  hostVoiceOn?.setAttribute("aria-pressed", String(hostVoiceChatEnabled));
+  hostVoiceOff?.setAttribute("aria-pressed", String(!hostVoiceChatEnabled));
+  if (hostVoiceHelp) {
+    hostVoiceHelp.textContent = hostVoiceChatEnabled
+      ? "Les joueurs utilisent le vocal integre."
+      : "Aucun micro demande. Ideal quand vous jouez dans la meme piece.";
+  }
+  if (touched && state?.hostId === playerId && !gameHasStarted()) {
+    playerView.classList.toggle("is-no-voice", !hostVoiceChatEnabled);
+    document.body.dataset.voiceMode = hostVoiceChatEnabled ? "with-micro" : "without-micro";
+    const missingMic = hostVoiceChatEnabled
+      ? state.players.filter((player) => player.alive && !player.fake && !player.voiceReady)
+      : [];
+    hostForceStart.classList.toggle("hidden", !missingMic.length);
+    hostMessage.textContent = hostVoiceChatEnabled
+      ? missingMic.length
+        ? `Micro manquant : ${missingMic.map((player) => player.name).join(", ")}.`
+        : "Mode avec micro selectionne. Tous les micros sont prets."
+      : "Mode sans micro selectionne. Aucun micro ne sera demande.";
+    renderHostPlayerList();
+  }
+}
+
 function renderHostPlayerList() {
   if (!hostPlayerList || !state) return;
   if (!state.players.length) {
@@ -607,11 +645,12 @@ function renderHostPlayerList() {
   hostPlayerList.innerHTML = state.players
     .map((player, index) => {
       const isHost = state.hostId === player.id;
-      const micReady = player.fake || player.voiceReady;
+      const voiceRequired = hostVoiceTouched ? hostVoiceChatEnabled : gameUsesVoice();
+      const micReady = !voiceRequired || player.fake || player.voiceReady;
       const typeLabel = player.fake ? "Bot test" : "Vrai joueur";
       const hostLabel = isHost ? "Organisateur" : "Joueur";
       const readyLabel = micReady ? "Pret" : "Pas pret";
-      const micLabel = player.fake ? "Pret test" : player.voiceDeafened ? "Sourdine" : player.voiceMuted ? "Micro coupe" : player.voiceReady ? "Micro actif" : "Micro manquant";
+      const micLabel = !voiceRequired ? "Sans micro" : player.fake ? "Pret test" : player.voiceDeafened ? "Sourdine" : player.voiceMuted ? "Micro coupe" : player.voiceReady ? "Micro actif" : "Micro manquant";
       const canKick = state.hostId !== player.id && !gameHasStarted();
       return `<div class="host-player-item">
         <div class="host-player-main">
@@ -631,6 +670,7 @@ function renderHostPlayerList() {
 }
 
 function rosterStatus(player) {
+  if (!gameUsesVoice()) return "Sans micro";
   if (player.fake) return "Bot";
   if (player.voiceDeafened) return "Sourdine";
   if (player.voiceMuted) return "Micro coupe";
@@ -711,6 +751,9 @@ function syncHostSettings() {
   }
   if (!hostOutlawTouched) {
     hostOutlawCount.value = String(recommendedOutlaws);
+  }
+  if (!hostVoiceTouched) {
+    setHostVoiceMode(state.settings.voiceChatEnabled !== false, false);
   }
   if (hostOutlawRecommendation) {
     hostOutlawRecommendation.textContent = `Conseille : ${recommendedOutlaws} hors-la-loi pour ${livingCount} joueur(s).`;
@@ -815,7 +858,7 @@ async function sendSignal(to, kind, payload) {
 
 function voiceTargetIds() {
   const player = myPlayer();
-  if (!voiceEnabled || !player || !state) return [];
+  if (!gameUsesVoice() || !voiceEnabled || !player || !state) return [];
   const myRoom = voiceRoomFor(player, state.duel);
   return state.players
     .filter((other) => !other.fake && other.id !== playerId && other.voiceRoom === myRoom && other.voiceReady)
@@ -954,7 +997,7 @@ async function flushCandidates(id) {
 
 async function syncVoicePeers() {
   const player = myPlayer();
-  if (!voiceEnabled || !player || !state) return;
+  if (!gameUsesVoice() || !voiceEnabled || !player || !state) return;
 
   const myRoom = voiceRoomFor(player, state.duel);
   voiceRoom.textContent = myRoom;
@@ -995,6 +1038,7 @@ async function syncVoicePeers() {
 }
 
 async function enableVoiceChat() {
+  if (!gameUsesVoice()) return;
   localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
   voiceConnectionIssue = false;
   voiceEnabled = true;
@@ -1017,6 +1061,17 @@ function updateVoiceTrackState() {
 }
 
 function updateVoiceControls() {
+  const voiceAvailable = gameUsesVoice();
+  if (!voiceAvailable) {
+    enableVoice.classList.add("hidden");
+    muteMicButton.classList.add("hidden");
+    deafenVoiceButton.classList.add("hidden");
+    reconnectVoiceButton.classList.add("hidden");
+    voiceRoom.textContent = "Sans micro";
+    voiceStatus.textContent = "Le vocal integre est desactive pour cette partie.";
+    return;
+  }
+  enableVoice.classList.remove("hidden");
   if (!voiceEnabled) {
     enableVoice.textContent = "🎙️ Activer micro";
     enableVoice.classList.remove("voice-on", "voice-muted");
@@ -1037,6 +1092,32 @@ function updateVoiceControls() {
   muteMicButton.classList.toggle("voice-on", !micMuted && !deafened);
   muteMicButton.classList.toggle("voice-muted", micMuted && !deafened);
   deafenVoiceButton.classList.toggle("voice-muted", deafened);
+}
+
+function stopVoiceForGame() {
+  for (const id of [...peers.keys()]) closePeer(id);
+  stopSpeakingMonitor(playerId);
+  localStream?.getTracks().forEach((track) => track.stop());
+  localStream = null;
+  voiceEnabled = false;
+  micMuted = false;
+  deafened = false;
+  voiceConnectionIssue = false;
+  lastVoiceRoom = "";
+  lastVoiceReady = null;
+  lastVoiceMuted = null;
+  lastVoiceDeafened = null;
+  remoteAudio.innerHTML = "";
+  updateVoiceControls();
+  if (playerId && state) {
+    postJson("/api/voice-room", {
+      playerId,
+      room: "",
+      ready: false,
+      muted: false,
+      deafened: false
+    });
+  }
 }
 
 async function reconnectVoiceChat() {
@@ -1119,6 +1200,11 @@ function render(nextState) {
   });
   const isHost = state.hostId === player.id;
   const hasStarted = gameHasStarted();
+  const voiceRequired = isHost && !hasStarted && hostVoiceTouched
+    ? hostVoiceChatEnabled
+    : gameUsesVoice();
+  playerView.classList.toggle("is-no-voice", !voiceRequired);
+  document.body.dataset.voiceMode = voiceRequired ? "with-micro" : "without-micro";
   playerView.classList.toggle("is-host-setup", isHost && !hasStarted);
   if (isHost && !hasStarted) setViewMode("host-setup");
   hostTools.classList.toggle("hidden", !isHost || hasStarted);
@@ -1132,9 +1218,11 @@ function render(nextState) {
     hostMessage.textContent = state.hostMessage || (livingCount < 3 ? "Tu peux tester a partir de 3 joueurs. L'experience complete est meilleure a 5 joueurs ou plus." : "Configure la partie puis lance quand tout le monde est pret.");
     renderHostPlayerList();
     syncHostSettings();
-    const missingMic = state.players.filter((item) => item.alive && !item.fake && !item.voiceReady);
-    hostForceStart.classList.toggle("hidden", !missingMic.length);
-    if (!state.hostMessage && missingMic.length) {
+    const missingMic = voiceRequired
+      ? state.players.filter((item) => item.alive && !item.fake && !item.voiceReady)
+      : [];
+    hostForceStart.classList.toggle("hidden", !voiceRequired || !missingMic.length);
+    if (!state.hostMessage && voiceRequired && missingMic.length) {
       hostMessage.textContent = `Micro manquant : ${missingMic.map((item) => item.name).join(", ")}.`;
     }
   }
@@ -1143,8 +1231,13 @@ function render(nextState) {
   const phase = state.phase || {};
   const saloonDuelist = mySaloonDuelist(duel, player);
   const isSelectedForDuel = saloonDuelist === player.id;
-  voiceRoom.textContent = voiceRoomFor(player, duel) || "Non connecte";
-  syncVoicePeers();
+  if (!voiceRequired) {
+    if (voiceEnabled || localStream || peers.size) stopVoiceForGame();
+    else updateVoiceControls();
+  } else {
+    voiceRoom.textContent = voiceRoomFor(player, duel) || "Non connecte";
+    syncVoicePeers();
+  }
   if (isHost && !hasStarted) {
     gameRosterPanel.classList.add("hidden");
   } else {
@@ -1172,7 +1265,9 @@ function render(nextState) {
     spectatorPanel.classList.add("hidden");
     endRoles.classList.remove("hidden");
     endRoleList.innerHTML = state.players.map((item) => `<div class="end-role-item"><span>${escapeHtml(item.name)}</span><strong>${escapeHtml(item.role || "Sans role")}</strong></div>`).join("");
-    setTask("Partie terminee", `${state.winner} gagnent. Rejoins le vocal Fin de partie.`);
+    setTask("Partie terminee", gameUsesVoice()
+      ? `${state.winner} gagnent. Rejoins le vocal Fin de partie.`
+      : `${state.winner} gagnent la partie.`);
     return;
   }
 
@@ -1190,10 +1285,10 @@ function render(nextState) {
     if (!player.role) {
       playerStatus.textContent = "Hors partie";
       message.textContent = "La partie est deja en cours. Attends la prochaine manche.";
-      setScreen("Partie en cours", "Tu rejoindras la prochaine partie.", "Reste hors des vocaux de jeu.");
+      setScreen("Partie en cours", "Tu rejoindras la prochaine partie.", gameUsesVoice() ? "Reste hors des vocaux de jeu." : "Observe la partie.");
     } else {
       message.textContent = "Tu es mort. Garde le silence jusqu'a la fin de la partie.";
-      setScreen("Elimine", "Tu ne participes plus.", "Reste dans le vocal Elimines et garde le silence.");
+      setScreen("Elimine", "Tu ne participes plus.", gameUsesVoice() ? "Reste dans le vocal Elimines et garde le silence." : "Observe la suite de la partie.");
     renderSpectatorView(duel);
     spectatorPanel.classList.remove("hidden");
     gameRosterPanel.classList.add("hidden");
@@ -1227,7 +1322,7 @@ function render(nextState) {
         setRevealPanel({
           kicker: "Resultat du duel",
           title: "Le duel est termine",
-          detail: duel.resultMessage || "Rejoins ton vocal."
+          detail: duel.resultMessage || (gameUsesVoice() ? "Rejoins ton vocal." : "Observe le resultat.")
         });
         setViewMode("result");
       } else {
@@ -1246,7 +1341,7 @@ function render(nextState) {
     } else if (phase.label === "Discussion terminee : choisissez les duellistes") {
       setScreen("Vote termine", "L'Empire tranche.", "En cas d'egalite, un tirage aleatoire decide.");
     } else if (!player.role) {
-      setScreen("Preparation", "Attends ton role.", "Rejoins le vocal Preparation pendant que tout le monde arrive.");
+      setScreen("Preparation", "Attends ton role.", gameUsesVoice() ? "Rejoins le vocal Preparation pendant que tout le monde arrive." : "Attends que tout le monde rejoigne la partie.");
     } else if (phase.name === "result") {
       setScreen(phase.label, "Suis l'indication affichee.", phase.label);
     } else {
@@ -1378,7 +1473,8 @@ hostStartGame.addEventListener("click", async () => {
   await postJson("/api/settings", {
     duelDuration: hostDuelDuration.value,
     resultDuration: hostResultDuration.value,
-    discussionDuration: hostDiscussionDuration.value
+    discussionDuration: hostDiscussionDuration.value,
+    voiceChatEnabled: hostVoiceChatEnabled
   });
   await postJson("/api/setup-game", { outlawCount: hostOutlawCount.value });
 });
@@ -1387,7 +1483,8 @@ hostForceStart.addEventListener("click", async () => {
   await postJson("/api/settings", {
     duelDuration: hostDuelDuration.value,
     resultDuration: hostResultDuration.value,
-    discussionDuration: hostDiscussionDuration.value
+    discussionDuration: hostDiscussionDuration.value,
+    voiceChatEnabled: hostVoiceChatEnabled
   });
   await postJson("/api/setup-game", { outlawCount: hostOutlawCount.value, force: true });
 });
@@ -1420,7 +1517,16 @@ hostOutlawCount.addEventListener("input", () => {
   hostOutlawTouched = true;
 });
 
+hostVoiceOn?.addEventListener("click", () => {
+  setHostVoiceMode(true);
+});
+
+hostVoiceOff?.addEventListener("click", () => {
+  setHostVoiceMode(false);
+});
+
 enableVoice.addEventListener("click", () => {
+  if (!gameUsesVoice()) return;
   if (voiceEnabled) return;
   sendClientLog("voice-enable-click");
   enableVoiceChat().catch(() => {

@@ -9,7 +9,8 @@ const port = Number(globalThis.process?.env?.PORT || 5205);
 const defaultSettings = {
   duelDuration: 30,
   resultDuration: 15,
-  discussionDuration: 150
+  discussionDuration: 150,
+  voiceChatEnabled: true
 };
 const defaultIceServers = [{ urls: "stun:stun.l.google.com:19302" }];
 const staticIceServers = loadStaticIceServers();
@@ -527,7 +528,9 @@ function publicGameList(req) {
       visibility: game.visibility,
       hostName: game.players.find((player) => player.id === game.hostId)?.name || "Organisateur",
       playerCount: game.players.filter((player) => player.alive).length,
-      readyCount: game.players.filter((player) => player.alive && (player.fake || player.voiceReady)).length,
+      readyCount: game.players.filter((player) => player.alive && (
+        game.settings.voiceChatEnabled === false || player.fake || player.voiceReady
+      )).length,
       joinUrl: game.visibility === "public" ? `${origin}/join.html?code=${game.code}` : ""
     }));
 }
@@ -738,10 +741,14 @@ function scheduleAfterDuel() {
 }
 
 function normalizeSettings(body) {
+  const voiceChatEnabled = Object.prototype.hasOwnProperty.call(body, "voiceChatEnabled")
+    ? body.voiceChatEnabled !== false && body.voiceChatEnabled !== "false"
+    : state.settings?.voiceChatEnabled !== false;
   return {
     duelDuration: clampDuration(body.duelDuration, 5, 300, defaultSettings.duelDuration),
     resultDuration: clampDuration(body.resultDuration, 3, 120, defaultSettings.resultDuration),
-    discussionDuration: clampDuration(body.discussionDuration, 10, 900, defaultSettings.discussionDuration)
+    discussionDuration: clampDuration(body.discussionDuration, 10, 900, defaultSettings.discussionDuration),
+    voiceChatEnabled
   };
 }
 
@@ -753,7 +760,7 @@ function setupGame(outlawCountInput, options = {}) {
     logGame("game:setup-blocked", { reason: "not-enough-players", players: living.length });
     return false;
   }
-  const missingMic = missingVoicePlayers();
+  const missingMic = state.settings.voiceChatEnabled === false ? [] : missingVoicePlayers();
   if (missingMic.length && !options.force) {
     state.hostMessage = `Micro manquant : ${missingMic.map((player) => player.name).join(", ")}.`;
     logGame("game:setup-blocked", { reason: "missing-mic", players: missingMic.map((player) => player.name) });
@@ -1029,6 +1036,14 @@ const server = http.createServer(async (req, res) => {
     useGame(body.code);
     activeSettings = normalizeSettings(body);
     state.settings = activeSettings;
+    if (state.settings.voiceChatEnabled === false) {
+      state.players.forEach((player) => {
+        player.voiceRoom = "";
+        player.voiceReady = false;
+        player.voiceMuted = false;
+        player.voiceDeafened = false;
+      });
+    }
     if (!state.duel.running && !state.duel.leftId && !state.duel.rightId) {
       state.duel = freshDuel();
     }
@@ -1052,7 +1067,7 @@ const server = http.createServer(async (req, res) => {
   if (req.method === "POST" && url.pathname === "/api/signal") {
     const body = await readBody(req);
     useGame(body.code);
-    if (body.from && body.to && body.kind) {
+    if (state.settings.voiceChatEnabled !== false && body.from && body.to && body.kind) {
       if (body.kind !== "candidate") logGame("voice:signal", { from: debugPlayer(body.from) || body.from, to: debugPlayer(body.to) || body.to, kind: body.kind });
       emitSignal({
         from: String(body.from),
@@ -1144,10 +1159,11 @@ const server = http.createServer(async (req, res) => {
     useGame(body.code);
     const player = state.players.find((item) => item.id === body.playerId);
     if (player) {
-      player.voiceRoom = String(body.room || "");
-      player.voiceReady = Boolean(body.ready);
-      player.voiceMuted = Boolean(body.muted);
-      player.voiceDeafened = Boolean(body.deafened);
+      const voiceChatEnabled = state.settings.voiceChatEnabled !== false;
+      player.voiceRoom = voiceChatEnabled ? String(body.room || "") : "";
+      player.voiceReady = voiceChatEnabled && Boolean(body.ready);
+      player.voiceMuted = voiceChatEnabled && Boolean(body.muted);
+      player.voiceDeafened = voiceChatEnabled && Boolean(body.deafened);
       logGame("voice:room", {
         player: player.name,
         room: player.voiceRoom,
